@@ -69,6 +69,11 @@ export default tseslint.config(
       ],
     },
   },
+  // Em testes e no simulador, `!` sobre resultados conhecidos deixa os cenários legíveis.
+  {
+    files: ['**/*.test.{ts,tsx}', 'tests/**/*.ts', 'scripts/**/*.ts', 'src/engine/testing/**/*.ts'],
+    rules: { '@typescript-eslint/no-non-null-assertion': 'off' },
+  },
   {
     files: ['eslint/**/*.js', '*.config.{js,ts}', 'scripts/**/*.{js,mjs}'],
     extends: [js.configs.recommended],

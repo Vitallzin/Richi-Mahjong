@@ -1,0 +1,27 @@
+name: Simulação longa
+
+on:
+  workflow_dispatch:
+    inputs:
+      games:
+        description: Número de partidas
+        default: '5000'
+
+permissions:
+  contents: read
+
+jobs:
+  simulate:
+    name: Partidas bot × bot com verificação de invariantes
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:sim
+        env:
+          SIM_GAMES: ${{ inputs.games }}

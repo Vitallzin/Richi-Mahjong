@@ -11,3 +11,5 @@ Um arquivo curto por decisão não óbvia. Valores de regra confirmados ficam em
 | 0003 | Salas privadas com o anfitrião como servidor                        |
 | 0004 | Commits em português                                                |
 | 0005 | Fronteiras de camada por plugin ESLint local                        |
+| 0006 | Limite da extensão na partida "só Leste" (provisório)               |
+| 0007 | Detalhes do fluxo de jogo não fixados na spec                       |

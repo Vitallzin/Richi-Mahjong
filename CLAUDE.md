@@ -17,7 +17,8 @@ Especificação completa: docs/spec.md (prevalece sobre qualquer outra coisa).
 ## Comandos
 
 - npm run dev | build | lint | typecheck | test | test:sim | test:coverage | format
+- npm run sim -- --games 100 [--mode yonma] [--seed 1] [--check] # simulador de linha de comando
 
 ## Fase atual
 
-Fase 0 — Fundação (concluída). Próxima: Fase 1 — Motor yonma.
+Fase 1 — Motor yonma (concluída). Próxima: Fase 2 — Mesa jogável (yonma × bots).

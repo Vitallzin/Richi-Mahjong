@@ -42,7 +42,7 @@ Firebase Hosting a cada push na `main`. Pré-requisitos (uma vez):
 | Fase | Conteúdo                                    | Estado |
 | ---- | ------------------------------------------- | ------ |
 | 0    | Fundação                                    | ✅     |
-| 1    | Motor yonma                                 | —      |
+| 1    | Motor yonma                                 | ✅     |
 | 2    | Mesa jogável contra bots                    | —      |
 | 3    | Ajudas, onboarding e tutorial               | —      |
 | 4    | Sanma                                       | —      |

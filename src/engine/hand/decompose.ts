@@ -2,7 +2,7 @@
  * Decomposição de mãos completas (todas as leituras possíveis, spec 7.9) e esperas.
  */
 import { KIND_COUNT, YAOCHU_KINDS, type TileKind } from '../tiles';
-import { chiitoitsuShanten, kokushiShanten, shanten } from './shanten';
+import { chiitoitsuShanten, kokushiShanten } from './shanten';
 
 /** Grupo fechado da mão: sequência (começando em `kind`) ou trinca. */
 export type HandSet = { readonly type: 'seq' | 'trip'; readonly kind: TileKind };
@@ -88,9 +88,44 @@ export function decompositions(counts: readonly number[], meldCount = 0): Decomp
   return out;
 }
 
+/**
+ * As peças formam só grupos (trincas/sequências)? Guloso e O(34): para a menor peça, usar trinca
+ * quando há 3+ cópias nunca atrapalha (três sequências iguais equivalem a três trincas).
+ */
+function allSets(c: number[]): boolean {
+  for (let i = 0; i < KIND_COUNT; i++) {
+    let ci = c[i] as number;
+    if (ci === 0) continue;
+    if (ci >= 3) ci -= 3;
+    if (ci === 0) continue;
+    if (i >= 27 || i % 9 > 6) return false;
+    const c1 = c[i + 1] as number;
+    const c2 = c[i + 2] as number;
+    if (c1 < ci || c2 < ci) return false;
+    c[i + 1] = c1 - ci;
+    c[i + 2] = c2 - ci;
+  }
+  return true;
+}
+
+/** Forma padrão completa (par + grupos), sem enumerar leituras. */
+export function isRegularAgari(counts: readonly number[]): boolean {
+  let total = 0;
+  for (const c of counts) total += c;
+  if (total % 3 !== 2) return false;
+  for (let pair = 0; pair < KIND_COUNT; pair++) {
+    if ((counts[pair] as number) < 2) continue;
+    const c = counts.slice();
+    c[pair] = (c[pair] as number) - 2;
+    if (allSets(c)) return true;
+  }
+  return false;
+}
+
 /** Mão completa (forma), sem considerar yaku. */
 export function isAgari(counts: readonly number[], meldCount = 0): boolean {
-  return shanten(counts, meldCount) === -1;
+  if (isRegularAgari(counts)) return true;
+  return meldCount === 0 && (isChiitoitsu(counts) || isKokushi(counts));
 }
 
 /**
@@ -117,5 +152,5 @@ export function waits(
 
 /** Tenpai de forma (não exige yaku). */
 export function isTenpai(counts: readonly number[], meldCount = 0): boolean {
-  return shanten(counts, meldCount) === 0 && waits(counts, meldCount).length > 0;
+  return waits(counts, meldCount).length > 0;
 }
