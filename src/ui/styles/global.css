@@ -1,0 +1,46 @@
+/* Tokens do tema "Noite de Sakura" (spec 11.1). Temas futuros trocam estas variáveis. */
+:root {
+  --color-bg: #16112a;
+  --color-glow: #3b2d66;
+  --color-felt: #2a2145;
+  --color-frame: #3b2a22;
+  --color-tile-back: #4b3a8c;
+  --color-accent: #d9b36a;
+  --color-surface: rgb(42 33 69 / 0.75);
+  --color-surface-hover: rgb(66 52 108 / 0.85);
+  --color-border: rgb(217 179 106 / 0.35);
+  --color-text-strong: #f4eefc;
+  --color-text-muted: #b9aed3;
+
+  --font-display: 'Shippori Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+  --font-body: 'M PLUS 1p', 'Hiragino Sans', 'Yu Gothic', system-ui, sans-serif;
+
+  --radius-md: 10px;
+
+  color-scheme: dark;
+  font-family: var(--font-body);
+  line-height: 1.5;
+  color: var(--color-text-strong);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
