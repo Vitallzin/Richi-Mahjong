@@ -21,4 +21,4 @@ Especificação completa: docs/spec.md (prevalece sobre qualquer outra coisa).
 
 ## Fase atual
 
-Fase 2 — Mesa jogável (yonma × bots): implementada; falta validação em aparelho real pelo desenvolvedor. Próxima: Fase 3 — Ajudas, onboarding e tutorial (só com liberação do desenvolvedor).
+Fase 3 — Ajudas, onboarding e tutorial: implementada; aguardando validação do desenvolvedor. Próxima: Fase 4 — Sanma (só com liberação do desenvolvedor).

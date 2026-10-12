@@ -192,6 +192,7 @@ export function SetupScreen() {
       difficulty: s.difficulty,
       characters: s.characters,
       playerName: t('table.you'),
+      training: advanced && s.training,
     });
     void enterGameDisplay();
     navigate('/partida');
@@ -366,6 +367,19 @@ export function SetupScreen() {
                   />
                 ))}
             </div>
+            <div className={styles.rule}>
+              <span className={styles.ruleLabel}>{t('setup.training')}</span>
+              <Segmented<boolean>
+                label={t('setup.training')}
+                value={s.training}
+                options={[
+                  { value: false, label: t('rules.value.off') },
+                  { value: true, label: t('rules.value.on') },
+                ]}
+                onChange={(v) => s.set({ training: v })}
+              />
+              <p className={styles.help}>{t('setup.training.desc')}</p>
+            </div>
             <button type="button" className={styles.link} onClick={() => s.resetRules(mode)}>
               {t('setup.advanced.restore')}
             </button>
@@ -385,6 +399,11 @@ export function SetupScreen() {
           <li>
             {t('setup.opponents')}: <strong>{t(`setup.difficulty.${s.difficulty}`)}</strong>
           </li>
+          {advanced && s.training && (
+            <li className={styles.changed}>
+              <strong>{t('setup.training')}</strong>
+            </li>
+          )}
           {changed.length === 0 ? (
             <li>{t('setup.summary.default')}</li>
           ) : (

@@ -4,6 +4,7 @@
  */
 import type { CSSProperties, MouseEvent, ReactNode } from 'react';
 import { numberOf, suitOf, type Tile as TileData } from '../../engine';
+import { labelText, useTileLabels } from './tileLabels';
 import { tileName } from './tileName';
 import { t } from '../../i18n';
 import styles from './Tile.module.css';
@@ -101,10 +102,17 @@ export function Tile({
     className,
   ].join(' ');
   const style = { '--tw': `${width}px` } as CSSProperties;
-  const label = tile ? tileName(tile) : t('tile.back');
+  const ariaLabel = tile ? tileName(tile) : t('tile.back');
+  const labels = useTileLabels();
+  const label = tile && labels ? labelText(tile.kind, labels) : null;
   const content = (
     <span className={styles.body}>
       <span className={styles.face}>{tile ? <Face tile={tile} /> : null}</span>
+      {label && (
+        <span className={styles.label} aria-hidden="true">
+          {label}
+        </span>
+      )}
     </span>
   );
   if (onClick) {
@@ -113,7 +121,7 @@ export function Tile({
         type="button"
         className={classes}
         style={style}
-        aria-label={label}
+        aria-label={ariaLabel}
         aria-pressed={selected}
         onClick={onClick}
         onPointerEnter={onPointerEnter}
@@ -124,7 +132,7 @@ export function Tile({
     );
   }
   return (
-    <span className={classes} style={style} role="img" aria-label={label}>
+    <span className={classes} style={style} role="img" aria-label={ariaLabel}>
       {content}
     </span>
   );

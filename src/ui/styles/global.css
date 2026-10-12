@@ -45,3 +45,23 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Reduzir movimento escolhido nas configurações (além da preferência do sistema). */
+:root[data-reduce-motion='true'] *,
+:root[data-reduce-motion='true'] *::before,
+:root[data-reduce-motion='true'] *::after {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Alto contraste (spec 10.7). */
+:root[data-high-contrast='true'] {
+  --color-text-muted: #e6ddff;
+  --color-border: rgb(255 226 160 / 0.9);
+  --color-surface: rgb(14 10 30 / 0.95);
+  --color-felt: #1c1636;
+}
+
+:root[data-high-contrast='true'] button {
+  outline-color: #fff;
+}

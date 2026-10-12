@@ -17,18 +17,8 @@ import {
   type Seat,
   type Tile,
   type TileKind,
+  visibleCounts,
 } from '../engine';
-
-/** Cópias visíveis de cada tipo: própria mão, descartes, grupos expostos, indicadores e kita. */
-export function visibleCounts(view: PlayerView): number[] {
-  const tiles: Tile[] = [...view.hand, ...view.doraIndicators];
-  for (const p of view.players) {
-    for (const d of p.discards) if (d.calledBy === null) tiles.push(d.tile);
-    for (const m of p.melds) tiles.push(...m.tiles);
-    tiles.push(...p.kita);
-  }
-  return toCounts(tiles);
-}
 
 export const meldCountOf = (view: PlayerView): number => view.players[view.seat]?.melds.length ?? 0;
 

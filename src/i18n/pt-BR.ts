@@ -1,10 +1,12 @@
 // Textos de interface em português do Brasil (spec 0.3: nunca strings soltas em componentes).
 import { game } from './pt-BR/game';
+import { help } from './pt-BR/help';
 import { rules } from './pt-BR/rules';
 import { yaku } from './pt-BR/yaku';
 
 export const ptBR = {
   ...game,
+  ...help,
   ...rules,
   ...yaku,
 

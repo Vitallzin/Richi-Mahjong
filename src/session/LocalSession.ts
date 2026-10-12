@@ -11,6 +11,7 @@ import {
   eventsForSeat,
   getLegalActions,
   getPlayerView,
+  getTrainingView,
   hasAnyAction,
   startNextHand,
   type Action,
@@ -21,6 +22,7 @@ import {
   type Rng,
   type RuleSet,
   type Seat,
+  type Tile,
 } from '../engine';
 import { consume, type TimerSettings } from './clock';
 import { clearMatch, saveMatch, SAVE_SCHEMA_VERSION, type MatchSnapshot } from './storage';
@@ -176,6 +178,11 @@ export class LocalSession implements MatchSession {
       hasBank: this.settings.timer.bankSeconds > 0,
       at: now,
     };
+  }
+
+  getRevealedHands(): Readonly<Partial<Record<Seat, readonly Tile[]>>> | null {
+    if (!this.settings.training) return null;
+    return getTrainingView(this.state, this.localSeat).revealedHands;
   }
 
   dispose(): void {

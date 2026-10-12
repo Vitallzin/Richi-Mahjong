@@ -1,4 +1,10 @@
+import { useEffect } from 'react';
 import { Route, Routes } from 'react-router-dom';
+import { useSettings } from '../state/settings';
+import { HelpsScreen } from './screens/HelpsScreen';
+import { SettingsScreen } from './screens/SettingsScreen';
+import { WelcomeScreen } from './screens/WelcomeScreen';
+import { TutorialScreen } from './tutorial/TutorialScreen';
 import { MainMenu } from './screens/MainMenu';
 import { NotFound } from './screens/NotFound';
 import { UnderConstruction } from './screens/UnderConstruction';
@@ -8,14 +14,22 @@ import { TableScreen } from './screens/TableScreen';
 
 /** Rotas da spec 10.1. As telas ainda não implementadas mostram "Em construção". */
 export function App() {
+  const a11y = useSettings((s) => s.accessibility);
+  // Acessibilidade global (spec 10.7): atributos no <html> lidos pelo CSS.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.dataset.reduceMotion = String(a11y.reduceMotion);
+    root.dataset.highContrast = String(a11y.highContrast);
+  }, [a11y.reduceMotion, a11y.highContrast]);
   return (
     <Routes>
       <Route path="/" element={<MainMenu />} />
       <Route path="/jogar" element={<SetupScreen />} />
       <Route path="/partida" element={<TableScreen />} />
-      <Route path="/tutorial/:capitulo?" element={<UnderConstruction />} />
-      <Route path="/ajudas" element={<UnderConstruction />} />
-      <Route path="/configuracoes" element={<UnderConstruction />} />
+      <Route path="/tutorial/:capitulo?" element={<TutorialScreen />} />
+      <Route path="/boas-vindas" element={<WelcomeScreen />} />
+      <Route path="/ajudas" element={<HelpsScreen />} />
+      <Route path="/configuracoes" element={<SettingsScreen />} />
       <Route path="/aparencia" element={<UnderConstruction />} />
       {import.meta.env.DEV && <Route path="/dev/pecas" element={<DevTiles />} />}
       <Route path="*" element={<NotFound />} />

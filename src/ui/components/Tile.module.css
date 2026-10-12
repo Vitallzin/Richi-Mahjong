@@ -222,3 +222,28 @@
     transition: none;
   }
 }
+
+/* Camada de rótulos (spec 9.4): independente do tema, contraste garantido sobre qualquer face. */
+.label {
+  position: absolute;
+  right: -2px;
+  top: -2px;
+  max-width: 96%;
+  padding: 0 calc(var(--tw) * 0.06);
+  border-radius: calc(var(--tw) * 0.08);
+  background: rgb(18 14 34 / 0.88);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: max(10px, calc(var(--tw) * 0.24));
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+.sideways .label {
+  right: -2px;
+  top: -2px;
+}

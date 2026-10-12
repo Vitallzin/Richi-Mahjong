@@ -211,3 +211,30 @@ describe('autosave', () => {
     session.dispose();
   });
 });
+
+describe('modo treino (spec 9.7)', () => {
+  it('mãos reveladas só com a opção ligada', () => {
+    const opts = { scheduler: new ManualScheduler(), seed, autosave: false };
+    const off = LocalSession.create(
+      PRESET_YONMA,
+      { timer: DEFAULT_TIMER, training: false },
+      BOTS,
+      0,
+      opts,
+    );
+    expect(off.getRevealedHands()).toBeNull();
+    const on = LocalSession.create(
+      PRESET_YONMA,
+      { timer: DEFAULT_TIMER, training: true },
+      BOTS,
+      0,
+      opts,
+    );
+    const hands = on.getRevealedHands();
+    expect(hands?.[1]).toHaveLength(13);
+    // A PlayerView continua sem mãos alheias.
+    expect(JSON.stringify(on.getView())).not.toContain('revealedHands');
+    off.dispose();
+    on.dispose();
+  });
+});

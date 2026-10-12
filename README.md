@@ -39,12 +39,12 @@ Firebase Hosting a cada push na `main`. Pré-requisitos (uma vez):
 
 ## Fases
 
-| Fase | Conteúdo                                    | Estado |
-| ---- | ------------------------------------------- | ------ |
-| 0    | Fundação                                    | ✅     |
-| 1    | Motor yonma                                 | ✅     |
-| 2    | Mesa jogável contra bots                    | 🔍 validação |
-| 3    | Ajudas, onboarding e tutorial               | —      |
-| 4    | Sanma                                       | —      |
-| 5    | Conta, histórico e salas privadas           | —      |
-| 6    | Bots avançados, personalização e acabamento | —      |
+| Fase | Conteúdo                                    | Estado       |
+| ---- | ------------------------------------------- | ------------ |
+| 0    | Fundação                                    | ✅           |
+| 1    | Motor yonma                                 | ✅           |
+| 2    | Mesa jogável contra bots                    | ✅           |
+| 3    | Ajudas, onboarding e tutorial               | 🔍 validação |
+| 4    | Sanma                                       | —            |
+| 5    | Conta, histórico e salas privadas           | —            |
+| 6    | Bots avançados, personalização e acabamento | —            |

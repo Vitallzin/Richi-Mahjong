@@ -1,6 +1,6 @@
 /** Interface única entre a UI e o jogo (spec 5.4): local, anfitrião ou convidado. */
 import type { BotSkill, CharacterId } from '../bots';
-import type { Action, PlayerEvent, PlayerView, RuleSet, Seat } from '../engine';
+import type { Action, PlayerEvent, PlayerView, RuleSet, Seat, Tile } from '../engine';
 import type { TimerSettings } from './clock';
 
 export type SeatSetup =
@@ -35,5 +35,10 @@ export interface MatchSession {
   submit(action: Action): void;
   /** Relógio do jogador local quando ele está decidindo (null se não está ou se é ilimitado). */
   getClock(): ClockView | null;
+  /**
+   * Modo treino (spec 9.7): mãos de todos, só na sessão local com a opção ligada; senão null.
+   * Usado apenas pela apresentação — nunca por bots ou ajudas.
+   */
+  getRevealedHands(): Readonly<Partial<Record<Seat, readonly Tile[]>>> | null;
   dispose(): void;
 }

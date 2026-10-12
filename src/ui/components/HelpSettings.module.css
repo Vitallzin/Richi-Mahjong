@@ -1,0 +1,104 @@
+.list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.text {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.label {
+  font-weight: 700;
+}
+
+.subLabel {
+  margin-top: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.desc {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--color-text-muted);
+}
+
+.example {
+  display: flex;
+  gap: 3px;
+  margin-top: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.inline {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.switch,
+.switchOn {
+  flex: none;
+  position: relative;
+  width: 56px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: #4a4560;
+  cursor: pointer;
+}
+
+.switchOn {
+  background: var(--color-accent);
+}
+
+.knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 150ms ease;
+}
+
+.switchOn .knob {
+  transform: translateX(24px);
+}
+
+.choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.choiceOn,
+.choiceOff {
+  min-height: 44px;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: rgb(0 0 0 / 0.2);
+  color: var(--color-text-strong);
+  font: inherit;
+  cursor: pointer;
+}
+
+.choiceOn {
+  background: var(--color-accent);
+  color: #1c1530;
+  font-weight: 700;
+}

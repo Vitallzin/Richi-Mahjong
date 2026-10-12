@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { loadMatch } from '../../session';
 import { resumeSavedMatch } from '../../state/match';
+import { useSettings } from '../../state/settings';
 import { enterGameDisplay } from '../platform/display';
 import { t, type MessageKey } from '../../i18n';
 import styles from './MainMenu.module.css';
@@ -20,6 +21,7 @@ const ITEMS: readonly MenuItem[] = [
 export function MainMenu() {
   const navigate = useNavigate();
   const [saved] = useState(() => loadMatch().status);
+  const welcomeSeen = useSettings((s) => s.welcomeSeen);
   const resume = () => {
     if (!resumeSavedMatch()) return;
     void enterGameDisplay();
@@ -51,7 +53,10 @@ export function MainMenu() {
                   <span className={styles.badge}>{t('menu.comingSoon')}</span>
                 </span>
               ) : (
-                <Link className={styles.item} to={item.to}>
+                <Link
+                  className={styles.item}
+                  to={item.to === '/jogar' && !welcomeSeen ? '/boas-vindas' : item.to}
+                >
                   {t(item.key)}
                 </Link>
               )}

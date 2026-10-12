@@ -14,7 +14,11 @@ describe('Menu principal', () => {
   it('mostra o título e os itens do menu em português', () => {
     renderAt('/');
     expect(screen.getByRole('heading', { level: 1, name: 'Riichi Mahjong' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Jogar partida' })).toHaveAttribute('href', '/jogar');
+    // No primeiro uso, passa pelas boas-vindas (spec 9.1).
+    expect(screen.getByRole('link', { name: 'Jogar partida' })).toHaveAttribute(
+      'href',
+      '/boas-vindas',
+    );
     expect(screen.getByText('Salas privadas')).toHaveAttribute('aria-disabled', 'true');
   });
 

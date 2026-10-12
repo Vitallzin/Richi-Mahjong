@@ -339,7 +339,7 @@
 
 .badge1 {
   right: 28px;
-  top: 340px;
+  top: 452px;
 }
 
 .badge2 {
@@ -489,7 +489,7 @@
 }
 
 .action_pon {
-  background: #d9771f;
+  background: #a85a12;
 }
 
 .action_kan {
@@ -522,4 +522,115 @@
   .lastDiscard {
     animation: none;
   }
+}
+
+/* ---------- Guia (spec 9.2/9.3) ---------- */
+.helpPanel {
+  position: absolute;
+  right: 24px;
+  top: 82px;
+  width: 300px;
+  max-height: 356px;
+  overflow: hidden;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: rgb(20 14 40 / 0.82);
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.helpTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--color-accent);
+}
+
+.helpFocus {
+  margin: 0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: var(--color-text-muted);
+}
+
+.helpState {
+  margin: 0;
+  font-weight: 700;
+}
+
+.helpWaits {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.helpWaits li {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.helpWaitText {
+  display: grid;
+  font-size: 14px;
+}
+
+.helpHint {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.tone_ok {
+  margin: 0;
+  color: #8fe3a8;
+}
+
+.tone_warn {
+  margin: 0;
+  color: #ffd27a;
+}
+
+.tone_bad {
+  margin: 0;
+  color: #ff9b9b;
+  font-weight: 700;
+}
+
+.doraHint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+}
+
+.trainingSeal {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  transform: translateX(-50%);
+  padding: 4px 18px;
+  border-radius: 999px;
+  background: #2e7d5b;
+  color: #fff;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 0.05em;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

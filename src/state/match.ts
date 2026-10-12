@@ -49,6 +49,7 @@ export interface SoloOptions {
   readonly difficulty: BotSkill;
   readonly characters: readonly CharacterChoice[];
   readonly playerName: string;
+  readonly training: boolean;
 }
 
 export function startSoloMatch(opts: SoloOptions): MatchSession {
@@ -64,7 +65,7 @@ export function startSoloMatch(opts: SoloOptions): MatchSession {
   }
   current = LocalSession.create(
     opts.rules,
-    { timer: opts.timer, training: false },
+    { timer: opts.timer, training: opts.training },
     seats,
     localSeat,
   );

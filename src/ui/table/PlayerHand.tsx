@@ -15,10 +15,22 @@ interface Props {
   /** Ids que podem ser descartados agora (vazio = não é a vez). */
   readonly discardable: ReadonlySet<number>;
   readonly autoSort: boolean;
+  /** Escala de acessibilidade das peças (spec 10.7). */
+  readonly scale?: number;
   readonly onDiscard: (tile: TileData) => void;
+  /** Peça em foco (mouse por cima, seleção por toque ou teclado), para a análise do guia. */
+  readonly onFocusTile?: (tile: TileData | null) => void;
 }
 
-export function PlayerHand({ hand, drawn, discardable, autoSort, onDiscard }: Props) {
+export function PlayerHand({
+  hand,
+  drawn,
+  discardable,
+  autoSort,
+  scale = 1,
+  onDiscard,
+  onFocusTile,
+}: Props) {
   const [rawSelected, setSelected] = useState<number | null>(null);
   const pointerType = useRef<string>('mouse');
   const myTurn = discardable.size > 0;
@@ -37,6 +49,7 @@ export function PlayerHand({ hand, drawn, discardable, autoSort, onDiscard }: Pr
       onDiscard(tile);
     } else {
       setSelected(tile.id);
+      onFocusTile?.(tile);
     }
   };
 
@@ -50,6 +63,7 @@ export function PlayerHand({ hand, drawn, discardable, autoSort, onDiscard }: Pr
       const delta = e.key === 'ArrowRight' ? 1 : -1;
       const next = playable[(index + delta + playable.length) % playable.length] ?? playable[0];
       setSelected(next?.id ?? null);
+      onFocusTile?.(next ?? null);
     } else if ((e.key === 'Enter' || e.key === ' ') && index >= 0) {
       e.preventDefault();
       const tile = playable[index];
@@ -67,17 +81,23 @@ export function PlayerHand({ hand, drawn, discardable, autoSort, onDiscard }: Pr
       onPointerDown={(e: PointerEvent) => {
         pointerType.current = e.pointerType;
       }}
+      onPointerLeave={(e: PointerEvent) => {
+        if (e.pointerType === 'mouse') onFocusTile?.(null);
+      }}
     >
       {tiles.map((tile) => (
         <Tile
           key={tile.id}
           tile={tile}
-          width={HAND_TILE}
+          width={Math.round(HAND_TILE * scale)}
           className={`${drawn && tile.id === drawn.id ? styles.drawnTile : ''} ${myTurn && discardable.has(tile.id) ? styles.playable : ''}`}
           selected={selected === tile.id}
           dimmed={myTurn && !discardable.has(tile.id)}
           onClick={myTurn ? () => activate(tile) : undefined}
           tabIndex={myTurn ? 0 : -1}
+          onPointerEnter={
+            myTurn && discardable.has(tile.id) ? () => onFocusTile?.(tile) : undefined
+          }
         />
       ))}
     </div>
