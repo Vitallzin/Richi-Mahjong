@@ -13,3 +13,5 @@ Um arquivo curto por decisão não óbvia. Valores de regra confirmados ficam em
 | 0005 | Fronteiras de camada por plugin ESLint local                        |
 | 0006 | Limite da extensão na partida "só Leste" (provisório)               |
 | 0007 | Detalhes do fluxo de jogo não fixados na spec                       |
+| 0008 | Sons sintetizados em WAV                                            |
+| 0009 | Decisões de interface e sessão da Fase 2                            |

@@ -9,6 +9,7 @@ import { formatClock, type MatchSession } from '../../session';
 import { useSettings } from '../../state/settings';
 import { DecisionDialog, type DecisionOption } from '../components/DecisionDialog';
 import { Tile } from '../components/Tile';
+import { play } from '../../audio/sounds';
 import { useGameSounds } from '../audio/useGameSounds';
 import { toggleFullscreen } from '../platform/display';
 import { ActionBar } from './ActionBar';
@@ -143,6 +144,12 @@ export function Table({
   const discardable = useMemo(() => new Set(view.legal.discard.map((x) => x.id)), [view.legal]);
 
   useGameSounds(events, tick, view.seat);
+
+  // Aviso de tempo (spec 11.5): quando a base acaba e o banco começa a ser usado.
+  const usingBank = clock !== null && clock.baseMs === 0 && clock.hasBank;
+  useEffect(() => {
+    if (usingBank) play('timeWarning');
+  }, [usingBank, tick]);
 
   const submit = (action: Action) => {
     setDialog(null);
