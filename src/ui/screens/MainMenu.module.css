@@ -83,3 +83,15 @@ a.item:focus-visible {
   border: 1px solid var(--color-border);
   color: var(--color-text-muted);
 }
+
+button.item {
+  width: 100%;
+  font: inherit;
+  font-size: 1.05rem;
+  cursor: pointer;
+}
+
+.primary {
+  border-color: var(--color-accent);
+  background: rgb(217 179 106 / 0.18);
+}

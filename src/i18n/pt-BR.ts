@@ -1,5 +1,13 @@
 // Textos de interface em português do Brasil (spec 0.3: nunca strings soltas em componentes).
+import { game } from './pt-BR/game';
+import { rules } from './pt-BR/rules';
+import { yaku } from './pt-BR/yaku';
+
 export const ptBR = {
+  ...game,
+  ...rules,
+  ...yaku,
+
   'app.title': 'Riichi Mahjong',
   'app.subtitle': 'Mahjong japonês em português, com guia opcional para iniciantes',
 

@@ -24,3 +24,13 @@ export function t(key: MessageKey, params?: MessageParams): string {
     name in params ? String(params[name]) : match,
   );
 }
+
+/** A chave existe no catálogo? (para chaves montadas dinamicamente, ex.: `rules.<id>.label`). */
+export function isMessageKey(key: string): key is MessageKey {
+  return key in catalogs[currentLocale];
+}
+
+/** Traduz uma chave dinâmica; se não existir, devolve a própria chave (visível em desenvolvimento). */
+export function tKey(key: string, params?: MessageParams): string {
+  return isMessageKey(key) ? t(key, params) : key;
+}

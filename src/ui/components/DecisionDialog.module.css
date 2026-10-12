@@ -1,0 +1,85 @@
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(10 6 24 / 0.55);
+}
+
+.dialog {
+  min-width: 420px;
+  max-width: 1100px;
+  padding: 28px 32px;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  background: linear-gradient(180deg, #2f2552, #211a3c);
+  box-shadow: 0 20px 60px rgb(0 0 0 / 0.5);
+  display: grid;
+  gap: 18px;
+  justify-items: center;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 30px;
+}
+
+.description {
+  margin: 0;
+  max-width: 760px;
+  text-align: center;
+  font-size: 22px;
+  color: var(--color-text-muted);
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  justify-content: center;
+}
+
+.option {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 2px solid var(--color-border);
+  background: rgb(0 0 0 / 0.25);
+  color: var(--color-text-strong);
+  font: inherit;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.option:hover,
+.option:focus-visible {
+  border-color: var(--color-accent);
+  outline: none;
+  background: rgb(217 179 106 / 0.12);
+}
+
+.tiles {
+  display: flex;
+  gap: 4px;
+}
+
+.label {
+  font-weight: 700;
+}
+
+.cancel {
+  min-width: 160px;
+  min-height: 52px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: #4a4560;
+  color: #fff;
+  font: inherit;
+  font-size: 22px;
+  cursor: pointer;
+}

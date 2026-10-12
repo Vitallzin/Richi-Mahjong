@@ -1,0 +1,211 @@
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(10 6 24 / 0.6);
+}
+
+.dialog {
+  width: 1180px;
+  max-height: 840px;
+  overflow: auto;
+  padding: 28px 36px;
+  border-radius: 18px;
+  border: 1px solid var(--color-border);
+  background: linear-gradient(180deg, #2f2552, #1e1836);
+  box-shadow: 0 24px 70px rgb(0 0 0 / 0.55);
+  display: grid;
+  gap: 18px;
+  font-size: 22px;
+}
+
+.title {
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 36px;
+  color: var(--color-accent);
+}
+
+.win {
+  display: grid;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.winTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 30px;
+}
+
+.handRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.gap {
+  width: 14px;
+}
+
+.meldGroup {
+  display: inline-flex;
+  gap: 2px;
+  margin-left: 14px;
+}
+
+.yakuList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 40px;
+}
+
+.yakuList li {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dotted rgb(255 255 255 / 0.15);
+}
+
+.score {
+  margin: 0;
+  font-size: 26px;
+}
+
+.score strong {
+  color: var(--color-accent);
+  margin-left: 12px;
+}
+
+.indicators {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.note {
+  margin: 0;
+  font-weight: 700;
+}
+
+.tenpaiList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.tenpaiList li {
+  display: grid;
+  grid-template-columns: 180px 120px 1fr;
+  align-items: center;
+}
+
+.tenpai {
+  color: #8fe3a8;
+  font-weight: 700;
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.deltas {
+  border-collapse: collapse;
+  justify-self: center;
+  min-width: 620px;
+}
+
+.deltas td {
+  padding: 6px 18px;
+  border-bottom: 1px solid rgb(255 255 255 / 0.1);
+  text-align: right;
+}
+
+.deltas td:first-child {
+  text-align: left;
+}
+
+.plus {
+  color: #8fe3a8;
+  font-weight: 700;
+}
+
+.minus {
+  color: #ff9b9b;
+  font-weight: 700;
+}
+
+.primary,
+.secondary {
+  justify-self: center;
+  min-width: 260px;
+  min-height: 60px;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 24px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.primary {
+  border: 0;
+  background: linear-gradient(180deg, #e8c47e, #c99a4a);
+  color: #1c1530;
+}
+
+.primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.secondary {
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-strong);
+}
+
+.buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.ranking {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+  justify-self: center;
+  min-width: 600px;
+}
+
+.ranking li {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  align-items: center;
+  padding: 12px 18px;
+  border-radius: 10px;
+  background: rgb(0 0 0 / 0.25);
+  font-size: 26px;
+}
+
+.first {
+  border: 2px solid var(--color-accent);
+}
+
+.place {
+  font-family: var(--font-display);
+  font-size: 32px;
+  color: var(--color-accent);
+}

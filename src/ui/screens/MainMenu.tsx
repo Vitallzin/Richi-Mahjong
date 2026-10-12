@@ -1,4 +1,8 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { loadMatch } from '../../session';
+import { resumeSavedMatch } from '../../state/match';
+import { enterGameDisplay } from '../platform/display';
 import { t, type MessageKey } from '../../i18n';
 import styles from './MainMenu.module.css';
 
@@ -14,6 +18,13 @@ const ITEMS: readonly MenuItem[] = [
 ];
 
 export function MainMenu() {
+  const navigate = useNavigate();
+  const [saved] = useState(() => loadMatch().status);
+  const resume = () => {
+    if (!resumeSavedMatch()) return;
+    void enterGameDisplay();
+    navigate('/partida');
+  };
   return (
     <main className={styles.screen}>
       <header className={styles.header}>
@@ -25,6 +36,13 @@ export function MainMenu() {
       </header>
       <nav aria-label={t('menu.ariaLabel')}>
         <ul className={styles.list}>
+          {saved === 'ok' && (
+            <li>
+              <button type="button" className={`${styles.item} ${styles.primary}`} onClick={resume}>
+                {t('menu.continue')}
+              </button>
+            </li>
+          )}
           {ITEMS.map((item) => (
             <li key={item.key}>
               {item.comingSoon ? (
@@ -41,6 +59,7 @@ export function MainMenu() {
           ))}
         </ul>
       </nav>
+      {saved === 'incompatible' && <p className={styles.subtitle}>{t('menu.saveIncompatible')}</p>}
     </main>
   );
 }

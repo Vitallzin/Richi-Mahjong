@@ -1,0 +1,525 @@
+/* Layout da mesa em coordenadas do palco (1600×900). */
+
+/* ---------- HUD ---------- */
+.header {
+  position: absolute;
+  left: 28px;
+  top: 18px;
+  padding: 10px 22px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: rgb(20 14 40 / 0.7);
+}
+
+.roundTitle {
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.roundKanji {
+  margin-left: 12px;
+  font-size: 20px;
+  color: var(--color-accent);
+  letter-spacing: 0.15em;
+}
+
+.roundInfo {
+  display: flex;
+  gap: 18px;
+  font-size: 19px;
+  color: var(--color-text-muted);
+}
+
+.doraPanel {
+  position: absolute;
+  left: 28px;
+  top: 138px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: rgb(20 14 40 / 0.7);
+  display: grid;
+  gap: 6px;
+}
+
+.doraLabel {
+  font-size: 17px;
+  color: var(--color-text-muted);
+}
+
+.doraTiles {
+  display: flex;
+  gap: 3px;
+}
+
+.menu {
+  position: absolute;
+  right: 24px;
+  top: 18px;
+  display: flex;
+  gap: 10px;
+}
+
+.menuButton,
+.menuOff {
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: rgb(20 14 40 / 0.75);
+  color: var(--color-text-strong);
+  font: inherit;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.menuOff {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+/* ---------- Plano da mesa (perspectiva suave, spec 10.2) ---------- */
+.plane {
+  position: absolute;
+  left: 330px;
+  top: 40px;
+  width: 940px;
+  height: 640px;
+  transform: perspective(1800px) rotateX(13deg);
+  transform-origin: 50% 100%;
+}
+
+.felt {
+  position: absolute;
+  inset: 0;
+  border-radius: 26px;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgb(255 255 255 / 0.05), transparent 60%),
+    radial-gradient(circle at 18% 78%, rgb(230 150 200 / 0.12) 0 40px, transparent 41px),
+    radial-gradient(circle at 82% 22%, rgb(230 150 200 / 0.1) 0 32px, transparent 33px),
+    var(--color-felt);
+  border: 14px solid var(--color-frame);
+  box-shadow:
+    inset 0 0 60px rgb(0 0 0 / 0.5),
+    0 30px 60px rgb(0 0 0 / 0.5);
+}
+
+.side {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+}
+
+.sideRot0 {
+  transform: rotate(0deg);
+}
+
+.sideRot1 {
+  transform: rotate(-90deg);
+}
+
+.sideRot2 {
+  transform: rotate(180deg);
+}
+
+.sideRot3 {
+  transform: rotate(90deg);
+}
+
+.sidePond {
+  position: absolute;
+  top: 112px;
+  left: -112px;
+}
+
+.pond {
+  display: grid;
+  gap: 1px;
+}
+
+.pondRow {
+  display: flex;
+  gap: 1px;
+  align-items: flex-end;
+  min-height: 52px;
+}
+
+.tsumogiri {
+  filter: brightness(0.92);
+}
+
+.lastDiscard {
+  animation: drop 260ms ease-out;
+}
+
+@keyframes drop {
+  from {
+    transform: translateY(-14px);
+    opacity: 0.2;
+  }
+}
+
+.sideEdge {
+  position: absolute;
+  display: flex;
+  gap: 14px;
+  align-items: flex-end;
+  transform: translateX(-50%);
+  left: 0;
+}
+
+/* distância até a borda: o plano é mais largo que alto */
+.edgeNear {
+  top: 255px;
+}
+
+.edgeFar {
+  top: 405px;
+}
+
+.hiddenHand,
+.melds,
+.meld {
+  display: flex;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+.melds {
+  gap: 10px;
+}
+
+.calledStack {
+  display: inline-flex;
+  flex-direction: column-reverse;
+}
+
+/* ---------- Painel central ---------- */
+.center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 210px;
+  height: 210px;
+  margin: -105px 0 0 -105px;
+  border-radius: 18px;
+  border: 2px solid var(--color-accent);
+  background: linear-gradient(160deg, #241b45, #15102b);
+  box-shadow: 0 8px 30px rgb(0 0 0 / 0.5);
+}
+
+.centerCore {
+  position: absolute;
+  inset: 46px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 2px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #2e2559, #1a1435);
+  text-align: center;
+}
+
+.centerRound {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.centerKanji {
+  font-size: 13px;
+  color: var(--color-accent);
+  letter-spacing: 0.1em;
+}
+
+.centerCounters {
+  display: flex;
+  gap: 10px;
+  font-size: 15px;
+}
+
+.centerWall {
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.centerSide {
+  position: absolute;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  width: 210px;
+  height: 40px;
+  left: 0;
+}
+
+.side0 {
+  bottom: 2px;
+}
+
+.side1 {
+  top: 85px;
+  left: 85px;
+  transform: rotate(-90deg);
+}
+
+.side2 {
+  top: 2px;
+  transform: rotate(180deg);
+}
+
+.side3 {
+  top: 85px;
+  left: -85px;
+  transform: rotate(90deg);
+}
+
+.wind,
+.dealerWind {
+  font-weight: 800;
+  color: var(--color-text-muted);
+}
+
+.dealerWind {
+  color: #ff8f8f;
+}
+
+.centerScore {
+  font-variant-numeric: tabular-nums;
+}
+
+.centerTurn {
+  color: var(--color-accent);
+  text-shadow: 0 0 8px rgb(217 179 106 / 0.8);
+}
+
+.centerTurn .wind,
+.centerTurn .dealerWind {
+  color: var(--color-accent);
+}
+
+.riichiStick {
+  display: inline-block;
+  width: 46px;
+  height: 7px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #fff 0 45%, #c4303e 45% 55%, #fff 55%);
+}
+
+/* ---------- Retratos ---------- */
+.badge {
+  position: absolute;
+  display: grid;
+  grid-template-columns: 64px auto;
+  grid-template-rows: auto auto auto;
+  column-gap: 12px;
+  align-items: center;
+  padding: 10px 16px 10px 10px;
+  min-width: 210px;
+  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  background: rgb(20 14 40 / 0.78);
+}
+
+.badgeTurn {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 18px rgb(217 179 106 / 0.6);
+}
+
+.badge0 {
+  left: 28px;
+  top: 640px;
+}
+
+.badge1 {
+  right: 28px;
+  top: 340px;
+}
+
+.badge2 {
+  right: 330px;
+  top: 96px;
+}
+
+.badge3 {
+  left: 28px;
+  top: 340px;
+}
+
+.portrait {
+  grid-row: 1 / span 3;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 800;
+  background: radial-gradient(circle at 35% 30%, #6b58b8, #2c2154);
+  border: 2px solid var(--color-accent);
+}
+
+.badgeName {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.badgeScore {
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-accent);
+}
+
+.badgeWind,
+.badgeDealer {
+  font-size: 16px;
+  color: var(--color-text-muted);
+}
+
+.badgeDealer {
+  color: #ff9f9f;
+}
+
+.badgeRiichi {
+  grid-column: 2;
+  justify-self: start;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 800;
+  background: #c4303e;
+  color: #fff;
+}
+
+/* ---------- Mão do jogador (sem perspectiva) ---------- */
+.hand {
+  position: absolute;
+  left: 290px;
+  top: 772px;
+  display: flex;
+  gap: 2px;
+  align-items: flex-end;
+}
+
+.drawnTile {
+  margin-left: 18px;
+}
+
+.playable:hover {
+  transform: translateY(-14px);
+}
+
+.ownMelds {
+  position: absolute;
+  right: 24px;
+  bottom: 22px;
+}
+
+.clock {
+  position: absolute;
+  left: 60px;
+  top: 790px;
+  min-width: 120px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 34px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  border: 2px solid var(--color-accent);
+  background: rgb(20 14 40 / 0.85);
+}
+
+.callTile {
+  position: absolute;
+  left: 50%;
+  top: 560px;
+  transform: translateX(-50%);
+  padding: 8px;
+  border-radius: 12px;
+  background: rgb(20 14 40 / 0.6);
+}
+
+/* ---------- Botões de ação (spec 9.5: cor + texto + ícone) ---------- */
+.actionBar {
+  position: absolute;
+  right: 40px;
+  top: 650px;
+  display: flex;
+  gap: 12px;
+  z-index: 10;
+}
+
+.actionButton {
+  min-width: 120px;
+  min-height: 64px;
+  padding: 0 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 14px;
+  border: 2px solid rgb(255 255 255 / 0.35);
+  color: #fff;
+  font: inherit;
+  font-size: 26px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.4);
+}
+
+.actionButton:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+.actionIcon {
+  font-size: 22px;
+}
+
+.action_chi {
+  background: #2e64c9;
+}
+
+.action_pon {
+  background: #d9771f;
+}
+
+.action_kan {
+  background: #c43f8f;
+}
+
+.action_kita {
+  background: #5d4bb0;
+}
+
+.action_riichi {
+  background: #c4303e;
+}
+
+.action_ron,
+.action_tsumo {
+  background: linear-gradient(180deg, #f1cc7d, #c9973f);
+  color: #22183a;
+}
+
+.action_kyuushu {
+  background: #3e7f6b;
+}
+
+.action_pass {
+  background: #5a5570;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lastDiscard {
+    animation: none;
+  }
+}

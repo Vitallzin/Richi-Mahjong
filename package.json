@@ -20,7 +20,8 @@
     "test:coverage": "vitest run --coverage",
     "test:sim": "vitest run --config vitest.sim.config.ts",
     "icons": "node scripts/gen-icons.mjs",
-    "sim": "tsx scripts/simulate.ts"
+    "sim": "tsx scripts/simulate.ts",
+    "sounds": "node scripts/gen-sounds.mjs"
   },
   "dependencies": {
     "@fontsource/m-plus-1p": "^5.3.0",
