@@ -38,6 +38,7 @@ Fonte: spec v1.4, seção 16. Uma linha por decisão. Alterar aqui **e** em `src
 ## Convenções padrão adotadas
 
 - Riichi exige ≥ 4 peças no muro vivo.
+- Extensão: só Leste vai até Sul 4, Leste-Sul até Oeste 4, limites absolutos inclusive para renchan (ADR 0006).
 - Kazoe yakuman a partir de 13 han.
 - Yakuman duplo: kokushi 13 esperas, suuankou tanki, chuuren 9 esperas, daisuushii.
 - Karaten conta como tenpai no pagamento de noten.

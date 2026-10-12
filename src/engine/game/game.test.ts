@@ -596,9 +596,16 @@ describe('fim de partida (spec 7.12)', () => {
 
   it('extensão: ninguém no alvo ⇒ continua no Sul; com alvo ⇒ encerra; limite ⇒ encerra', () => {
     const rules = buildRuleSet('yonma', { length: 'east' });
-    const exhaust = (scores: number[], roundWind = 0) => {
+    const exhaust = (scores: number[], roundWind = 0, dealerHand = E) => {
       let st = rig(
-        { hands: [B, C, D, E], draws: '5m6p5s6s', dora: '8p', dealer: 3, scores, roundWind },
+        {
+          hands: [B, C, D, dealerHand],
+          draws: '5m6p5s6s',
+          dora: '8p',
+          dealer: 3,
+          scores,
+          roundWind,
+        },
         rules,
       );
       st.hand!.wall.splice(3);
@@ -615,6 +622,14 @@ describe('fim de partida (spec 7.12)', () => {
     expect(cont.dealer).toBe(0);
     expect(exhaust([31000, 23000, 23000, 23000]).result?.endReason).toBe('normal');
     expect(exhaust([25000, 25000, 25000, 25000], 1).result?.endReason).toBe('normal');
+    // Sul 4 é limite absoluto: dealer tenpai (repetiria) e a partida encerra mesmo assim.
+    const renchanAtLimit = exhaust([25000, 25000, 25000, 25000], 1, '123m456p789s1122z');
+    expect(renchanAtLimit.summary!.renchan).toBe(true);
+    expect(renchanAtLimit.result?.endReason).toBe('normal');
+    // Antes do limite (Leste 4), o dealer tenpai repete normalmente.
+    const renchanAllLast = exhaust([25000, 25000, 25000, 25000], 0, '123m456p789s1122z');
+    expect(renchanAllLast.result).toBeNull();
+    expect(renchanAllLast.dealer).toBe(3);
   });
 
   it('bastões que sobram vão para o 1º colocado; desempate pela ordem dos assentos', () => {

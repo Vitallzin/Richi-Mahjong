@@ -93,7 +93,10 @@ function decideMatchEnd(
     return 'agariYame';
   }
   if ((inExtension || (wasAllLast && !end.renchan)) && top >= target) return 'normal';
-  if (s.roundWind > maxWind) return 'normal';
+  // Limite absoluto (ADR 0006): a última mão do vento de extensão encerra a partida mesmo com
+  // repetição do dealer e mesmo que ninguém tenha atingido o alvo.
+  const wasAbsoluteLast = prev.roundWind === maxWind && prev.dealer === n - 1;
+  if (wasAbsoluteLast || s.roundWind > maxWind) return 'normal';
   return null;
 }
 
