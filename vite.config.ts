@@ -2,7 +2,12 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// Porta fixa: localhost:3000 é o domínio autorizado no Firebase Auth e na restrição da chave.
+const PORT = 3000;
+
 export default defineConfig({
+  server: { port: PORT, strictPort: true },
+  preview: { port: PORT, strictPort: true },
   plugins: [
     react(),
     VitePWA({
