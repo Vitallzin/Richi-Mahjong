@@ -3,7 +3,12 @@
  * Formas: padrão (4 grupos + par), chiitoitsu (7 pares distintos) e kokushi (13 órfãos).
  * Entrada sempre como vetor de contagem de 34 posições (só as peças fechadas).
  */
-import { KIND_COUNT, YAOCHU_KINDS } from '../tiles';
+import { KIND_COUNT as KINDS, YAOCHU_KINDS as YAOCHU } from '../tiles';
+
+// Cópias locais: em laços quentes, ler a constante importada pode custar um getter de módulo
+// (ex.: no executor de testes), o que deixava o shanten ~14× mais lento.
+const KIND_COUNT = KINDS;
+const YAOCHU_KINDS = YAOCHU;
 
 /**
  * Shanten da forma padrão. `meldCount` = grupos já chamados/declarados (cada um reduz um grupo).

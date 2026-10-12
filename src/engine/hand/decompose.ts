@@ -1,7 +1,12 @@
 /**
  * Decomposição de mãos completas (todas as leituras possíveis, spec 7.9) e esperas.
  */
-import { KIND_COUNT, YAOCHU_KINDS, type TileKind } from '../tiles';
+import { KIND_COUNT as KINDS, YAOCHU_KINDS as YAOCHU, type TileKind } from '../tiles';
+
+// Cópias locais: em laços quentes, ler a constante importada pode custar um getter de módulo
+// (ex.: no executor de testes), o que deixava o shanten ~14× mais lento.
+const KIND_COUNT = KINDS;
+const YAOCHU_KINDS = YAOCHU;
 import { chiitoitsuShanten, kokushiShanten } from './shanten';
 
 /** Grupo fechado da mão: sequência (começando em `kind`) ou trinca. */
