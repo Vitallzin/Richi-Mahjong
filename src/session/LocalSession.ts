@@ -25,6 +25,7 @@ import {
   type Tile,
 } from '../engine';
 import { consume, type TimerSettings } from './clock';
+import { PACING } from './pacing';
 import { clearMatch, saveMatch, SAVE_SCHEMA_VERSION, type MatchSnapshot } from './storage';
 import type { ClockView, MatchSession, MatchSettings, SeatSetup, SessionListener } from './types';
 
@@ -49,10 +50,30 @@ export function randomSeed(): number {
 export interface BotDelays {
   readonly turn: readonly [number, number];
   readonly call: readonly [number, number];
+  /** Espera as animações (anúncios, voo da pedra, início de mão) antes de alguém agir. */
+  readonly presentation: boolean;
 }
 
-export const HUMAN_LIKE_DELAYS: BotDelays = { turn: [400, 1500], call: [150, 600] };
-export const NO_DELAYS: BotDelays = { turn: [0, 0], call: [0, 0] };
+export const HUMAN_LIKE_DELAYS: BotDelays = {
+  turn: PACING.botTurnMs,
+  call: PACING.botCallMs,
+  presentation: true,
+};
+export const NO_DELAYS: BotDelays = { turn: [0, 0], call: [0, 0], presentation: false };
+
+/** Quanto a apresentação dos eventos leva antes de a mesa seguir (ms). */
+export function presentationPause(events: readonly GameEvent[]): number {
+  let pause = 0;
+  for (const e of events) {
+    if (e.type === 'HandStarted') pause = Math.max(pause, PACING.handStartMs);
+    else if (e.type === 'CallMade' || e.type === 'RiichiDeclared' || e.type === 'KitaDeclared') {
+      pause = Math.max(pause, PACING.callAnnouncementMs);
+    } else if (e.type === 'TileDiscarded') {
+      pause = Math.max(pause, e.riichi ? PACING.callAnnouncementMs : PACING.discardFlightMs);
+    }
+  }
+  return pause;
+}
 
 export interface LocalSessionOptions {
   readonly state: MatchState;
@@ -221,7 +242,15 @@ export class LocalSession implements MatchSession {
       }, 0);
       return;
     }
-    this.scheduleActors();
+    const pause = this.delays.presentation ? presentationPause(events) : 0;
+    if (pause === 0) {
+      this.scheduleActors();
+      return;
+    }
+    const version = this.version;
+    this.schedule(() => {
+      if (this.version === version) this.scheduleActors();
+    }, pause);
   }
 
   private scheduleActors(): void {

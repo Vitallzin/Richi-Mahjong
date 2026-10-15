@@ -1,26 +1,57 @@
-/* Tokens do tema "Noite de Sakura" (spec 11.1). Temas futuros trocam estas variáveis. */
-:root {
-  --color-bg: #16112a;
-  --color-glow: #3b2d66;
-  --color-felt: #2a2145;
-  --color-frame: #3b2a22;
-  --color-tile-back: #4b3a8c;
-  --color-accent: #d9b36a;
-  --color-surface: rgb(42 33 69 / 0.75);
-  --color-surface-hover: rgb(66 52 108 / 0.85);
-  --color-border: rgb(217 179 106 / 0.35);
-  --color-text-strong: #f4eefc;
-  --color-text-muted: #b9aed3;
+/*
+ * Tema "Noite de Sakura" (spec 11.1), com acabamento chinês: laca, ouro imperial, cinábrio e jade.
+ * Temas futuros trocam estas variáveis.
+ */
+@font-face {
+  font-family: 'Cinzel';
+  src: url('/fonts/Cinzel-Variable.ttf') format('truetype');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
 
-  --font-display: 'Shippori Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
-  --font-body: 'M PLUS 1p', 'Hiragino Sans', 'Yu Gothic', system-ui, sans-serif;
-  --font-tile: 'Shippori Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+:root {
+  /* paleta base */
+  --ink: #120d1f;
+  --lacquer: #2a1a3a;
+  --lacquer-deep: #1b1128;
+  --gold: #d6ad60;
+  --gold-bright: #f0d391;
+  --gold-dim: rgb(214 173 96 / 0.38);
+  --cinnabar: #b8322a;
+  --cinnabar-bright: #d9473c;
+  --jade: #3f8f78;
+  --jade-bright: #7fd1b0;
+  --rice: #f3ead6;
+
+  /* papéis */
+  --color-bg: var(--ink);
+  --color-glow: #3b2958;
+  --color-felt: #241a3a;
+  --color-frame: #3a2418;
+  --color-tile-back: #4a3488;
+  --color-accent: var(--gold);
+  --color-surface: rgb(42 26 58 / 0.86);
+  --color-surface-hover: rgb(64 40 86 / 0.92);
+  --color-border: var(--gold-dim);
+  --color-text-strong: var(--rice);
+  --color-text-muted: #c2b5d6;
+  --color-positive: var(--jade-bright);
+  --color-negative: #ff9b8f;
+
+  --font-display: 'Cinzel', 'Noto Sans SC', Georgia, serif;
+  --font-body: 'Noto Sans SC', system-ui, sans-serif;
+  /* Hanzi decorativos e faces das pedras: traço caligráfico. */
+  --font-tile: 'Shippori Mincho', 'Noto Serif SC', 'Songti SC', serif;
+  --font-brush: 'Shippori Mincho', 'Noto Serif SC', serif;
 
   --radius-md: 10px;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   color-scheme: dark;
   font-family: var(--font-body);
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--color-text-strong);
   background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
@@ -34,7 +65,28 @@
 
 body {
   margin: 0;
-  background: var(--color-bg);
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgb(58 40 96 / 0.85), transparent 70%),
+    linear-gradient(180deg, #1c1336 0%, var(--ink) 60%) fixed;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold-bright);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--cinnabar);
+  color: var(--rice);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -42,6 +94,7 @@ body {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }
@@ -51,14 +104,16 @@ body {
 :root[data-reduce-motion='true'] *::before,
 :root[data-reduce-motion='true'] *::after {
   animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
 }
 
 /* Alto contraste (spec 10.7). */
 :root[data-high-contrast='true'] {
-  --color-text-muted: #e6ddff;
+  --color-text-muted: #ece4ff;
   --color-border: rgb(255 226 160 / 0.9);
-  --color-surface: rgb(14 10 30 / 0.95);
+  --gold-dim: rgb(255 226 160 / 0.9);
+  --color-surface: rgb(14 10 30 / 0.96);
   --color-felt: #1c1636;
 }
 

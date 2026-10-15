@@ -1,0 +1,139 @@
+.backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 0%, #3a2860 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 18%, rgb(255 196 120 / 0.1) 0%, transparent 70%),
+    linear-gradient(180deg, #1c1336 0%, #140d24 55%, #0e0919 100%);
+}
+
+.dim::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgb(10 6 20 / 0.35);
+}
+
+.moon {
+  position: absolute;
+  right: 22%;
+  top: 7%;
+  width: clamp(60px, 8vw, 120px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 38%, #fff8e6 0%, #f3e2b8 55%, #d9bf83 100%);
+  box-shadow:
+    0 0 40px 10px rgb(243 226 184 / 0.25),
+    0 0 120px 40px rgb(243 226 184 / 0.08);
+  opacity: 0.85;
+}
+
+.skyline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 45%;
+}
+
+/* ---------- lanternas ---------- */
+.lantern {
+  position: absolute;
+  top: -4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform-origin: top center;
+  animation: sway 6s ease-in-out infinite alternate;
+}
+
+@keyframes sway {
+  from {
+    rotate: -2.5deg;
+  }
+  to {
+    rotate: 2.5deg;
+  }
+}
+
+.cord {
+  width: 2px;
+  height: clamp(30px, 8vh, 90px);
+  background: linear-gradient(#000 0%, #6b5132 100%);
+}
+
+.lanternBody {
+  position: relative;
+  width: clamp(38px, 4.5vw, 64px);
+  aspect-ratio: 0.82;
+  display: grid;
+  place-items: center;
+  border-radius: 46% 46% 42% 42% / 50% 50% 46% 46%;
+  background:
+    repeating-linear-gradient(90deg, rgb(0 0 0 / 0.14) 0 2px, transparent 2px 22%),
+    radial-gradient(circle at 50% 45%, #ff9d5c 0%, #d9473c 45%, #8e1f1b 100%);
+  box-shadow:
+    0 0 26px 6px rgb(255 120 70 / 0.35),
+    inset 0 -6px 10px rgb(0 0 0 / 0.25);
+  border-top: 5px solid var(--gold);
+  border-bottom: 5px solid var(--gold);
+}
+
+.lanternGlyph {
+  font-family: var(--font-brush);
+  font-weight: 800;
+  font-size: clamp(14px, 1.7vw, 26px);
+  color: var(--gold-bright);
+  text-shadow: 0 0 6px rgb(255 220 150 / 0.6);
+}
+
+.tassel {
+  width: 6px;
+  height: clamp(16px, 3vh, 34px);
+  background: linear-gradient(var(--gold), #9b2a22);
+  border-radius: 0 0 3px 3px;
+}
+
+/* ---------- pétalas ---------- */
+.petals {
+  position: absolute;
+  inset: 0;
+}
+
+.petal {
+  position: absolute;
+  top: -5%;
+  width: 11px;
+  height: 8px;
+  border-radius: 80% 0 80% 0;
+  background: linear-gradient(135deg, #ffd6e7, #e88db4);
+  opacity: 0.55;
+  animation: fall linear infinite;
+}
+
+@keyframes fall {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(40px, 55vh) rotate(200deg);
+  }
+  100% {
+    transform: translate(-30px, 110vh) rotate(420deg);
+  }
+}
+
+@media (pointer: coarse) {
+  .petal:nth-child(n + 5) {
+    display: none;
+  }
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgb(5 3 12 / 0.55) 100%);
+}

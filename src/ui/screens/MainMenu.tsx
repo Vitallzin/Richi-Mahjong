@@ -1,22 +1,28 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { loadMatch } from '../../session';
 import { resumeSavedMatch } from '../../state/match';
 import { useSettings } from '../../state/settings';
 import { enterGameDisplay } from '../platform/display';
 import { t, type MessageKey } from '../../i18n';
+import { parseTiles } from '../../engine';
+import { Backdrop } from '../components/Backdrop';
+import { Tile } from '../components/Tile';
 import styles from './MainMenu.module.css';
 
-type MenuItem = { key: MessageKey; to: string; comingSoon?: boolean };
+/** Cada item leva um hanzi que resume a ação (打 jogar, 学 aprender, 助 ajudar…). */
+type MenuItem = { key: MessageKey; to: string; glyph: string; comingSoon?: boolean };
 
 const ITEMS: readonly MenuItem[] = [
-  { key: 'menu.play', to: '/jogar' },
-  { key: 'menu.tutorial', to: '/tutorial' },
-  { key: 'menu.help', to: '/ajudas' },
-  { key: 'menu.settings', to: '/configuracoes' },
-  { key: 'menu.appearance', to: '/aparencia' },
-  { key: 'menu.rooms', to: '/salas', comingSoon: true },
+  { key: 'menu.play', to: '/jogar', glyph: '打' },
+  { key: 'menu.tutorial', to: '/tutorial', glyph: '学' },
+  { key: 'menu.help', to: '/ajudas', glyph: '助' },
+  { key: 'menu.settings', to: '/configuracoes', glyph: '設' },
+  { key: 'menu.appearance', to: '/aparencia', glyph: '美' },
+  { key: 'menu.rooms', to: '/salas', glyph: '房', comingSoon: true },
 ];
+
+const FAN = parseTiles('1z5z6z7z4z');
 
 export function MainMenu() {
   const navigate = useNavigate();
@@ -29,11 +35,23 @@ export function MainMenu() {
   };
   return (
     <main className={styles.screen}>
+      <Backdrop />
       <header className={styles.header}>
-        <span className={styles.decoration} aria-hidden="true">
-          東一局
-        </span>
+        <div className={styles.fan} aria-hidden="true">
+          {FAN.map((tile, i) => (
+            <span
+              key={tile.id}
+              className={styles.fanTile}
+              style={{ '--i': i - 2 } as CSSProperties}
+            >
+              <Tile tile={tile} width={58} />
+            </span>
+          ))}
+        </div>
         <h1 className={styles.title}>{t('app.title')}</h1>
+        <span className={styles.decoration} aria-hidden="true">
+          立直麻雀
+        </span>
         <p className={styles.subtitle}>{t('app.subtitle')}</p>
       </header>
       <nav aria-label={t('menu.ariaLabel')}>
@@ -41,6 +59,9 @@ export function MainMenu() {
           {saved === 'ok' && (
             <li>
               <button type="button" className={`${styles.item} ${styles.primary}`} onClick={resume}>
+                <span className={styles.glyph} aria-hidden="true">
+                  再
+                </span>
                 {t('menu.continue')}
               </button>
             </li>
@@ -49,6 +70,9 @@ export function MainMenu() {
             <li key={item.key}>
               {item.comingSoon ? (
                 <span className={`${styles.item} ${styles.disabled}`} aria-disabled="true">
+                  <span className={styles.glyph} aria-hidden="true">
+                    {item.glyph}
+                  </span>
                   {t(item.key)}
                   <span className={styles.badge}>{t('menu.comingSoon')}</span>
                 </span>
@@ -57,6 +81,9 @@ export function MainMenu() {
                   className={styles.item}
                   to={item.to === '/jogar' && !welcomeSeen ? '/boas-vindas' : item.to}
                 >
+                  <span className={styles.glyph} aria-hidden="true">
+                    {item.glyph}
+                  </span>
                   {t(item.key)}
                 </Link>
               )}

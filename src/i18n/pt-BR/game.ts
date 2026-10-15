@@ -136,6 +136,7 @@ export const game = {
   'summary.pao': 'Pao: {name} paga',
   'summary.points': '{n} pontos',
   'summary.continue': 'Continuar',
+  'summary.nextWin': 'Próxima vitória',
   'summary.uraIndicators': 'Ura-dora',
 
   // Resultado da partida

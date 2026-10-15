@@ -3,134 +3,32 @@
  * perspectiva. Fala só com a MatchSession (spec 5.1).
  */
 import { useEffect, useMemo, useState } from 'react';
-import {
-  isYaochu,
-  type Action,
-  type PlayerEvent,
-  type PlayerView,
-  type Tile as TileData,
-} from '../../engine';
+import { play } from '../../audio/sounds';
+import type { Action, PlayerEvent, PlayerView, Tile as TileData } from '../../engine';
+import { doraPairs } from '../../help';
 import { t } from '../../i18n';
 import { formatClock, type MatchSession } from '../../session';
 import { useSettings } from '../../state/settings';
-import { doraPairs } from '../../help';
-import { DecisionDialog, type DecisionOption } from '../components/DecisionDialog';
+import { useGameSounds } from '../audio/useGameSounds';
+import { Backdrop } from '../components/Backdrop';
+import { DecisionDialog } from '../components/DecisionDialog';
+import { Tile } from '../components/Tile';
 import { TileLabelsContext } from '../components/tileLabels';
 import { tileName } from '../components/tileName';
-import { HelpPanel } from './HelpPanel';
-import { Tile } from '../components/Tile';
-import { play } from '../../audio/sounds';
-import { useGameSounds } from '../audio/useGameSounds';
 import { toggleFullscreen } from '../platform/display';
 import { ActionBar } from './ActionBar';
 import { ACTION_KEYS, availableActions, type ActionKey } from './actions';
-import { NUMBER_KANJI, relativeSide, seatName, windKanji, windName, windShort } from './labels';
+import { CallBanner } from './CallBanner';
+import { buildDialog, isAction, type Dialog } from './decisions';
+import { HelpPanel } from './HelpPanel';
+import { NUMBER_KANJI, relativeSide, seatName, windKanji, windName } from './labels';
 import { PlayerHand } from './PlayerHand';
+import { RoundResult } from './RoundResult';
 import { Stage } from './Stage';
-import { HandSummaryDialog, MatchResultDialog } from './SummaryDialogs';
+import { MatchResultDialog } from './SummaryDialogs';
 import styles from './Table.module.css';
 import { CenterPanel, HiddenHand, Melds, Pond } from './TableParts';
 import { useClock, useMatch } from './useMatch';
-
-interface Dialog {
-  readonly title: string;
-  readonly description?: string;
-  readonly options: readonly DecisionOption[];
-  readonly actions: Readonly<Record<string, Action>>;
-}
-
-const uniqueTiles = (tiles: readonly TileData[]) => {
-  const seen = new Map<string, TileData>();
-  for (const x of tiles) if (!seen.has(`${x.kind}:${x.red}`)) seen.set(`${x.kind}:${x.red}`, x);
-  return [...seen.values()];
-};
-
-function buildDialog(kind: ActionKey, view: PlayerView): Dialog | Action {
-  const legal = view.legal;
-  const call = view.callTile?.tile;
-  const pairOptions = (
-    title: string,
-    type: 'pon' | 'chi',
-    uses: readonly (readonly [TileData, TileData])[],
-  ): Dialog | Action => {
-    const first = uses[0];
-    if (uses.length === 1 && first) return { type, use: [first[0], first[1]] };
-    const options: DecisionOption[] = [];
-    const actions: Record<string, Action> = {};
-    uses.forEach((use, i) => {
-      const key = `${type}-${i}`;
-      options.push({
-        key,
-        tiles: call ? [...use, call].sort((a, b) => a.kind - b.kind) : [...use],
-      });
-      actions[key] = { type, use: [use[0], use[1]] };
-    });
-    return { title, options, actions };
-  };
-  switch (kind) {
-    case 'pon':
-      return pairOptions(t('decision.pon'), 'pon', legal.pon);
-    case 'chi':
-      return pairOptions(t('decision.chi'), 'chi', legal.chi);
-    case 'riichi': {
-      const tiles = uniqueTiles(legal.riichi);
-      const options = tiles.map((tile) => ({ key: `r-${tile.id}`, tiles: [tile] }));
-      const actions = Object.fromEntries(
-        tiles.map((tile) => [`r-${tile.id}`, { type: 'discard', tile, riichi: true } as Action]),
-      );
-      return {
-        title: t('decision.riichi'),
-        description: t('decision.riichiHint'),
-        options,
-        actions,
-      };
-    }
-    case 'kan': {
-      const options: DecisionOption[] = [];
-      const actions: Record<string, Action> = {};
-      if (legal.daiminkan && call) {
-        options.push({
-          key: 'daiminkan',
-          tiles: [...view.hand.filter((x) => x.kind === call.kind), call],
-        });
-        actions.daiminkan = { type: 'daiminkan' };
-      }
-      for (const k of legal.ankan) {
-        options.push({ key: `ankan-${k}`, tiles: view.hand.filter((x) => x.kind === k) });
-        actions[`ankan-${k}`] = { type: 'ankan', kind: k };
-      }
-      for (const tile of legal.kakan) {
-        const meld = view.players[view.seat]?.melds.find(
-          (m) => m.type === 'pon' && m.called.kind === tile.kind,
-        );
-        options.push({ key: `kakan-${tile.id}`, tiles: [...(meld?.tiles ?? []), tile] });
-        actions[`kakan-${tile.id}`] = { type: 'kakan', tile };
-      }
-      const only = options[0];
-      if (options.length === 1 && only) return actions[only.key] as Action;
-      return { title: t('decision.kan'), options, actions };
-    }
-    case 'kyuushu': {
-      const tiles = uniqueTiles(view.hand.filter((x) => isYaochu(x.kind)));
-      return {
-        title: t('action.kyuushu'),
-        description: t('decision.kyuushu'),
-        options: [{ key: 'yes', tiles, label: t('action.confirm') }],
-        actions: { yes: { type: 'kyuushuKyuuhai' } },
-      };
-    }
-    case 'tsumo':
-      return { type: 'tsumo' };
-    case 'ron':
-      return { type: 'ron' };
-    case 'kita':
-      return { type: 'kita' };
-    case 'pass':
-      return { type: 'pass' };
-  }
-}
-
-const isAction = (x: Dialog | Action): x is Action => 'type' in x;
 
 export function Table({
   session,
@@ -157,6 +55,9 @@ export function Table({
   const focus =
     focusTile?.tick === tick && discardable.has(focusTile.tile.id) ? focusTile.tile : null;
   const revealed = session.getRevealedHands();
+  const myTurn = view.phase === 'awaitingDiscard' && view.turn === view.seat;
+  const myCall = view.phase === 'awaitingCalls' || view.phase === 'awaitingRobbery';
+
   // "Sem chamadas" (spec 9.5): chi/pon/kan não são oferecidos; Ron continua.
   const shownActions = helps.noCalls
     ? actions.filter(
@@ -170,6 +71,11 @@ export function Table({
   }, [autoPass, tick, session]);
 
   useGameSounds(events, tick, view.seat);
+
+  // Aviso sonoro quando aparece uma chamada possível para você.
+  useEffect(() => {
+    if (myCall && !autoPass) play('yourTurn');
+  }, [myCall, autoPass, tick]);
 
   // Aviso de tempo (spec 11.5): quando a base acaba e o banco começa a ser usado.
   const usingBank = clock !== null && clock.baseMs === 0 && clock.hasBank;
@@ -217,27 +123,33 @@ export function Table({
   });
 
   const playing = view.phase !== 'handSummary' && view.phase !== 'matchEnded';
-  const roundTitle = `${windName(view.roundWind)} ${view.handNumber}`;
-
+  // Durante o resultado, o cabeçalho continua mostrando a mão que acabou de terminar.
+  const round =
+    view.phase === 'handSummary' && view.summary
+      ? { wind: view.summary.roundWind, n: view.summary.handNumber, honba: view.summary.honba }
+      : { wind: view.roundWind, n: view.handNumber, honba: view.honba };
   const announcement = announce(events, view, session.seats);
 
   return (
     <TileLabelsContext.Provider value={helps.labels}>
-      <Stage>
+      <Stage background={<Backdrop dim />}>
         <p className={styles.srOnly} aria-live="polite">
           {announcement}
         </p>
+
         <header className={styles.header}>
-          <div className={styles.roundTitle}>
-            {roundTitle}
-            <span className={styles.roundKanji} aria-hidden="true">
-              {windKanji(view.roundWind)}
-              {NUMBER_KANJI[view.handNumber - 1]}局
-            </span>
-          </div>
-          <div className={styles.roundInfo}>
-            <span>{t('table.honba', { n: view.honba })}</span>
-            <span>{t('table.sticks', { n: view.riichiSticks })}</span>
+          <span className={styles.headerGlyph} aria-hidden="true">
+            {windKanji(round.wind)}
+            {NUMBER_KANJI[round.n - 1]}局
+          </span>
+          <div>
+            <div className={styles.roundTitle}>
+              {windName(round.wind)} {round.n}
+            </div>
+            <div className={styles.roundInfo}>
+              <span>{t('table.honba', { n: round.honba })}</span>
+              <span>{t('table.sticks', { n: view.riichiSticks })}</span>
+            </div>
           </div>
         </header>
 
@@ -260,7 +172,7 @@ export function Table({
                 })}
               >
                 <Tile tile={{ id: -200 - i, kind: pair.indicator, red: false }} width={26} />
-                <span aria-hidden="true">→</span>
+                <span className={styles.doraArrow} aria-hidden="true" />
                 <span className={styles.doraLabel}>{t('table.dora')}</span>
                 <Tile tile={{ id: -300 - i, kind: pair.dora, red: false }} width={26} glow />
               </div>
@@ -274,7 +186,7 @@ export function Table({
             onClick={() => settings.set({ muted: !settings.muted })}
             aria-pressed={!settings.muted}
           >
-            ♪ {t('table.menu.sound')}
+            {t('table.menu.sound')}
           </button>
           <button
             type="button"
@@ -282,14 +194,14 @@ export function Table({
             onClick={() => settings.set({ autoSort: !settings.autoSort })}
             aria-pressed={settings.autoSort}
           >
-            ⇅ {t('table.menu.autoSort')}
+            {t('table.menu.autoSort')}
           </button>
           <button
             type="button"
             className={styles.menuButton}
             onClick={() => void toggleFullscreen()}
           >
-            ⛶ {t('table.menu.fullscreen')}
+            {t('table.menu.fullscreen')}
           </button>
           <button
             type="button"
@@ -298,11 +210,12 @@ export function Table({
               if (globalThis.confirm(t('table.menu.exitConfirm'))) onExit();
             }}
           >
-            ✕ {t('table.menu.exit')}
+            {t('table.menu.exit')}
           </button>
         </nav>
 
         <div className={styles.plane}>
+          <div className={styles.frame} />
           <div className={styles.felt} />
           <CenterPanel view={view} />
           {view.players.map((p) => {
@@ -336,18 +249,23 @@ export function Table({
         {view.players.map((p) => {
           const side = relativeSide(p.seat, view.seat, n);
           const name = seatName(session.seats, p.seat);
+          const isTurn = view.turn === p.seat;
           return (
             <div
               key={p.seat}
-              className={`${styles.badge} ${styles[`badge${side}`]} ${view.turn === p.seat ? styles.badgeTurn : ''}`}
+              className={`${styles.badge} ${styles[`badge${side}`]} ${isTurn ? styles.badgeTurn : ''}`}
+              aria-current={isTurn ? 'true' : undefined}
             >
               <span className={styles.portrait} aria-hidden="true">
                 {name.slice(0, 1)}
               </span>
               <span className={styles.badgeName}>{name}</span>
-              <span className={styles.badgeScore}>{p.score}</span>
+              <span className={styles.badgeScore}>{p.score.toLocaleString('pt-BR')}</span>
               <span className={p.isDealer ? styles.badgeDealer : styles.badgeWind}>
-                {windShort(p.seatWind)}
+                <span className={styles.badgeWindGlyph} aria-hidden="true">
+                  {windKanji(p.seatWind)}
+                </span>
+                {windName(p.seatWind)}
                 {p.isDealer ? ` · ${t('table.dealer')}` : ''}
               </span>
               {p.riichi?.established && (
@@ -357,12 +275,14 @@ export function Table({
           );
         })}
 
-        {clock && (
-          <div className={styles.clock} aria-label={t('table.clock')}>
-            {formatClock(clock, clock.hasBank)}
+        {(myTurn || myCall) && playing && (
+          <div className={styles.yourTurn} role="status">
+            {t('table.yourTurn')}
+            {clock && <span className={styles.clock}>{formatClock(clock, clock.hasBank)}</span>}
           </div>
         )}
 
+        <div className={`${styles.handTray} ${myTurn ? styles.handTrayActive : ''}`} />
         <PlayerHand
           hand={view.hand}
           drawn={view.drawn}
@@ -391,6 +311,8 @@ export function Table({
           </div>
         )}
 
+        <CallBanner events={events} tick={tick} localSeat={view.seat} players={n} />
+
         {dialog && (
           <DecisionDialog
             title={dialog.title}
@@ -405,9 +327,11 @@ export function Table({
         )}
 
         {view.phase === 'handSummary' && view.summary && (
-          <HandSummaryDialog
+          <RoundResult
+            key={`${view.handsPlayed}`}
             summary={view.summary}
             seats={session.seats}
+            localSeat={view.seat}
             canContinue={view.legal.ackSummary}
             onContinue={() => submit({ type: 'ackSummary' })}
           />

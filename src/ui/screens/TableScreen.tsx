@@ -22,6 +22,9 @@ export function TableScreen() {
     );
   }
 
+  // Depuração em desenvolvimento: a sessão fica acessível no console.
+  if (import.meta.env.DEV) Object.assign(globalThis, { __session: session });
+
   const leave = (to: string) => {
     closeSession(); // a partida em andamento continua salva (autosave)
     void exitGameDisplay();

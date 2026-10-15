@@ -2,7 +2,7 @@
 import type { DiscardEntry, Meld, PlayerView, PublicPlayerView, Seat } from '../../engine';
 import { t } from '../../i18n';
 import { Tile } from '../components/Tile';
-import { NUMBER_KANJI, relativeSide, windKanji, windName, windShort } from './labels';
+import { NUMBER_KANJI, relativeSide, windKanji, windName } from './labels';
 import styles from './Table.module.css';
 
 export const POND_TILE = 36;
@@ -111,7 +111,10 @@ export function HiddenHand({ count, width }: { count: number; width: number }) {
   );
 }
 
-/** Painel central: rodada, honba, bastões, peças restantes e vento/pontos de cada assento. */
+/**
+ * Painel central octogonal: rodada, honba, bastões, peças restantes e, em cada lado, o vento e os
+ * pontos do assento. O lado de quem joga acende (indicação de vez).
+ */
 export function CenterPanel({ view }: { view: PlayerView }) {
   const n = view.rules.players;
   return (
@@ -119,17 +122,24 @@ export function CenterPanel({ view }: { view: PlayerView }) {
       className={styles.center}
       aria-label={t('table.round', { wind: windName(view.roundWind), n: view.handNumber })}
     >
+      <div className={styles.centerRing} />
       <div className={styles.centerCore}>
-        <div className={styles.centerRound}>
-          {windName(view.roundWind)} {view.handNumber}
-        </div>
         <div className={styles.centerKanji} aria-hidden="true">
           {windKanji(view.roundWind)}
           {NUMBER_KANJI[view.handNumber - 1]}局
         </div>
+        <div className={styles.centerRound}>
+          {windName(view.roundWind)} {view.handNumber}
+        </div>
         <div className={styles.centerCounters}>
-          <span title={t('table.honba', { n: view.honba })}>▮{view.honba}</span>
-          <span title={t('table.sticks', { n: view.riichiSticks })}>●{view.riichiSticks}</span>
+          <span title={t('table.honba', { n: view.honba })}>
+            <i className={styles.honbaIcon} />
+            {view.honba}
+          </span>
+          <span title={t('table.sticks', { n: view.riichiSticks })}>
+            <i className={styles.stickIcon} />
+            {view.riichiSticks}
+          </span>
         </div>
         <div className={styles.centerWall}>{t('table.wall', { n: view.wallRemaining })}</div>
       </div>
@@ -141,8 +151,12 @@ export function CenterPanel({ view }: { view: PlayerView }) {
             key={p.seat}
             className={`${styles.centerSide} ${styles[`side${side}`]} ${isTurn ? styles.centerTurn : ''}`}
           >
-            <span className={p.isDealer ? styles.dealerWind : styles.wind}>
-              {windShort(p.seatWind)}
+            <span className={styles.turnLight} />
+            <span
+              className={p.isDealer ? styles.dealerWind : styles.wind}
+              title={windName(p.seatWind)}
+            >
+              {windKanji(p.seatWind)}
             </span>
             <span className={styles.centerScore}>{p.score}</span>
             {p.riichi?.established && (

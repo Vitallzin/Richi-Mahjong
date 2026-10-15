@@ -38,7 +38,7 @@ export default defineConfig({
       workbox: {
         // Fontes japonesas vêm em ~100 subconjuntos por peso: precacheia só o latino; o resto é
         // guardado sob demanda (CacheFirst) quando o navegador pede.
-        globPatterns: ['**/*.{js,css,html,svg,png,webp,webm,mp3,wav}', '**/*latin*.woff2'],
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,webm,mp3,wav,ttf}', '**/*latin*.woff2'],
         runtimeCaching: [
           {
             urlPattern: /\.woff2$/,

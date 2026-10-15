@@ -1,0 +1,569 @@
+/* Sequência de fim de mão (coordenadas do palco 1600×900). Atrasos vêm da variável --d. */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(ellipse at 50% 45%, rgb(30 18 48 / 0.72), rgb(8 5 16 / 0.88));
+  animation: fadeIn 260ms ease both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ---------- 1. anúncio ---------- */
+.announce {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 40px 120px;
+  border: 0;
+  background: none;
+  color: var(--rice);
+  font: inherit;
+  cursor: pointer;
+}
+
+.announceRays {
+  position: absolute;
+  inset: -260px;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgb(240 211 145 / 0.16) 0 6deg,
+    transparent 6deg 18deg
+  );
+  mask: radial-gradient(circle, #000 0 22%, transparent 62%);
+  animation: spin 9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+.announceGlyph {
+  position: relative;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 220px;
+  line-height: 1;
+  color: var(--cinnabar-bright);
+  -webkit-text-stroke: 4px var(--gold-bright);
+  text-shadow:
+    0 8px 0 #5a1410,
+    0 0 60px rgb(217 71 60 / 0.6);
+  animation: slam 700ms var(--ease-spring) both;
+}
+
+.announceWord,
+.announceWordSmall {
+  position: relative;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 110px;
+  line-height: 1;
+  background: linear-gradient(180deg, #fff6d8, var(--gold-bright) 45%, #a77a2f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 6px 0 rgb(0 0 0 / 0.55));
+  animation: rise 600ms var(--ease-out) 200ms both;
+}
+
+.announceWordSmall {
+  font-size: 70px;
+}
+
+.announceName {
+  position: relative;
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--rice);
+  animation: rise 600ms var(--ease-out) 380ms both;
+}
+
+@keyframes slam {
+  0% {
+    opacity: 0;
+    transform: scale(2.4) rotate(-8deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.92) rotate(2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+/* ---------- 2. mão e yaku ---------- */
+.panel {
+  position: relative;
+  width: 1240px;
+  max-height: 840px;
+  padding: 30px 44px 34px;
+  display: grid;
+  gap: 22px;
+  border-radius: 18px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgb(255 210 140 / 0.08), transparent 55%),
+    linear-gradient(180deg, #2f1d42 0%, #1a1128 100%);
+  border: 1px solid var(--gold);
+  box-shadow:
+    inset 0 0 0 5px #1b1128,
+    inset 0 0 0 6px var(--gold-dim),
+    0 30px 80px rgb(0 0 0 / 0.6);
+  animation: rise 450ms var(--ease-out) both;
+  font-size: 24px;
+  cursor: default;
+}
+
+.winHeader {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 20px;
+  align-items: center;
+}
+
+.portrait {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 800;
+  background: radial-gradient(circle at 35% 30%, #7a5fc4, #2c1f52);
+  border: 3px solid var(--gold);
+  box-shadow: 0 0 24px rgb(214 173 96 / 0.4);
+}
+
+.winName {
+  margin: 0;
+  font-size: 40px;
+}
+
+.winHow {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.indicators {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.small {
+  margin: 0 6px;
+  font-size: 18px;
+  color: var(--color-text-muted);
+}
+
+.hand {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  padding: 16px 0;
+  border-top: 1px solid var(--gold-dim);
+  border-bottom: 1px solid var(--gold-dim);
+}
+
+.flip {
+  display: inline-flex;
+  gap: 2px;
+  animation: flipIn 420ms var(--ease-out) var(--d, 0ms) both;
+}
+
+@keyframes flipIn {
+  from {
+    opacity: 0;
+    transform: perspective(500px) rotateY(90deg) translateY(-10px);
+  }
+}
+
+.winTile {
+  margin-left: 22px;
+}
+
+.meld {
+  margin-left: 22px;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 40px;
+  align-items: start;
+}
+
+.yaku {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.yakuLine {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed rgb(214 173 96 / 0.25);
+  animation: slideIn 380ms var(--ease-out) var(--d, 0ms) both;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+}
+
+.han {
+  color: var(--gold-bright);
+  font-weight: 700;
+}
+
+.total {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+}
+
+.scoreLine {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 30px;
+  animation: rise 400ms var(--ease-out) var(--d, 0ms) both;
+}
+
+/* O selo de cinábrio carimbado: o momento-assinatura. */
+.stamp {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 16px 26px 12px;
+  border-radius: 12px;
+  background: linear-gradient(160deg, var(--cinnabar-bright), #8e1f1b);
+  box-shadow:
+    inset 0 0 0 3px rgb(255 225 170 / 0.6),
+    inset 0 0 0 9px #8e1f1b,
+    inset 0 0 0 10px rgb(255 225 170 / 0.35),
+    0 18px 40px rgb(0 0 0 / 0.5);
+  rotate: -5deg;
+  animation: stamp 520ms var(--ease-spring) var(--d, 0ms) both;
+}
+
+.stampGlyph {
+  font-family: var(--font-brush);
+  font-weight: 800;
+  font-size: 70px;
+  line-height: 1;
+  color: var(--gold-bright);
+}
+
+.stampWord {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 30px;
+  color: var(--rice);
+}
+
+@keyframes stamp {
+  0% {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(0.9);
+  }
+  75% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.points {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 46px;
+  color: var(--gold-bright);
+  font-variant-numeric: tabular-nums;
+  animation: rise 400ms var(--ease-out) var(--d, 0ms) both;
+}
+
+.next {
+  justify-self: center;
+  min-width: 280px;
+  min-height: 64px;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(180deg, var(--cinnabar-bright), var(--cinnabar));
+  color: var(--rice);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 26px;
+  letter-spacing: 0.04em;
+  box-shadow:
+    inset 0 0 0 2px rgb(255 220 180 / 0.4),
+    inset 0 0 0 6px var(--cinnabar),
+    inset 0 0 0 7px rgb(255 220 180 / 0.25),
+    0 8px 22px rgb(120 20 15 / 0.5);
+  cursor: pointer;
+  animation: rise 400ms var(--ease-out) var(--d, 0ms) both;
+}
+
+.next:disabled {
+  filter: grayscale(0.7);
+  cursor: default;
+}
+
+.visible {
+  animation: none;
+}
+
+/* Pular: tudo aparece de uma vez. */
+.instant * {
+  animation-delay: 0ms !important;
+  animation-duration: 1ms !important;
+}
+
+/* ---------- empate ---------- */
+.drawTitle {
+  margin: 0;
+  text-align: center;
+  font-size: 40px;
+  color: var(--gold-bright);
+}
+
+.note {
+  margin: 0;
+  text-align: center;
+  font-weight: 700;
+  color: var(--jade-bright);
+}
+
+.tenpai {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.tenpai li {
+  display: grid;
+  grid-template-columns: 200px 130px 1fr;
+  align-items: center;
+}
+
+.tenpaiName {
+  font-weight: 700;
+}
+
+.tenpaiYes {
+  color: var(--jade-bright);
+  font-weight: 700;
+}
+
+.tenpaiNo {
+  color: var(--color-text-muted);
+}
+
+.tenpaiHand {
+  display: flex;
+  gap: 2px;
+}
+
+/* ---------- 3. placar ---------- */
+.board {
+  position: absolute;
+  inset: 0;
+}
+
+.compass {
+  position: absolute;
+  left: 800px;
+  top: 450px;
+  width: 230px;
+  height: 230px;
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
+  background: radial-gradient(circle, #2e2056 0 45%, #1a1232 46% 100%), var(--lacquer);
+  box-shadow: inset 0 0 0 3px var(--gold);
+}
+
+.compassGlyph {
+  font-family: var(--font-brush);
+  font-size: 84px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--gold-bright);
+}
+
+.compassText {
+  font-family: var(--font-display);
+  font-size: 22px;
+}
+
+.plaque {
+  position: absolute;
+  width: 330px;
+  translate: -50% -50%;
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 14px;
+  align-items: center;
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #2f1d42, #1b1128);
+  border: 1px solid var(--gold);
+  box-shadow:
+    inset 0 0 0 4px #1b1128,
+    inset 0 0 0 5px var(--gold-dim),
+    0 14px 40px rgb(0 0 0 / 0.5);
+  animation: rise 420ms var(--ease-out) both;
+}
+
+.plaque0 {
+  left: 800px;
+  top: 700px;
+}
+
+.plaque1 {
+  left: 1290px;
+  top: 450px;
+}
+
+.plaque2 {
+  left: 800px;
+  top: 200px;
+}
+
+.plaque3 {
+  left: 310px;
+  top: 450px;
+}
+
+.rank {
+  grid-row: 1 / span 2;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 8px;
+  background: linear-gradient(160deg, var(--cinnabar-bright), #8e1f1b);
+  box-shadow: inset 0 0 0 2px rgb(255 225 170 / 0.5);
+  font-family: var(--font-brush);
+  font-weight: 800;
+  font-size: 30px;
+  color: var(--gold-bright);
+}
+
+.plaqueName {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.plaqueScore {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 38px;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold-bright);
+}
+
+.deltaPlus,
+.deltaMinus {
+  position: absolute;
+  right: 18px;
+  top: -30px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 32px;
+  animation: pop 500ms var(--ease-spring) var(--d, 0ms) both;
+}
+
+.deltaPlus {
+  color: var(--jade-bright);
+  text-shadow: 0 0 14px rgb(127 209 176 / 0.6);
+}
+
+.deltaMinus {
+  color: var(--color-negative);
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.6);
+  }
+}
+
+/* Moedas de ouro voando de quem paga para quem recebe. */
+.coin {
+  position: absolute;
+  z-index: 2;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff6d0, var(--gold-bright) 40%, #a77a2f 75%);
+  box-shadow: 0 0 12px rgb(240 211 145 / 0.8);
+  opacity: 0;
+  animation: fly 900ms cubic-bezier(0.5, 0, 0.3, 1) var(--d, 0ms) both;
+}
+
+.coin::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border: 1.5px solid #8b6522;
+}
+
+@keyframes fly {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.5);
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(0.8);
+  }
+}
+
+.boardNext {
+  position: absolute;
+  right: 60px;
+  bottom: 50px;
+}

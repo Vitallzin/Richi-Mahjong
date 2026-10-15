@@ -6,16 +6,17 @@ import { t } from '../../i18n';
 import { ACTION_KEYS, type ActionKey } from './actions';
 import styles from './Table.module.css';
 
+/** Hanzi de cada jogada (ícone), sempre acompanhado do nome em português. */
 const ICONS: Record<ActionKey, string> = {
-  tsumo: '✦',
-  ron: '✦',
-  riichi: '▮',
-  kan: '▦',
-  pon: '◆',
-  chi: '➜',
+  tsumo: '自摸',
+  ron: '荣',
+  riichi: '立直',
+  kan: '杠',
+  pon: '碰',
+  chi: '吃',
   kita: '北',
   kyuushu: '九',
-  pass: '✕',
+  pass: '过',
 };
 
 const LABEL: Record<ActionKey, () => string> = {

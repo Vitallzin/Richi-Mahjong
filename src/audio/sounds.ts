@@ -17,22 +17,31 @@ export type SoundId =
   | 'handEnd'
   | 'roundStart'
   | 'timeWarning'
-  | 'click';
+  | 'click'
+  | 'stamp'
+  | 'whoosh'
+  | 'scoreTick'
+  | 'yourTurn';
 
-const IDS: readonly SoundId[] = [
-  'discard',
-  'draw',
-  'chi',
-  'pon',
-  'kan',
-  'riichi',
-  'ron',
-  'tsumo',
-  'handEnd',
-  'roundStart',
-  'timeWarning',
-  'click',
-];
+/** Volume relativo de cada som (os arquivos saem normalizados do gerador). */
+const LEVEL: Readonly<Record<SoundId, number>> = {
+  discard: 0.85,
+  draw: 0.45,
+  chi: 0.75,
+  pon: 0.8,
+  kan: 0.8,
+  riichi: 0.9,
+  ron: 1,
+  tsumo: 1,
+  handEnd: 0.7,
+  roundStart: 0.55,
+  timeWarning: 0.6,
+  click: 0.35,
+  stamp: 0.9,
+  whoosh: 0.45,
+  scoreTick: 0.3,
+  yourTurn: 0.5,
+};
 
 let cache: Partial<Record<SoundId, Howl>> | null = null;
 
@@ -40,7 +49,9 @@ let cache: Partial<Record<SoundId, Howl>> | null = null;
 export function preloadSounds(): void {
   if (cache) return;
   cache = {};
-  for (const id of IDS) cache[id] = new Howl({ src: [`/sounds/${id}.wav`], preload: true });
+  for (const id of Object.keys(LEVEL) as SoundId[]) {
+    cache[id] = new Howl({ src: [`/sounds/${id}.wav`], preload: true, volume: LEVEL[id] });
+  }
 }
 
 export function setAudio(volume: number, muted: boolean): void {
@@ -70,7 +81,6 @@ export function soundFor(event: PlayerEvent, localSeat: Seat): SoundId | null {
       return event.wins[0]?.winType === 'tsumo' ? 'tsumo' : 'ron';
     case 'ExhaustiveDraw':
     case 'AbortiveDraw':
-    case 'MatchEnded':
       return 'handEnd';
     default:
       return null;

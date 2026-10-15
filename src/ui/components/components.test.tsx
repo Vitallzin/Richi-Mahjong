@@ -47,7 +47,7 @@ describe('ActionBar', () => {
       within(bar)
         .getAllByRole('button')
         .map((x) => x.textContent),
-    ).toEqual(['✦Ron', '◆Pon', '✕Passar']);
+    ).toEqual(['荣Ron', '碰Pon', '过Passar']);
     fireEvent.click(screen.getByRole('button', { name: /Passar/ }));
     expect(onAction).toHaveBeenCalledWith('pass');
   });

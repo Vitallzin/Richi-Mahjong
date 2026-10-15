@@ -9,18 +9,23 @@ Destaques: React, React Router, Zustand, Firebase JS SDK (Apache-2.0), Howler.js
 
 ## Fontes
 
-- **Shippori Mincho** — Fontdasu (SIL Open Font License 1.1). Títulos e faces das pedras (kanji).
+- **Cinzel** — The Cinzel Project Authors (SIL Open Font License 1.1). Títulos.
+  Arquivo variável fornecido pelo desenvolvedor: `public/fonts/Cinzel-Variable.ttf` (licença em
+  `public/fonts/Cinzel-OFL.txt`) — https://github.com/NDISCOVER/Cinzel
+- **Noto Sans SC** — Adobe/Google (SIL Open Font License 1.1). Interface. Via `@fontsource/noto-sans-sc`
+  (mesma fonte do Google Fonts, fatiada em subconjuntos woff2) —
+  https://fonts.google.com/noto/specimen/Noto+Sans+SC
+- **Shippori Mincho** — Fontdasu (SIL Open Font License 1.1). Faces das pedras e hanzi decorativos.
   Via `@fontsource/shippori-mincho` — https://fonts.google.com/specimen/Shippori+Mincho
-- **M PLUS 1p** — Coji Morishita / M+ FONTS PROJECT (SIL Open Font License 1.1). Texto corrido e
-  botões. Via `@fontsource/m-plus-1p` — https://fonts.google.com/specimen/M+PLUS+1p
 
 ## Sons
 
-- `public/sounds/*.wav` — sintetizados por `scripts/gen-sounds.mjs` (arte original do projeto, sem
-  gravações de terceiros). Reprodução com **Howler.js** (MIT) — https://howlerjs.com
+- `public/sounds/*.wav` — sintetizados por `scripts/gen-sounds.mjs` (síntese modal + reverberação; arte
+  original do projeto, sem gravações de terceiros). Reprodução com **Howler.js** (MIT) — https://howlerjs.com
 
 ## Imagens e ícones
 
+- Cenário (céu, pagode, lanternas, pétalas) e ornamentos — desenho próprio em SVG/CSS.
 - Faces das pedras — desenho próprio em CSS (`src/ui/components/tileFaces.ts`), tema "Noite de Sakura".
 - `public/icons/*` — gerados por `scripts/gen-icons.mjs` (arte original do projeto).
 - `docs/concept/Mesa_de_Mahjong_Sob_a_Lua.png` — imagem de conceito do desenvolvedor (referência visual).
