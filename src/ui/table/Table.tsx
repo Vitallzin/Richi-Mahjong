@@ -29,6 +29,7 @@ import { ACTION_KEYS, availableActions, type ActionKey } from './actions';
 import { CallBanner } from './CallBanner';
 import { buildDialog, isAction, type Dialog } from './decisions';
 import { HelpPanel } from './HelpPanel';
+import { ExitIcon, FullscreenIcon, MusicIcon, SortIcon, SoundIcon } from './MenuIcons';
 import { NUMBER_KANJI, relativeSide, seatName, windKanji, windName } from './labels';
 import { PlayerHand } from './PlayerHand';
 import { RoundResult } from './RoundResult';
@@ -207,40 +208,50 @@ export function Table({
               className={settings.muted ? styles.menuOff : styles.menuButton}
               onClick={() => settings.set({ muted: !settings.muted })}
               aria-pressed={!settings.muted}
+              aria-label={t('table.menu.sound')}
+              title={t('table.menu.sound')}
             >
-              {t('table.menu.sound')}
+              <SoundIcon off={settings.muted} />
             </button>
             <button
               type="button"
               className={settings.music ? styles.menuButton : styles.menuOff}
               onClick={() => settings.set({ music: !settings.music })}
               aria-pressed={settings.music}
+              aria-label={t('table.menu.music')}
+              title={t('table.menu.music')}
             >
-              {t('table.menu.music')}
+              <MusicIcon off={!settings.music} />
             </button>
             <button
               type="button"
               className={settings.autoSort ? styles.menuButton : styles.menuOff}
               onClick={() => settings.set({ autoSort: !settings.autoSort })}
               aria-pressed={settings.autoSort}
+              aria-label={t('table.menu.autoSort')}
+              title={t('table.menu.autoSort')}
             >
-              {t('table.menu.autoSort')}
+              <SortIcon />
             </button>
             <button
               type="button"
               className={styles.menuButton}
               onClick={() => void toggleFullscreen()}
+              aria-label={t('table.menu.fullscreen')}
+              title={t('table.menu.fullscreen')}
             >
-              {t('table.menu.fullscreen')}
+              <FullscreenIcon />
             </button>
             <button
               type="button"
-              className={styles.menuButton}
+              className={`${styles.menuButton} ${styles.menuExit}`}
               onClick={() => {
                 if (globalThis.confirm(t('table.menu.exitConfirm'))) onExit();
               }}
+              aria-label={t('table.menu.exit')}
+              title={t('table.menu.exit')}
             >
-              {t('table.menu.exit')}
+              <ExitIcon />
             </button>
           </nav>
 
@@ -250,6 +261,8 @@ export function Table({
             <CenterPanel view={view} />
             {view.players.map((p) => {
               const side = relativeSide(p.seat, view.seat, n);
+              // A mão da frente usa pedras um pouco menores para não encostar na borda nem no rio.
+              const edgeTile = side === 2 ? 27 : 30;
               return (
                 <div key={p.seat} className={`${styles.side} ${styles[`sideRot${side}`]}`}>
                   <div
@@ -265,13 +278,13 @@ export function Table({
                       {revealed?.[p.seat] ? (
                         <div className={styles.hiddenHand}>
                           {revealed[p.seat]?.map((x) => (
-                            <Tile key={x.id} tile={x} width={30} />
+                            <Tile key={x.id} tile={x} width={edgeTile} />
                           ))}
                         </div>
                       ) : (
-                        <HiddenHand count={p.handCount} width={30} />
+                        <HiddenHand count={p.handCount} width={edgeTile} />
                       )}
-                      <Melds player={p} players={n} width={30} />
+                      <Melds player={p} players={n} width={edgeTile} />
                     </div>
                   )}
                 </div>

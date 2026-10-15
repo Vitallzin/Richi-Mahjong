@@ -25,3 +25,12 @@ Pedido do desenvolvedor (15/10/2026), a partir de capturas de tela.
 
 - Na sua vez (14 peças) sem peça sob o mouse, o guia não calcula esperas: diz que o descarte certo deixa
   em tenpai e pede para passar o mouse nas peças. Antes mostrava "Nenhuma vitória possível" por engano.
+
+## Ajustes seguintes (mesmo dia)
+
+- Menu da mesa virou uma barra de ícones no canto superior esquerdo (som, música, organizar mão, tela
+  cheia, sair); cada botão mantém o nome em `aria-label` e dica (`title`).
+- Placa do jogador da frente: compacta, numa linha, centralizada acima da mesa. Placa do jogador da
+  direita encostada na borda direita da mesa, na altura da mão dele.
+- Guia mais à direita e acima da mão (não cobre a pedra comprada).
+- Mão do jogador da frente com pedras de 27 px e rio um pouco mais perto do centro: folga da borda e do rio.
