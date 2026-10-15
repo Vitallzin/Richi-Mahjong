@@ -7,6 +7,8 @@ export const help = {
   'help.state.completeNoYaku': 'Mão completa, mas sem yaku: não dá para vencer assim.',
   'help.state.completeBelowMin': 'Mão completa com yaku, mas abaixo do han mínimo da regra.',
   'help.state.tenpai': 'Tenpai: falta 1 peça.',
+  'help.state.discardToTenpai':
+    'Com o descarte certo você fica em tenpai. Passe o mouse nas peças para ver as esperas.',
   'help.state.shanten': 'Faltam {n} trocas para chegar ao tenpai.',
   'help.state.shanten1': 'Falta 1 troca para chegar ao tenpai.',
   'help.state.noWaits': 'Tenpai só de forma: você mesmo tem todas as cópias da espera.',
@@ -101,8 +103,6 @@ export const help = {
   'settings.musicVolume': 'Volume da música',
   'settings.hoverSounds': 'Som ao passar o mouse',
   'settings.hoverSounds.desc': 'Um toque suave ao passar sobre botões e peças.',
-  'help.seenCount': '{n} já visíveis na mesa',
-  'help.seenNone': 'Nenhuma cópia visível na mesa',
   'settings.a11y': 'Acessibilidade',
   'settings.reduceMotion': 'Reduzir movimento',
   'settings.reduceMotion.desc': 'Desliga animações (também segue a preferência do sistema).',

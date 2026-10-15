@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { play } from '../../audio/sounds';
 import {
   doraFromIndicator,
-  visibleCounts,
   type Action,
   type PlayerEvent,
   type PlayerView,
@@ -77,11 +76,6 @@ export function Table({
     }),
     [helps.bonusGlow, helps.seenHighlight, hoverKind, view.doraIndicators, view.rules.mode],
   );
-  const seenOnTable =
-    hoverKind === null
-      ? 0
-      : (visibleCounts(view)[hoverKind] ?? 0) -
-        view.hand.filter((x) => x.kind === hoverKind).length;
   const myTurn = view.phase === 'awaitingDiscard' && view.turn === view.seat;
   const myCall = view.phase === 'awaitingCalls' || view.phase === 'awaitingRobbery';
 
@@ -258,6 +252,9 @@ export function Table({
               const side = relativeSide(p.seat, view.seat, n);
               return (
                 <div key={p.seat} className={`${styles.side} ${styles[`sideRot${side}`]}`}>
+                  <div
+                    className={`${styles.pondZone} ${view.turn === p.seat && playing ? styles.pondZoneTurn : ''}`}
+                  />
                   <div className={styles.sidePond}>
                     <Pond discards={p.discards} lastId={lastDiscardId} />
                   </div>
@@ -331,12 +328,6 @@ export function Table({
           />
 
           {playing && <HelpPanel view={view} focus={focus} prefs={helps} />}
-
-          {helps.seenHighlight && hoverKind !== null && playing && (
-            <div className={styles.seenBadge} role="status">
-              {seenOnTable > 0 ? t('help.seenCount', { n: seenOnTable }) : t('help.seenNone')}
-            </div>
-          )}
 
           {revealed && <div className={styles.trainingSeal}>{t('table.training')}</div>}
 

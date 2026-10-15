@@ -102,6 +102,10 @@ describe('análise de descarte candidato e mão completa', () => {
     const bad = analyzeHand(v, east);
     expect(bad.state).toBe('notTenpai');
     expect(bad.shanten).toBe(1);
+    // Sem peça analisada, a mão de 14 não finge ter esperas (nem "nenhuma vitória possível").
+    const whole = analyzeHand(v);
+    expect(whole.state).toBe('discardToTenpai');
+    expect(whole.waits).toEqual([]);
   });
 
   it('mão de 14 completa: distingue forma completa de yaku', () => {

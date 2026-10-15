@@ -25,6 +25,6 @@ Pedido do desenvolvedor (15/10/2026). **Substitui "Sem música" da spec (2 e 11.
   (dourado na dora, rosado na vermelha) e um reflexo que atravessa a face. Ajuda "Brilho nas peças de
   bônus", ligada por padrão.
 - **Destacar peças já vistas:** ao passar o mouse (ou tocar) numa peça da mão, as cópias visíveis na mesa
-  (rios, grupos expostos, indicadores) ganham contorno dourado pulsante, e um selo mostra "N já visíveis na
-  mesa". Usa só informação pública (PlayerView). Ajuda "Destacar peças já vistas", ligada por padrão.
+  (rios, grupos expostos, indicadores) ganham contorno dourado pulsante (só o destaque visual; o selo
+  com a contagem foi retirado a pedido do desenvolvedor). Usa só informação pública (PlayerView). Ajuda "Destacar peças já vistas", ligada por padrão.
 - Ambos respeitam "reduzir movimento" (sem animação, destaque estático).

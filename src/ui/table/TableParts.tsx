@@ -5,7 +5,7 @@ import { Tile } from '../components/Tile';
 import { NUMBER_KANJI, relativeSide, windKanji, windName } from './labels';
 import styles from './Table.module.css';
 
-export const POND_TILE = 36;
+export const POND_TILE = 32;
 
 /** Rio: 6 por fileira nas duas primeiras, o resto na terceira; riichi deitado; chamada esmaecida. */
 export function Pond({

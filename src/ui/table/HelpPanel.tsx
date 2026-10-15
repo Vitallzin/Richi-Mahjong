@@ -55,6 +55,8 @@ export function HelpPanel({
           : c.belowMinimum
             ? t('help.state.completeBelowMin')
             : t('help.state.completeNoYaku');
+    } else if (advice.state === 'discardToTenpai') {
+      stateText = t('help.state.discardToTenpai');
     } else if (advice.state === 'tenpai') {
       stateText = t('help.state.tenpai');
     } else if (advice.shanten === 0) {

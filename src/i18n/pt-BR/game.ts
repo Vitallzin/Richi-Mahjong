@@ -109,6 +109,9 @@ export const game = {
   // Resultado da mão
   'summary.ron': 'Ron',
   'summary.tsumo': 'Tsumo',
+  'summary.ronByYou': 'Você fez ron em {loser}!',
+  'summary.ronOnYou': '{winner} fez ron em você',
+  'summary.ronOn': '{winner} fez ron em {loser}',
   'summary.winner': '{name} venceu',
   'summary.from': 'de {name}',
   'summary.exhaustive': 'Empate: o muro acabou',

@@ -40,7 +40,11 @@ export interface WaitInfo {
   readonly riichiWouldGiveYaku: boolean;
 }
 
-export type HandState = 'complete' | 'tenpai' | 'notTenpai';
+/**
+ * 'discardToTenpai': mão de 14 peças (sua vez) em que o descarte certo deixa em tenpai — as esperas
+ * aparecem ao analisar cada descarte.
+ */
+export type HandState = 'complete' | 'tenpai' | 'discardToTenpai' | 'notTenpai';
 
 export interface HandAdvice {
   readonly state: HandState;
@@ -148,7 +152,7 @@ export function analyzeHand(view: PlayerView, discard: Tile | null = null): Hand
       completeWithYaku = toCheck(input ? scoreHand(input) : null, view.rules.hanMinimum);
     }
     return {
-      state: complete ? 'complete' : s === 0 ? 'tenpai' : 'notTenpai',
+      state: complete ? 'complete' : s === 0 ? 'discardToTenpai' : 'notTenpai',
       shanten: s,
       completeWithYaku,
       waits: [],

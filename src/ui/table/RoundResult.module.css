@@ -567,3 +567,175 @@
   right: 60px;
   bottom: 50px;
 }
+
+/* ---------- 1b. ron: raio de quem ganhou até quem descartou ---------- */
+.ronStrike {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ronSource,
+.ronImpact {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.ronSource::before {
+  content: '';
+  position: absolute;
+  left: -70px;
+  top: -70px;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgb(255 236 180 / 0.9),
+    rgb(240 211 145 / 0.35) 40%,
+    transparent 70%
+  );
+  animation: ronCharge 700ms ease-out 450ms both;
+}
+
+@keyframes ronCharge {
+  from {
+    opacity: 0;
+    scale: 0.2;
+  }
+  60% {
+    opacity: 1;
+    scale: 1.15;
+  }
+  to {
+    opacity: 0.75;
+    scale: 1;
+  }
+}
+
+.ronBeam {
+  position: absolute;
+  height: 10px;
+  margin-top: -5px;
+  transform-origin: 0 50%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgb(255 246 216 / 0.2),
+    #fff6d8 30%,
+    var(--gold-bright) 70%,
+    var(--cinnabar-bright)
+  );
+  box-shadow:
+    0 0 18px rgb(240 211 145 / 0.9),
+    0 0 46px rgb(217 71 60 / 0.6);
+  animation: ronBeam 1600ms cubic-bezier(0.2, 0.9, 0.3, 1) 650ms both;
+}
+
+@keyframes ronBeam {
+  0% {
+    scale: 0 1;
+    opacity: 1;
+  }
+  22% {
+    scale: 1 1;
+    opacity: 1;
+  }
+  100% {
+    scale: 1 0.3;
+    opacity: 0.25;
+  }
+}
+
+/* a pedra da vitória corre pelo raio e crava em quem descartou */
+.ronTile {
+  position: absolute;
+  translate: -50% -50%;
+  animation: ronTile 380ms cubic-bezier(0.5, 0, 0.9, 0.4) 650ms both;
+}
+
+@keyframes ronTile {
+  from {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.6) rotate(-20deg);
+  }
+  20% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: translate(var(--dx), var(--dy)) scale(1.1) rotate(0deg);
+  }
+}
+
+.ronImpact::before,
+.ronImpact::after {
+  content: '';
+  position: absolute;
+  left: -90px;
+  top: -90px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  border: 6px solid var(--cinnabar-bright);
+  box-shadow: 0 0 30px rgb(217 71 60 / 0.8);
+  animation: ronRing 700ms ease-out 1000ms both;
+}
+
+.ronImpact::after {
+  border-color: var(--gold-bright);
+  animation-delay: 1120ms;
+}
+
+@keyframes ronRing {
+  from {
+    opacity: 1;
+    scale: 0.1;
+  }
+  to {
+    opacity: 0;
+    scale: 1.6;
+  }
+}
+
+.ronImpactSeal {
+  position: absolute;
+  left: 0;
+  top: 0;
+  translate: -50% -130%;
+  padding: 4px 12px;
+  border-radius: 8px;
+  border: 2px solid var(--gold-bright);
+  background: var(--cinnabar);
+  color: var(--rice);
+  font-family: var(--font-body);
+  font-size: 34px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.5);
+  animation: ronSeal 500ms var(--ease-spring) 1000ms both;
+}
+
+@keyframes ronSeal {
+  from {
+    opacity: 0;
+    transform: scale(2.2) rotate(-12deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(-6deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ronSource::before,
+  .ronBeam,
+  .ronTile,
+  .ronImpact::before,
+  .ronImpact::after,
+  .ronImpactSeal {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+}

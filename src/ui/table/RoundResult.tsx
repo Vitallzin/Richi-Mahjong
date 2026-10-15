@@ -18,6 +18,8 @@ type Step =
   { kind: 'announce' } | { kind: 'win'; index: number } | { kind: 'draw' } | { kind: 'scores' };
 
 const ANNOUNCE_MS = 1700;
+/** Ron: tempo extra para o raio sair de quem ganhou e atingir quem descartou. */
+const ANNOUNCE_RON_MS = 2600;
 const YAKU_START_MS = 900;
 const YAKU_STEP_MS = 420;
 const COUNT_DELAY_MS = 900;
@@ -30,6 +32,8 @@ const LIMIT_GLYPH: Record<string, string> = {
   sanbaiman: '三倍満',
   yakuman: '役満',
 };
+
+const ORIGIN = { x: 800, y: 450 };
 
 const signed = (n: number) => (n > 0 ? `+${n}` : String(n));
 
@@ -44,22 +48,77 @@ function stepsOf(summary: HandSummary): Step[] {
 
 // ---------------------------------------------------------------------------------------------
 
+/** Onde cada lado está sentado no palco 1600×900 (origem e alvo do raio do ron). */
+const BEAM_POS: Record<number, { x: number; y: number }> = {
+  0: { x: 800, y: 790 },
+  1: { x: 1400, y: 450 },
+  2: { x: 800, y: 110 },
+  3: { x: 200, y: 450 },
+};
+
+function ronLine(win: WinRecord, seats: readonly SeatSetup[], localSeat: Seat): string {
+  const from = win.from ?? win.seat;
+  if (win.seat === localSeat) return t('summary.ronByYou', { loser: seatName(seats, from) });
+  if (from === localSeat) return t('summary.ronOnYou', { winner: seatName(seats, win.seat) });
+  return t('summary.ronOn', { winner: seatName(seats, win.seat), loser: seatName(seats, from) });
+}
+
+/** Raio dourado de quem fez ron até quem descartou, com a pedra da vitória e o impacto (放銃). */
+function RonStrike({ win, side, fromSide }: { win: WinRecord; side: number; fromSide: number }) {
+  const a = BEAM_POS[side] ?? ORIGIN;
+  const b = BEAM_POS[fromSide] ?? ORIGIN;
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const length = Math.hypot(dx, dy);
+  const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+  useEffect(() => {
+    const ids = [
+      globalThis.setTimeout(() => play('whoosh'), 650),
+      globalThis.setTimeout(() => play('stamp'), 1000),
+    ];
+    return () => ids.forEach((id) => globalThis.clearTimeout(id));
+  }, []);
+  return (
+    <div className={styles.ronStrike} aria-hidden="true">
+      <span className={styles.ronSource} style={{ left: a.x, top: a.y }} />
+      <span
+        className={styles.ronBeam}
+        style={{ left: a.x, top: a.y, width: length, rotate: `${angle}deg` }}
+      />
+      <span
+        className={styles.ronTile}
+        style={{ left: a.x, top: a.y, '--dx': `${dx}px`, '--dy': `${dy}px` } as CSSProperties}
+      >
+        <Tile tile={win.winTile} width={58} glow />
+      </span>
+      <span className={styles.ronImpact} style={{ left: b.x, top: b.y }}>
+        <span className={styles.ronImpactSeal}>放銃</span>
+      </span>
+    </div>
+  );
+}
+
 function Announce({
   summary,
   seats,
+  localSeat,
   onDone,
 }: {
   summary: HandSummary;
   seats: readonly SeatSetup[];
+  localSeat: Seat;
   onDone: () => void;
 }) {
-  useEffect(() => {
-    const id = globalThis.setTimeout(onDone, ANNOUNCE_MS);
-    return () => globalThis.clearTimeout(id);
-  }, [onDone]);
   const first = summary.wins[0];
   const isWin = summary.kind === 'win' && first;
   const tsumo = first?.winType === 'tsumo';
+  const rons = isWin ? summary.wins.filter((w) => w.winType === 'ron' && w.from !== null) : [];
+  const ms = rons.length > 0 ? ANNOUNCE_RON_MS : ANNOUNCE_MS;
+  useEffect(() => {
+    const id = globalThis.setTimeout(onDone, ms);
+    return () => globalThis.clearTimeout(id);
+  }, [onDone, ms]);
+  const n = seats.length;
   const glyph = isWin ? (tsumo ? '自摸' : '荣') : '流局';
   const word = isWin
     ? tsumo
@@ -69,26 +128,41 @@ function Announce({
       ? t('summary.exhaustive')
       : t('summary.abortive');
   return (
-    <button type="button" className={styles.announce} onClick={onDone} aria-live="assertive">
-      <span className={styles.announceRays} aria-hidden="true" />
-      <span className={styles.announceGlyph} aria-hidden="true">
-        {glyph}
-      </span>
-      <span className={isWin ? styles.announceWord : styles.announceWordSmall}>
-        {word}
-        {isWin ? '!' : ''}
-      </span>
-      {isWin && (
-        <span className={styles.announceName}>
-          {summary.wins.map((w) => seatName(seats, w.seat)).join(' · ')}
+    <>
+      {rons.map((w) => (
+        <RonStrike
+          key={w.seat}
+          win={w}
+          side={relativeSide(w.seat, localSeat, n)}
+          fromSide={relativeSide(w.from ?? w.seat, localSeat, n)}
+        />
+      ))}
+      <button type="button" className={styles.announce} onClick={onDone} aria-live="assertive">
+        <span className={styles.announceRays} aria-hidden="true" />
+        <span className={styles.announceGlyph} aria-hidden="true">
+          {glyph}
         </span>
-      )}
-      {summary.kind === 'abortive' && summary.abortiveReason && (
-        <span className={styles.announceName}>
-          {t(`summary.abortive.${summary.abortiveReason}`)}
+        <span className={isWin ? styles.announceWord : styles.announceWordSmall}>
+          {word}
+          {isWin ? '!' : ''}
         </span>
-      )}
-    </button>
+        {isWin && rons.length === 0 && (
+          <span className={styles.announceName}>
+            {summary.wins.map((w) => seatName(seats, w.seat)).join(' · ')}
+          </span>
+        )}
+        {rons.map((w) => (
+          <span key={w.seat} className={styles.announceName}>
+            {ronLine(w, seats, localSeat)}
+          </span>
+        ))}
+        {summary.kind === 'abortive' && summary.abortiveReason && (
+          <span className={styles.announceName}>
+            {t(`summary.abortive.${summary.abortiveReason}`)}
+          </span>
+        )}
+      </button>
+    </>
   );
 }
 
@@ -310,7 +384,6 @@ function DrawStep({
 }
 
 /** Centro de cada assento no palco 1600×900 (para o voo dos pontos). */
-const ORIGIN = { x: 800, y: 450 };
 const SIDE_POS: Record<number, { x: number; y: number }> = {
   0: { x: 800, y: 690 },
   1: { x: 1270, y: 450 },
@@ -493,7 +566,9 @@ export function RoundResult({
       aria-modal="true"
       aria-label={t('summary.continue')}
     >
-      {step.kind === 'announce' && <Announce summary={summary} seats={seats} onDone={next} />}
+      {step.kind === 'announce' && (
+        <Announce summary={summary} seats={seats} localSeat={localSeat} onDone={next} />
+      )}
       {step.kind === 'win' && currentWin && (
         <WinStep
           key={step.index}

@@ -84,8 +84,15 @@ describe('sequência de fim de mão', () => {
     );
     expect(screen.getByText('Ron!')).toBeInTheDocument();
     expect(screen.getByText('荣')).toBeInTheDocument();
+    // ron: o raio indica quem fez ron em quem
+    expect(screen.getByText('Ren fez ron em Akari')).toBeInTheDocument();
+    expect(screen.getByText('放銃')).toBeInTheDocument();
     act(() => {
       vi.advanceTimersByTime(1800);
+    });
+    expect(screen.getByText('Ron!')).toBeInTheDocument();
+    act(() => {
+      vi.advanceTimersByTime(900);
     });
     expect(screen.getByRole('heading', { name: 'Ren' })).toBeInTheDocument();
     expect(screen.getByText('Riichi')).toBeInTheDocument();
@@ -98,6 +105,31 @@ describe('sequência de fim de mão', () => {
     expect(screen.getByText('-8000')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
     expect(onContinue).toHaveBeenCalledOnce();
+  });
+
+  it('ron do jogador local e ron contra ele têm frases próprias', () => {
+    const mine = { ...win, seat: 0 as const, from: 3 as const };
+    const { unmount } = render(
+      <RoundResult
+        summary={{ ...summary, wins: [mine] }}
+        seats={SEATS}
+        localSeat={0}
+        canContinue
+        onContinue={() => undefined}
+      />,
+    );
+    expect(screen.getByText('Você fez ron em Sora!')).toBeInTheDocument();
+    unmount();
+    render(
+      <RoundResult
+        summary={{ ...summary, wins: [{ ...win, from: 0 }] }}
+        seats={SEATS}
+        localSeat={0}
+        canContinue
+        onContinue={() => undefined}
+      />,
+    );
+    expect(screen.getByText('Ren fez ron em você')).toBeInTheDocument();
   });
 
   it('empate mostra 流局 e a lista de tenpai', () => {
