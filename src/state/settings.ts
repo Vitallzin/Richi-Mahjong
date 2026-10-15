@@ -22,6 +22,11 @@ export interface SettingsData {
   readonly characters: readonly CharacterChoice[];
   readonly volume: number;
   readonly muted: boolean;
+  /** Música ambiente (decisão do desenvolvedor, ADR 0012). */
+  readonly music: boolean;
+  readonly musicVolume: number;
+  /** Som suave ao passar o mouse em botões e peças. */
+  readonly hoverSounds: boolean;
   readonly autoSort: boolean;
   readonly helps: HelpPrefs;
   /** A tela de boas-vindas já foi vista (spec 9.1). */
@@ -58,6 +63,9 @@ export const DEFAULT_SETTINGS: SettingsData = {
   characters: ['ren', 'akari', 'sora'],
   volume: 0.8,
   muted: false,
+  music: true,
+  musicVolume: 0.45,
+  hoverSounds: true,
   autoSort: true,
   helps: DEFAULT_HELP_PREFS,
   welcomeSeen: false,

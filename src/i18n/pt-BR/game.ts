@@ -70,6 +70,7 @@ export const game = {
   'table.menu.exitConfirm': 'Sair? A partida fica salva e você pode continuar depois pelo menu.',
   'table.menu.fullscreen': 'Tela cheia',
   'table.menu.sound': 'Som',
+  'table.menu.music': 'Música',
   'table.menu.autoSort': 'Organizar mão',
   'table.rotateHint': 'Gire o aparelho para jogar deitado.',
   'table.noSession': 'Nenhuma partida em andamento.',

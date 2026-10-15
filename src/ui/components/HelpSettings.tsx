@@ -10,7 +10,8 @@ import styles from './HelpSettings.module.css';
 import { Tile } from './Tile';
 import { TileLabelsContext } from './tileLabels';
 
-type ToggleKey = 'rules' | 'waits' | 'noYaku' | 'furiten' | 'doraHint' | 'noCalls';
+type ToggleKey =
+  'rules' | 'waits' | 'noYaku' | 'furiten' | 'doraHint' | 'bonusGlow' | 'seenHighlight' | 'noCalls';
 
 const TOGGLES: readonly { key: ToggleKey; example?: string }[] = [
   { key: 'rules' },
@@ -18,6 +19,8 @@ const TOGGLES: readonly { key: ToggleKey; example?: string }[] = [
   { key: 'noYaku' },
   { key: 'furiten' },
   { key: 'doraHint', example: '12z' },
+  { key: 'bonusGlow', example: '0p0s' },
+  { key: 'seenHighlight', example: '6z' },
   { key: 'noCalls' },
 ];
 

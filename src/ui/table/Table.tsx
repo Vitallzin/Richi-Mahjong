@@ -4,7 +4,15 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { play } from '../../audio/sounds';
-import type { Action, PlayerEvent, PlayerView, Tile as TileData } from '../../engine';
+import {
+  doraFromIndicator,
+  visibleCounts,
+  type Action,
+  type PlayerEvent,
+  type PlayerView,
+  type Tile as TileData,
+  type TileKind,
+} from '../../engine';
 import { doraPairs } from '../../help';
 import { t } from '../../i18n';
 import { formatClock, type MatchSession } from '../../session';
@@ -13,6 +21,7 @@ import { useGameSounds } from '../audio/useGameSounds';
 import { Backdrop } from '../components/Backdrop';
 import { DecisionDialog } from '../components/DecisionDialog';
 import { Tile } from '../components/Tile';
+import { TileHighlightContext, type TileHighlight } from '../components/tileHighlight';
 import { TileLabelsContext } from '../components/tileLabels';
 import { tileName } from '../components/tileName';
 import { toggleFullscreen } from '../platform/display';
@@ -55,6 +64,24 @@ export function Table({
   const focus =
     focusTile?.tick === tick && discardable.has(focusTile.tile.id) ? focusTile.tile : null;
   const revealed = session.getRevealedHands();
+
+  // Camada de destaques: bônus (dora/vermelhas) e cópias visíveis da peça sob o mouse.
+  const [hoverKind, setHoverKind] = useState<TileKind | null>(null);
+  const highlight = useMemo<TileHighlight>(
+    () => ({
+      bonusGlow: helps.bonusGlow,
+      bonusKinds: new Set(
+        view.doraIndicators.map((d) => doraFromIndicator(d.kind, view.rules.mode)),
+      ),
+      matchKind: helps.seenHighlight ? hoverKind : null,
+    }),
+    [helps.bonusGlow, helps.seenHighlight, hoverKind, view.doraIndicators, view.rules.mode],
+  );
+  const seenOnTable =
+    hoverKind === null
+      ? 0
+      : (visibleCounts(view)[hoverKind] ?? 0) -
+        view.hand.filter((x) => x.kind === hoverKind).length;
   const myTurn = view.phase === 'awaitingDiscard' && view.turn === view.seat;
   const myCall = view.phase === 'awaitingCalls' || view.phase === 'awaitingRobbery';
 
@@ -132,219 +159,236 @@ export function Table({
 
   return (
     <TileLabelsContext.Provider value={helps.labels}>
-      <Stage background={<Backdrop dim />}>
-        <p className={styles.srOnly} aria-live="polite">
-          {announcement}
-        </p>
+      <TileHighlightContext.Provider value={highlight}>
+        <Stage background={<Backdrop dim />}>
+          <p className={styles.srOnly} aria-live="polite">
+            {announcement}
+          </p>
 
-        <header className={styles.header}>
-          <span className={styles.headerGlyph} aria-hidden="true">
-            {windKanji(round.wind)}
-            {NUMBER_KANJI[round.n - 1]}局
-          </span>
-          <div>
-            <div className={styles.roundTitle}>
-              {windName(round.wind)} {round.n}
+          <header className={styles.header}>
+            <span className={styles.headerGlyph} aria-hidden="true">
+              {windKanji(round.wind)}
+              {NUMBER_KANJI[round.n - 1]}局
+            </span>
+            <div>
+              <div className={styles.roundTitle}>
+                {windName(round.wind)} {round.n}
+              </div>
+              <div className={styles.roundInfo}>
+                <span>{t('table.honba', { n: round.honba })}</span>
+                <span>{t('table.sticks', { n: view.riichiSticks })}</span>
+              </div>
             </div>
-            <div className={styles.roundInfo}>
-              <span>{t('table.honba', { n: round.honba })}</span>
-              <span>{t('table.sticks', { n: view.riichiSticks })}</span>
-            </div>
-          </div>
-        </header>
+          </header>
 
-        <section className={styles.doraPanel} aria-label={t('table.dora')}>
-          <span className={styles.doraLabel}>{t('table.indicator')}</span>
-          <div className={styles.doraTiles}>
-            {Array.from({ length: 5 }, (_, i) => {
-              const ind = view.doraIndicators[i];
-              return <Tile key={i} tile={ind ?? null} width={40} />;
+          <section className={styles.doraPanel} aria-label={t('table.dora')}>
+            <span className={styles.doraLabel}>{t('table.indicator')}</span>
+            <div className={styles.doraTiles}>
+              {Array.from({ length: 5 }, (_, i) => {
+                const ind = view.doraIndicators[i];
+                return <Tile key={i} tile={ind ?? null} width={40} />;
+              })}
+            </div>
+            {helps.doraHint &&
+              doraPairs(view).map((pair, i) => (
+                <div
+                  key={i}
+                  className={styles.doraHint}
+                  title={t('help.dora', {
+                    indicator: tileName({ id: -1, kind: pair.indicator, red: false }),
+                    dora: tileName({ id: -1, kind: pair.dora, red: false }),
+                  })}
+                >
+                  <Tile tile={{ id: -200 - i, kind: pair.indicator, red: false }} width={26} />
+                  <span className={styles.doraArrow} aria-hidden="true" />
+                  <span className={styles.doraLabel}>{t('table.dora')}</span>
+                  <Tile tile={{ id: -300 - i, kind: pair.dora, red: false }} width={26} glow />
+                </div>
+              ))}
+          </section>
+
+          <nav className={styles.menu}>
+            <button
+              type="button"
+              className={settings.muted ? styles.menuOff : styles.menuButton}
+              onClick={() => settings.set({ muted: !settings.muted })}
+              aria-pressed={!settings.muted}
+            >
+              {t('table.menu.sound')}
+            </button>
+            <button
+              type="button"
+              className={settings.music ? styles.menuButton : styles.menuOff}
+              onClick={() => settings.set({ music: !settings.music })}
+              aria-pressed={settings.music}
+            >
+              {t('table.menu.music')}
+            </button>
+            <button
+              type="button"
+              className={settings.autoSort ? styles.menuButton : styles.menuOff}
+              onClick={() => settings.set({ autoSort: !settings.autoSort })}
+              aria-pressed={settings.autoSort}
+            >
+              {t('table.menu.autoSort')}
+            </button>
+            <button
+              type="button"
+              className={styles.menuButton}
+              onClick={() => void toggleFullscreen()}
+            >
+              {t('table.menu.fullscreen')}
+            </button>
+            <button
+              type="button"
+              className={styles.menuButton}
+              onClick={() => {
+                if (globalThis.confirm(t('table.menu.exitConfirm'))) onExit();
+              }}
+            >
+              {t('table.menu.exit')}
+            </button>
+          </nav>
+
+          <div className={styles.plane}>
+            <div className={styles.frame} />
+            <div className={styles.felt} />
+            <CenterPanel view={view} />
+            {view.players.map((p) => {
+              const side = relativeSide(p.seat, view.seat, n);
+              return (
+                <div key={p.seat} className={`${styles.side} ${styles[`sideRot${side}`]}`}>
+                  <div className={styles.sidePond}>
+                    <Pond discards={p.discards} lastId={lastDiscardId} />
+                  </div>
+                  {side !== 0 && (
+                    <div
+                      className={`${styles.sideEdge} ${side % 2 === 1 ? styles.edgeFar : styles.edgeNear}`}
+                    >
+                      {revealed?.[p.seat] ? (
+                        <div className={styles.hiddenHand}>
+                          {revealed[p.seat]?.map((x) => (
+                            <Tile key={x.id} tile={x} width={30} />
+                          ))}
+                        </div>
+                      ) : (
+                        <HiddenHand count={p.handCount} width={30} />
+                      )}
+                      <Melds player={p} players={n} width={30} />
+                    </div>
+                  )}
+                </div>
+              );
             })}
           </div>
-          {helps.doraHint &&
-            doraPairs(view).map((pair, i) => (
-              <div
-                key={i}
-                className={styles.doraHint}
-                title={t('help.dora', {
-                  indicator: tileName({ id: -1, kind: pair.indicator, red: false }),
-                  dora: tileName({ id: -1, kind: pair.dora, red: false }),
-                })}
-              >
-                <Tile tile={{ id: -200 - i, kind: pair.indicator, red: false }} width={26} />
-                <span className={styles.doraArrow} aria-hidden="true" />
-                <span className={styles.doraLabel}>{t('table.dora')}</span>
-                <Tile tile={{ id: -300 - i, kind: pair.dora, red: false }} width={26} glow />
-              </div>
-            ))}
-        </section>
 
-        <nav className={styles.menu}>
-          <button
-            type="button"
-            className={settings.muted ? styles.menuOff : styles.menuButton}
-            onClick={() => settings.set({ muted: !settings.muted })}
-            aria-pressed={!settings.muted}
-          >
-            {t('table.menu.sound')}
-          </button>
-          <button
-            type="button"
-            className={settings.autoSort ? styles.menuButton : styles.menuOff}
-            onClick={() => settings.set({ autoSort: !settings.autoSort })}
-            aria-pressed={settings.autoSort}
-          >
-            {t('table.menu.autoSort')}
-          </button>
-          <button
-            type="button"
-            className={styles.menuButton}
-            onClick={() => void toggleFullscreen()}
-          >
-            {t('table.menu.fullscreen')}
-          </button>
-          <button
-            type="button"
-            className={styles.menuButton}
-            onClick={() => {
-              if (globalThis.confirm(t('table.menu.exitConfirm'))) onExit();
-            }}
-          >
-            {t('table.menu.exit')}
-          </button>
-        </nav>
-
-        <div className={styles.plane}>
-          <div className={styles.frame} />
-          <div className={styles.felt} />
-          <CenterPanel view={view} />
           {view.players.map((p) => {
             const side = relativeSide(p.seat, view.seat, n);
+            const name = seatName(session.seats, p.seat);
+            const isTurn = view.turn === p.seat;
             return (
-              <div key={p.seat} className={`${styles.side} ${styles[`sideRot${side}`]}`}>
-                <div className={styles.sidePond}>
-                  <Pond discards={p.discards} lastId={lastDiscardId} />
-                </div>
-                {side !== 0 && (
-                  <div
-                    className={`${styles.sideEdge} ${side % 2 === 1 ? styles.edgeFar : styles.edgeNear}`}
-                  >
-                    {revealed?.[p.seat] ? (
-                      <div className={styles.hiddenHand}>
-                        {revealed[p.seat]?.map((x) => (
-                          <Tile key={x.id} tile={x} width={30} />
-                        ))}
-                      </div>
-                    ) : (
-                      <HiddenHand count={p.handCount} width={30} />
-                    )}
-                    <Melds player={p} players={n} width={30} />
-                  </div>
+              <div
+                key={p.seat}
+                className={`${styles.badge} ${styles[`badge${side}`]} ${isTurn ? styles.badgeTurn : ''}`}
+                aria-current={isTurn ? 'true' : undefined}
+              >
+                <span className={styles.portrait} aria-hidden="true">
+                  {name.slice(0, 1)}
+                </span>
+                <span className={styles.badgeName}>{name}</span>
+                <span className={styles.badgeScore}>{p.score.toLocaleString('pt-BR')}</span>
+                <span className={p.isDealer ? styles.badgeDealer : styles.badgeWind}>
+                  <span className={styles.badgeWindGlyph} aria-hidden="true">
+                    {windKanji(p.seatWind)}
+                  </span>
+                  {windName(p.seatWind)}
+                  {p.isDealer ? ` · ${t('table.dealer')}` : ''}
+                </span>
+                {p.riichi?.established && (
+                  <span className={styles.badgeRiichi}>{t('table.riichi')}</span>
                 )}
               </div>
             );
           })}
-        </div>
 
-        {view.players.map((p) => {
-          const side = relativeSide(p.seat, view.seat, n);
-          const name = seatName(session.seats, p.seat);
-          const isTurn = view.turn === p.seat;
-          return (
-            <div
-              key={p.seat}
-              className={`${styles.badge} ${styles[`badge${side}`]} ${isTurn ? styles.badgeTurn : ''}`}
-              aria-current={isTurn ? 'true' : undefined}
-            >
-              <span className={styles.portrait} aria-hidden="true">
-                {name.slice(0, 1)}
-              </span>
-              <span className={styles.badgeName}>{name}</span>
-              <span className={styles.badgeScore}>{p.score.toLocaleString('pt-BR')}</span>
-              <span className={p.isDealer ? styles.badgeDealer : styles.badgeWind}>
-                <span className={styles.badgeWindGlyph} aria-hidden="true">
-                  {windKanji(p.seatWind)}
-                </span>
-                {windName(p.seatWind)}
-                {p.isDealer ? ` · ${t('table.dealer')}` : ''}
-              </span>
-              {p.riichi?.established && (
-                <span className={styles.badgeRiichi}>{t('table.riichi')}</span>
-              )}
+          {(myTurn || myCall) && playing && (
+            <div className={styles.yourTurn} role="status">
+              {t('table.yourTurn')}
+              {clock && <span className={styles.clock}>{formatClock(clock, clock.hasBank)}</span>}
             </div>
-          );
-        })}
+          )}
 
-        {(myTurn || myCall) && playing && (
-          <div className={styles.yourTurn} role="status">
-            {t('table.yourTurn')}
-            {clock && <span className={styles.clock}>{formatClock(clock, clock.hasBank)}</span>}
-          </div>
-        )}
-
-        <div className={`${styles.handTray} ${myTurn ? styles.handTrayActive : ''}`} />
-        <PlayerHand
-          hand={view.hand}
-          drawn={view.drawn}
-          discardable={discardable}
-          autoSort={settings.autoSort}
-          scale={settings.accessibility.tileScale}
-          onDiscard={(tile) => submit({ type: 'discard', tile })}
-          onFocusTile={(tile) => setFocusTile(tile ? { tick, tile } : null)}
-        />
-
-        {playing && <HelpPanel view={view} focus={focus} prefs={helps} />}
-
-        {revealed && <div className={styles.trainingSeal}>{t('table.training')}</div>}
-
-        {me && (
-          <div className={styles.ownMelds}>
-            <Melds player={me} players={n} width={48} />
-          </div>
-        )}
-
-        {playing && <ActionBar actions={shownActions} onAction={onAction} />}
-
-        {view.callTile && playing && (
-          <div className={styles.callTile}>
-            <Tile tile={view.callTile.tile} width={56} glow />
-          </div>
-        )}
-
-        <CallBanner events={events} tick={tick} localSeat={view.seat} players={n} />
-
-        {dialog && (
-          <DecisionDialog
-            title={dialog.title}
-            {...(dialog.description ? { description: dialog.description } : {})}
-            options={dialog.options}
-            onPick={(key) => {
-              const action = dialog.actions[key];
-              if (action) submit(action);
-            }}
-            onCancel={() => setDialog(null)}
+          <div className={`${styles.handTray} ${myTurn ? styles.handTrayActive : ''}`} />
+          <PlayerHand
+            hand={view.hand}
+            drawn={view.drawn}
+            discardable={discardable}
+            autoSort={settings.autoSort}
+            scale={settings.accessibility.tileScale}
+            onDiscard={(tile) => submit({ type: 'discard', tile })}
+            onFocusTile={(tile) => setFocusTile(tile ? { tick, tile } : null)}
+            onHoverTile={(tile) => setHoverKind(tile ? tile.kind : null)}
           />
-        )}
 
-        {view.phase === 'handSummary' && view.summary && (
-          <RoundResult
-            key={`${view.handsPlayed}`}
-            summary={view.summary}
-            seats={session.seats}
-            localSeat={view.seat}
-            canContinue={view.legal.ackSummary}
-            onContinue={() => submit({ type: 'ackSummary' })}
-          />
-        )}
-        {view.phase === 'matchEnded' && view.result && (
-          <MatchResultDialog
-            result={view.result}
-            seats={session.seats}
-            onPlayAgain={onPlayAgain}
-            onMenu={onExit}
-          />
-        )}
-      </Stage>
+          {playing && <HelpPanel view={view} focus={focus} prefs={helps} />}
+
+          {helps.seenHighlight && hoverKind !== null && playing && (
+            <div className={styles.seenBadge} role="status">
+              {seenOnTable > 0 ? t('help.seenCount', { n: seenOnTable }) : t('help.seenNone')}
+            </div>
+          )}
+
+          {revealed && <div className={styles.trainingSeal}>{t('table.training')}</div>}
+
+          {me && (
+            <div className={styles.ownMelds}>
+              <Melds player={me} players={n} width={48} />
+            </div>
+          )}
+
+          {playing && <ActionBar actions={shownActions} onAction={onAction} />}
+
+          {view.callTile && playing && (
+            <div className={styles.callTile}>
+              <Tile tile={view.callTile.tile} width={56} glow />
+            </div>
+          )}
+
+          <CallBanner events={events} tick={tick} localSeat={view.seat} players={n} />
+
+          {dialog && (
+            <DecisionDialog
+              title={dialog.title}
+              {...(dialog.description ? { description: dialog.description } : {})}
+              options={dialog.options}
+              onPick={(key) => {
+                const action = dialog.actions[key];
+                if (action) submit(action);
+              }}
+              onCancel={() => setDialog(null)}
+            />
+          )}
+
+          {view.phase === 'handSummary' && view.summary && (
+            <RoundResult
+              key={`${view.handsPlayed}`}
+              summary={view.summary}
+              seats={session.seats}
+              localSeat={view.seat}
+              canContinue={view.legal.ackSummary}
+              onContinue={() => submit({ type: 'ackSummary' })}
+            />
+          )}
+          {view.phase === 'matchEnded' && view.result && (
+            <MatchResultDialog
+              result={view.result}
+              seats={session.seats}
+              onPlayAgain={onPlayAgain}
+              onMenu={onExit}
+            />
+          )}
+        </Stage>
+      </TileHighlightContext.Provider>
     </TileLabelsContext.Provider>
   );
 }

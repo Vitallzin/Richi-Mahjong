@@ -61,6 +61,12 @@ export const help = {
   'helps.doraHint.label': 'Indicador → Dora',
   'helps.doraHint.desc':
     'Mostra qual peça é a dora (a seguinte ao indicador), e não só o indicador.',
+  'helps.bonusGlow.label': 'Brilho nas peças de bônus',
+  'helps.bonusGlow.desc':
+    'Dora e cincos vermelhos brilham de leve na mesa, para você não perder pontos extras.',
+  'helps.seenHighlight.label': 'Destacar peças já vistas',
+  'helps.seenHighlight.desc':
+    'Ao passar o mouse (ou tocar) numa peça da sua mão, as cópias dela já descartadas ou expostas na mesa brilham.',
   'helps.noCalls.label': 'Sem chamadas',
   'helps.noCalls.desc':
     'Modo iniciante: não oferece chi, pon e kan dos descartes alheios (Ron continua aparecendo).',
@@ -90,6 +96,13 @@ export const help = {
   'settings.sound': 'Som',
   'settings.volume': 'Volume',
   'settings.mute': 'Sem som',
+  'settings.music': 'Música ambiente',
+  'settings.music.desc': 'Música calma de cítara chinesa e sinos, composta ao vivo pelo jogo.',
+  'settings.musicVolume': 'Volume da música',
+  'settings.hoverSounds': 'Som ao passar o mouse',
+  'settings.hoverSounds.desc': 'Um toque suave ao passar sobre botões e peças.',
+  'help.seenCount': '{n} já visíveis na mesa',
+  'help.seenNone': 'Nenhuma cópia visível na mesa',
   'settings.a11y': 'Acessibilidade',
   'settings.reduceMotion': 'Reduzir movimento',
   'settings.reduceMotion.desc': 'Desliga animações (também segue a preferência do sistema).',

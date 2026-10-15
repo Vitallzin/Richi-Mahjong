@@ -5,6 +5,7 @@ import { ActionBar } from '../table/ActionBar';
 import { availableActions } from '../table/actions';
 import { DecisionDialog } from './DecisionDialog';
 import { Tile } from './Tile';
+import { TileHighlightContext } from './tileHighlight';
 
 describe('Tile', () => {
   it('tem rótulo em português para leitor de tela', () => {
@@ -83,5 +84,39 @@ describe('DecisionDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
     fireEvent.keyDown(dialog, { key: 'Escape' });
     expect(onCancel).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('destaques da camada de ajudas', () => {
+  it('dora e vermelhas ganham brilho; cópias da peça sob o mouse ganham destaque', () => {
+    const [oneM, red5p, chun] = parseTiles('1m0p7z');
+    const { container } = render(
+      <TileHighlightContext.Provider
+        value={{ bonusGlow: true, bonusKinds: new Set([0]), matchKind: 33 }}
+      >
+        <Tile tile={oneM!} />
+        <Tile tile={red5p!} />
+        <Tile tile={chun!} />
+        <Tile tile={chun!} onClick={() => undefined} />
+      </TileHighlightContext.Provider>,
+    );
+    const tiles = container.querySelectorAll('[data-tile]');
+    expect(tiles[0]?.className).toMatch(/bonus/);
+    expect(tiles[1]?.className).toMatch(/bonusRed/);
+    expect(tiles[2]?.className).toMatch(/match/);
+    // a peça clicável (da própria mão) não se destaca a si mesma
+    expect(tiles[3]?.className).not.toMatch(/match/);
+  });
+
+  it('com a ajuda desligada, nada brilha', () => {
+    const [oneM] = parseTiles('1m');
+    const { container } = render(
+      <TileHighlightContext.Provider
+        value={{ bonusGlow: false, bonusKinds: new Set([0]), matchKind: null }}
+      >
+        <Tile tile={oneM!} />
+      </TileHighlightContext.Provider>,
+    );
+    expect(container.querySelector('[data-tile]')?.className).not.toMatch(/bonus/);
   });
 });

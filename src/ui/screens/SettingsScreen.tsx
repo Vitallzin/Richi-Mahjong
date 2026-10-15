@@ -47,6 +47,43 @@ export function SettingsScreen() {
             onChange={(e) => s.set({ muted: e.target.checked })}
           />
         </label>
+        <label className={styles.row}>
+          <span>
+            {t('settings.music')}
+            <br />
+            <span className={styles.desc}>{t('settings.music.desc')}</span>
+          </span>
+          <input
+            type="checkbox"
+            checked={s.music}
+            onChange={(e) => s.set({ music: e.target.checked })}
+          />
+        </label>
+        <label className={styles.row}>
+          {t('settings.musicVolume')}
+          <input
+            className={styles.range}
+            type="range"
+            min={0}
+            max={1}
+            step={0.05}
+            value={s.musicVolume}
+            disabled={!s.music}
+            onChange={(e) => s.set({ musicVolume: Number(e.target.value) })}
+          />
+        </label>
+        <label className={styles.row}>
+          <span>
+            {t('settings.hoverSounds')}
+            <br />
+            <span className={styles.desc}>{t('settings.hoverSounds.desc')}</span>
+          </span>
+          <input
+            type="checkbox"
+            checked={s.hoverSounds}
+            onChange={(e) => s.set({ hoverSounds: e.target.checked })}
+          />
+        </label>
       </section>
 
       <section className={styles.section}>

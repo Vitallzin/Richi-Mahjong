@@ -17,3 +17,4 @@ Um arquivo curto por decisão não óbvia. Valores de regra confirmados ficam em
 | 0009 | Decisões de interface e sessão da Fase 2                            |
 | 0010 | Decisões das ajudas, tutorial e acessibilidade (Fase 3)             |
 | 0011 | Visual com ar chinês, animações e ritmo da mesa                     |
+| 0012 | Música ambiente, sons de hover e destaques de peças                 |

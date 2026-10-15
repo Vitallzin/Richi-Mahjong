@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { useSettings } from '../state/settings';
+import { useAmbientAudio } from './audio/useAmbientAudio';
 import { HelpsScreen } from './screens/HelpsScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { WelcomeScreen } from './screens/WelcomeScreen';
@@ -15,6 +16,7 @@ import { TableScreen } from './screens/TableScreen';
 /** Rotas da spec 10.1. As telas ainda não implementadas mostram "Em construção". */
 export function App() {
   const a11y = useSettings((s) => s.accessibility);
+  useAmbientAudio();
   // Acessibilidade global (spec 10.7): atributos no <html> lidos pelo CSS.
   useEffect(() => {
     const root = document.documentElement;

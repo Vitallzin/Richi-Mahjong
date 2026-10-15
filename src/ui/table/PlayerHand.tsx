@@ -20,6 +20,8 @@ interface Props {
   readonly onDiscard: (tile: TileData) => void;
   /** Peça em foco (mouse por cima, seleção por toque ou teclado), para a análise do guia. */
   readonly onFocusTile?: (tile: TileData | null) => void;
+  /** Peça sob o mouse (ou tocada), em qualquer momento — destaca as cópias visíveis na mesa. */
+  readonly onHoverTile?: (tile: TileData | null) => void;
 }
 
 export function PlayerHand({
@@ -30,6 +32,7 @@ export function PlayerHand({
   scale = 1,
   onDiscard,
   onFocusTile,
+  onHoverTile,
 }: Props) {
   const [rawSelected, setSelected] = useState<number | null>(null);
   const pointerType = useRef<string>('mouse');
@@ -50,6 +53,7 @@ export function PlayerHand({
     } else {
       setSelected(tile.id);
       onFocusTile?.(tile);
+      onHoverTile?.(tile);
     }
   };
 
@@ -77,12 +81,16 @@ export function PlayerHand({
   return (
     <div
       className={styles.hand}
+      data-hover-zone="hand"
       onKeyDown={onKeyDown}
       onPointerDown={(e: PointerEvent) => {
         pointerType.current = e.pointerType;
       }}
       onPointerLeave={(e: PointerEvent) => {
-        if (e.pointerType === 'mouse') onFocusTile?.(null);
+        if (e.pointerType === 'mouse') {
+          onFocusTile?.(null);
+          onHoverTile?.(null);
+        }
       }}
     >
       {tiles.map((tile) => (
@@ -95,9 +103,10 @@ export function PlayerHand({
           dimmed={myTurn && !discardable.has(tile.id)}
           onClick={myTurn ? () => activate(tile) : undefined}
           tabIndex={myTurn ? 0 : -1}
-          onPointerEnter={
-            myTurn && discardable.has(tile.id) ? () => onFocusTile?.(tile) : undefined
-          }
+          onPointerEnter={() => {
+            onHoverTile?.(tile);
+            if (myTurn && discardable.has(tile.id)) onFocusTile?.(tile);
+          }}
         />
       ))}
     </div>

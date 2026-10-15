@@ -958,3 +958,19 @@
     animation: none !important;
   }
 }
+
+/* Quantas cópias da peça sob o mouse já estão visíveis na mesa. */
+.seenBadge {
+  position: absolute;
+  left: 290px;
+  top: 716px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--gold);
+  background: rgb(27 17 40 / 0.92);
+  color: var(--gold-bright);
+  font-size: 17px;
+  font-weight: 500;
+  pointer-events: none;
+  animation: turnIn 200ms var(--ease-out) both;
+}

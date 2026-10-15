@@ -4,6 +4,7 @@
  */
 import type { CSSProperties, MouseEvent, ReactNode } from 'react';
 import { numberOf, suitOf, type Tile as TileData } from '../../engine';
+import { useTileHighlight } from './tileHighlight';
 import { labelText, useTileLabels } from './tileLabels';
 import { tileName } from './tileName';
 import { t } from '../../i18n';
@@ -74,6 +75,7 @@ export interface TileProps {
   readonly glow?: boolean;
   readonly onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
   readonly onPointerEnter?: () => void;
+  readonly onPointerLeave?: () => void;
   readonly className?: string;
   readonly tabIndex?: number;
 }
@@ -87,9 +89,14 @@ export function Tile({
   glow = false,
   onClick,
   onPointerEnter,
+  onPointerLeave,
   className = '',
   tabIndex,
 }: TileProps) {
+  const hl = useTileHighlight();
+  // Camada de ajudas: bônus (dora/vermelha) brilha; cópias da peça sob o mouse brilham na mesa.
+  const bonus = !!tile && !!hl?.bonusGlow && (tile.red || hl.bonusKinds.has(tile.kind));
+  const match = !!tile && !onClick && hl?.matchKind === tile.kind;
   const classes = [
     styles.tile,
     tile ? styles.front : styles.back,
@@ -98,6 +105,8 @@ export function Tile({
     dimmed ? styles.dimmed : '',
     glow ? styles.glow : '',
     tile?.red ? styles.redTile : '',
+    bonus ? (tile?.red ? styles.bonusRed : styles.bonus) : '',
+    match ? styles.match : '',
     onClick ? styles.clickable : '',
     className,
   ].join(' ');
@@ -108,6 +117,13 @@ export function Tile({
   const content = (
     <span className={styles.body}>
       <span className={styles.face}>{tile ? <Face tile={tile} /> : null}</span>
+      {bonus && (
+        <span
+          className={styles.sheen}
+          aria-hidden="true"
+          style={{ animationDelay: `${-((tile?.id ?? 0) % 7) * 0.8}s` }}
+        />
+      )}
       {label && (
         <span className={styles.label} aria-hidden="true">
           {label}
@@ -123,8 +139,10 @@ export function Tile({
         style={style}
         aria-label={ariaLabel}
         aria-pressed={selected}
+        data-tile=""
         onClick={onClick}
         onPointerEnter={onPointerEnter}
+        onPointerLeave={onPointerLeave}
         tabIndex={tabIndex}
       >
         {content}
@@ -132,7 +150,15 @@ export function Tile({
     );
   }
   return (
-    <span className={classes} style={style} role="img" aria-label={ariaLabel}>
+    <span
+      className={classes}
+      style={style}
+      role="img"
+      aria-label={ariaLabel}
+      data-tile=""
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={onPointerLeave}
+    >
       {content}
     </span>
   );

@@ -12,6 +12,10 @@ export interface HelpPrefs {
   readonly furiten: boolean;
   /** Painel "Indicador → Dora". */
   readonly doraHint: boolean;
+  /** Peças de bônus (dora e cincos vermelhos) brilham discretamente. */
+  readonly bonusGlow: boolean;
+  /** Ao passar o mouse numa peça da mão, as cópias já visíveis na mesa (rios, grupos, dora) brilham. */
+  readonly seenHighlight: boolean;
   /** Modo iniciante: não oferecer chi/pon/kan. */
   readonly noCalls: boolean;
   /** Riichi: sugerir com confirmação, ou declarar direto quando há um único descarte possível. */
@@ -25,6 +29,8 @@ export const DEFAULT_HELP_PREFS: HelpPrefs = Object.freeze({
   noYaku: true,
   furiten: true,
   doraHint: true,
+  bonusGlow: true,
+  seenHighlight: true,
   noCalls: false,
   riichi: 'confirm',
   labels: DEFAULT_LABELS,
