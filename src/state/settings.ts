@@ -8,6 +8,7 @@ import type { BotSkill, CharacterId } from '../bots';
 import { DEFAULT_HELP_PREFS, type HelpPrefs } from '../help';
 import type { Mode, RuleOptionId } from '../engine';
 import { DEFAULT_TIMER, type TimerSettings } from '../session';
+import { DEFAULT_APPEARANCE, type Appearance } from '../theme/appearance';
 
 export type CharacterChoice = CharacterId | 'random';
 export type RuleDraft = Partial<Record<RuleOptionId, unknown>>;
@@ -33,6 +34,8 @@ export interface SettingsData {
   /** Modo treino "Mostrar mãos" (spec 9.7), só em partida solo. */
   readonly training: boolean;
   readonly accessibility: AccessibilityPrefs;
+  /** Aparência: fundo, feltro, faces e verso (spec 11.2). Local; não sincroniza em sala. */
+  readonly appearance: Appearance;
 }
 
 export interface AccessibilityPrefs {
@@ -69,6 +72,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   welcomeSeen: false,
   training: false,
   accessibility: { reduceMotion: false, highContrast: false, tileScale: 1 },
+  appearance: DEFAULT_APPEARANCE,
 };
 
 export const useSettings = create<SettingsData & SettingsActions>()(
@@ -106,6 +110,7 @@ export const useSettings = create<SettingsData & SettingsActions>()(
             labels: { ...current.helps.labels, ...p.helps?.labels },
           },
           accessibility: { ...current.accessibility, ...p.accessibility },
+          appearance: { ...current.appearance, ...p.appearance },
         };
       },
       partialize: ({

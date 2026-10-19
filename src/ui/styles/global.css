@@ -68,7 +68,7 @@ body {
   min-height: 100dvh;
   background:
     radial-gradient(ellipse 80% 50% at 50% 0%, rgb(58 40 96 / 0.85), transparent 70%),
-    linear-gradient(180deg, #1c1336 0%, var(--ink) 60%) fixed;
+    linear-gradient(180deg, var(--bd-sky-a, #1c1336) 0%, var(--ink) 60%) fixed;
 }
 
 h1,

@@ -28,12 +28,12 @@ export function Backdrop({ dim = false }: { dim?: boolean }) {
       <svg className={styles.skyline} viewBox="0 0 1600 400" preserveAspectRatio="xMidYMax slice">
         <defs>
           <linearGradient id="bd-roof" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0" stopColor="#2b1d45" />
-            <stop offset="1" stopColor="#140d22" />
+            <stop offset="0" style={{ stopColor: 'var(--bd-roof-a, #2b1d45)' }} />
+            <stop offset="1" style={{ stopColor: 'var(--bd-roof-b, #140d22)' }} />
           </linearGradient>
         </defs>
         {/* pagode distante */}
-        <g fill="#1d1431" opacity="0.9">
+        <g style={{ fill: 'var(--bd-far, #1d1431)' }} opacity="0.9">
           <path d="M1180 400V250h-50l70-30h-40l60-34h-30l46-30 46 30h-30l60 34h-40l70 30h-50v150z" />
           <rect x="1198" y="140" width="4" height="22" />
         </g>

@@ -4,9 +4,14 @@
   overflow: hidden;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 70% 55% at 50% 0%, #3a2860 0%, transparent 70%),
+    radial-gradient(ellipse 70% 55% at 50% 0%, var(--bd-glow, #3a2860) 0%, transparent 70%),
     radial-gradient(ellipse 50% 40% at 80% 18%, rgb(255 196 120 / 0.1) 0%, transparent 70%),
-    linear-gradient(180deg, #1c1336 0%, #140d24 55%, #0e0919 100%);
+    linear-gradient(
+      180deg,
+      var(--bd-sky-a, #1c1336) 0%,
+      var(--bd-sky-b, #140d24) 55%,
+      var(--bd-sky-c, #0e0919) 100%
+    );
 }
 
 .dim::after {
@@ -23,7 +28,12 @@
   width: clamp(60px, 8vw, 120px);
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(circle at 40% 38%, #fff8e6 0%, #f3e2b8 55%, #d9bf83 100%);
+  background: radial-gradient(
+    circle at 40% 38%,
+    var(--bd-moon-a, #fff8e6) 0%,
+    var(--bd-moon-b, #f3e2b8) 55%,
+    var(--bd-moon-c, #d9bf83) 100%
+  );
   box-shadow:
     0 0 40px 10px rgb(243 226 184 / 0.25),
     0 0 120px 40px rgb(243 226 184 / 0.08);
@@ -74,7 +84,12 @@
   border-radius: 46% 46% 42% 42% / 50% 50% 46% 46%;
   background:
     repeating-linear-gradient(90deg, rgb(0 0 0 / 0.14) 0 2px, transparent 2px 22%),
-    radial-gradient(circle at 50% 45%, #ff9d5c 0%, #d9473c 45%, #8e1f1b 100%);
+    radial-gradient(
+      circle at 50% 45%,
+      var(--bd-lantern-a, #ff9d5c) 0%,
+      var(--bd-lantern-b, #d9473c) 45%,
+      var(--bd-lantern-c, #8e1f1b) 100%
+    );
   box-shadow:
     0 0 26px 6px rgb(255 120 70 / 0.35),
     inset 0 -6px 10px rgb(0 0 0 / 0.25);
@@ -109,7 +124,7 @@
   width: 11px;
   height: 8px;
   border-radius: 80% 0 80% 0;
-  background: linear-gradient(135deg, #ffd6e7, #e88db4);
+  background: linear-gradient(135deg, var(--bd-petal-a, #ffd6e7), var(--bd-petal-b, #e88db4));
   opacity: 0.55;
   animation: fall linear infinite;
 }
