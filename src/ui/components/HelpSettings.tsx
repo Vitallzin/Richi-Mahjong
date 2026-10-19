@@ -11,12 +11,21 @@ import { Tile } from './Tile';
 import { TileLabelsContext } from './tileLabels';
 
 type ToggleKey =
-  'rules' | 'waits' | 'noYaku' | 'furiten' | 'doraHint' | 'bonusGlow' | 'seenHighlight' | 'noCalls';
+  | 'rules'
+  | 'waits'
+  | 'noYaku'
+  | 'yakuPath'
+  | 'furiten'
+  | 'doraHint'
+  | 'bonusGlow'
+  | 'seenHighlight'
+  | 'noCalls';
 
 const TOGGLES: readonly { key: ToggleKey; example?: string }[] = [
   { key: 'rules' },
   { key: 'waits', example: '14m' },
   { key: 'noYaku' },
+  { key: 'yakuPath' },
   { key: 'furiten' },
   { key: 'doraHint', example: '12z' },
   { key: 'bonusGlow', example: '0p0s' },

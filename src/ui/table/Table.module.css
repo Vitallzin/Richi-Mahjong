@@ -634,7 +634,7 @@
 /* Jogador da direita: encostado na mesa, na altura da mão dele. */
 .badge1 {
   left: 1306px;
-  top: 300px;
+  top: 228px;
 }
 
 /* Jogador da frente: placa compacta numa linha, acima da borda de cima da mesa. */
@@ -992,7 +992,7 @@
   right: 14px;
   bottom: 152px;
   width: 270px;
-  max-height: 300px;
+  max-height: 385px;
   overflow: hidden;
   padding: 10px 14px;
   border-radius: 12px;
@@ -1098,4 +1098,46 @@
   .badgeTurn .portrait::after {
     animation: none !important;
   }
+}
+
+/* Caminho de yaku no guia */
+.helpPath {
+  display: grid;
+  gap: 4px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--gold-dim);
+  background: rgb(240 211 145 / 0.06);
+}
+
+.helpPathTitle {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.helpPathTitle small {
+  font-size: 12px;
+}
+
+.helpPathList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 3px;
+}
+
+.helpPathList li {
+  display: grid;
+  line-height: 1.25;
+}
+
+.helpPathList strong {
+  color: var(--gold-bright);
+  font-size: 15px;
+}
+
+.helpPathList span {
+  font-size: 13px;
+  color: var(--color-text-muted);
 }

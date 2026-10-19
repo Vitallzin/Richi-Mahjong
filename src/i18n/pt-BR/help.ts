@@ -63,6 +63,13 @@ export const help = {
   'helps.doraHint.label': 'Indicador → Dora',
   'helps.doraHint.desc':
     'Mostra qual peça é a dora (a seguinte ao indicador), e não só o indicador.',
+  'helps.yakuPath.label': 'Caminho de yaku',
+  'helps.yakuPath.desc':
+    'Mostra no guia qual yaku a sua mão está seguindo (ex.: Toitoi, Yakuhai), para aprender os nomes jogando.',
+  'help.path.title': 'Caminho de yaku',
+  'help.path.estimate': 'pela forma da mão',
+  'help.path.sure': 'garantido nas esperas',
+  'help.path.openNone': 'Mão aberta sem yaku à vista: sem yaku você não pode vencer.',
   'helps.bonusGlow.label': 'Brilho nas peças de bônus',
   'helps.bonusGlow.desc':
     'Dora e cincos vermelhos brilham de leve na mesa, para você não perder pontos extras.',

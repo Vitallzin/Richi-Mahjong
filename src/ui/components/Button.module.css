@@ -1,8 +1,11 @@
 /*
  * Movimento comum dos botões (usado via `composes`): sobe um pouco no hover, afunda ao pressionar e um
  * reflexo de laca atravessa a face. Respeita "reduzir movimento" pelas regras globais.
+ *
+ * Bases com especificidade zero (:where): o estilo próprio de cada botão (ex.: position: absolute)
+ * sempre vence, não importa a ordem em que as folhas de estilo carregam.
  */
-.shine {
+:where(.shine) {
   position: relative;
   overflow: hidden;
   isolation: isolate;
@@ -32,6 +35,9 @@
 
 .lift {
   composes: shine;
+}
+
+:where(.lift) {
   transition:
     transform 160ms var(--ease-out),
     filter 160ms ease,

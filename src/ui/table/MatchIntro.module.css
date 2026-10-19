@@ -1,0 +1,312 @@
+/* Apresentação dos jogadores (palco 1600×900). Atrasos por cartão vêm de --d. */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 70;
+  background: radial-gradient(ellipse at 50% 48%, rgb(40 24 64 / 0.86), rgb(8 5 16 / 0.94));
+  animation: fade 300ms ease both;
+  cursor: pointer;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.rays {
+  position: absolute;
+  left: 800px;
+  top: 440px;
+  width: 1200px;
+  height: 1200px;
+  translate: -50% -50%;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgb(240 211 145 / 0.1) 0 5deg,
+    transparent 5deg 15deg
+  );
+  mask: radial-gradient(circle, #000 0 18%, transparent 58%);
+  animation: spin 24s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+/* ---------- centro ---------- */
+.center {
+  position: absolute;
+  left: 800px;
+  top: 430px;
+  translate: -50% -50%;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  text-align: center;
+  cursor: default;
+}
+
+.kicker {
+  font-size: 18px;
+  letter-spacing: 0.12em;
+  color: var(--color-text-muted);
+  animation: rise 500ms var(--ease-out) 100ms both;
+}
+
+.seal {
+  display: grid;
+  place-items: center;
+  min-width: 150px;
+  padding: 10px 22px;
+  border-radius: 14px;
+  font-family: var(--font-brush);
+  font-size: 58px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--rice);
+  background: linear-gradient(180deg, var(--cinnabar-bright), #8e1f1b);
+  border: 3px solid var(--gold-bright);
+  box-shadow:
+    inset 0 0 0 5px rgb(0 0 0 / 0.18),
+    0 0 50px rgb(217 71 60 / 0.5),
+    0 14px 30px rgb(0 0 0 / 0.5);
+  rotate: -4deg;
+  animation: stamp 600ms var(--ease-spring) 150ms both;
+}
+
+@keyframes stamp {
+  from {
+    opacity: 0;
+    transform: scale(2.4) rotate(-12deg);
+  }
+}
+
+.title {
+  margin: 6px 0 0;
+  font-family: var(--font-display);
+  font-size: 64px;
+  line-height: 1;
+  background: linear-gradient(180deg, #fff6d8, var(--gold-bright) 45%, #a77a2f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 5px 0 rgb(0 0 0 / 0.5));
+  animation: rise 600ms var(--ease-out) 350ms both;
+}
+
+.details {
+  margin: 0;
+  font-size: 22px;
+  color: var(--rice);
+  animation: rise 600ms var(--ease-out) 500ms both;
+}
+
+.start {
+  composes: lift from '../components/Button.module.css';
+  margin-top: 14px;
+  min-width: 260px;
+  min-height: 60px;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(180deg, var(--cinnabar-bright), var(--cinnabar));
+  color: var(--rice);
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  box-shadow:
+    inset 0 0 0 2px rgb(255 220 180 / 0.4),
+    inset 0 0 0 6px var(--cinnabar),
+    inset 0 0 0 7px rgb(255 220 180 / 0.25),
+    0 8px 22px rgb(120 20 15 / 0.5);
+  cursor: pointer;
+  animation: rise 500ms var(--ease-out) 1300ms both;
+}
+
+/* barra que esvazia até a partida começar sozinha */
+.start::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 6px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgb(255 230 180 / 0.6);
+  transform-origin: left;
+  animation: countdown 5200ms linear both;
+}
+
+@keyframes countdown {
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+/* ---------- cartões dos jogadores ---------- */
+.card {
+  position: absolute;
+  width: 380px;
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 18px 22px 18px 18px;
+  border-radius: 16px;
+  border: 1px solid var(--gold);
+  background:
+    radial-gradient(ellipse at 0% 0%, rgb(255 210 140 / 0.1), transparent 60%),
+    linear-gradient(180deg, #2f1d42, #1b1128);
+  box-shadow:
+    inset 0 0 0 4px #1b1128,
+    inset 0 0 0 5px var(--gold-dim),
+    0 20px 50px rgb(0 0 0 / 0.55);
+  translate: -50% -50%;
+  animation: var(--enter) 650ms var(--ease-spring) var(--d, 0ms) both;
+  cursor: default;
+}
+
+.side0 {
+  left: 800px;
+  top: 760px;
+  --enter: fromBottom;
+}
+
+.side1 {
+  left: 1330px;
+  top: 430px;
+  --enter: fromRight;
+}
+
+.side2 {
+  left: 800px;
+  top: 112px;
+  --enter: fromTop;
+}
+
+.side3 {
+  left: 270px;
+  top: 430px;
+  --enter: fromLeft;
+}
+
+@keyframes fromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(220px);
+  }
+}
+
+@keyframes fromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-220px);
+  }
+}
+
+@keyframes fromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-320px);
+  }
+}
+
+@keyframes fromRight {
+  from {
+    opacity: 0;
+    transform: translateX(320px);
+  }
+}
+
+.dealer {
+  border-color: var(--gold-bright);
+  box-shadow:
+    inset 0 0 0 4px #1b1128,
+    inset 0 0 0 5px var(--gold),
+    0 0 40px rgb(240 211 145 / 0.3),
+    0 20px 50px rgb(0 0 0 / 0.55);
+}
+
+/* vento do assento em selo, no canto */
+.wind {
+  position: absolute;
+  top: -16px;
+  right: -12px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  rotate: 6deg;
+  font-family: var(--font-brush);
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--rice);
+  background: linear-gradient(180deg, #4f3a7a, #2c1f52);
+  border: 2px solid var(--gold-bright);
+}
+
+.dealer .wind {
+  background: linear-gradient(180deg, var(--cinnabar-bright), #8e1f1b);
+}
+
+.portrait {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--rice);
+  background: radial-gradient(circle at 35% 30%, #7a5fc4, #2c1f52);
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 0 5px rgb(240 211 145 / 0.12);
+}
+
+.info {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.name {
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 1.1;
+  color: var(--gold-bright);
+}
+
+.meta {
+  font-size: 17px;
+  color: var(--color-text-muted);
+}
+
+.tag {
+  justify-self: start;
+  margin-top: 4px;
+  padding: 1px 10px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+  border: 1px solid var(--gold-dim);
+  color: var(--rice);
+}
+
+.quote {
+  font-size: 16px;
+  font-style: italic;
+  color: var(--color-text-muted);
+}

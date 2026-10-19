@@ -44,16 +44,26 @@ export const game = {
 
   // Personagens (spec 8.3)
   'characters.ren.name': 'Ren',
+  'characters.ren.tag': 'Defensivo',
   'characters.ren.quote': 'Paciência ganha mais mãos do que pressa.',
   'characters.ren.style':
     'Defensivo: prioriza segurança, evita descartes perigosos e recua quando alguém declara riichi.',
   'characters.akari.name': 'Akari',
+  'characters.akari.tag': 'Agressiva',
   'characters.akari.quote': 'Quem hesita perde a vez!',
   'characters.akari.style':
     'Agressiva: busca mãos rápidas, chama chi/pon/kan quando vale e pressiona os adversários.',
   'characters.sora.name': 'Sora',
+  'characters.sora.tag': 'Equilibrado',
   'characters.sora.quote': 'Um pouco de tudo, na medida certa.',
   'characters.sora.style': 'Equilibrado: eficiência, valor da mão e defesa; é o oponente padrão.',
+
+  // Apresentação dos jogadores
+  'intro.newMatch': 'Nova partida',
+  'intro.resumed': 'Continuando a partida',
+  'intro.start': 'Começar',
+  'intro.continue': 'Continuar',
+  'intro.you': 'Você',
 
   // Mesa
   'table.round': '{wind} {n}',

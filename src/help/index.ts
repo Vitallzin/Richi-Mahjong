@@ -6,3 +6,4 @@ export * from './analysis';
 export * from './labels';
 export * from './dora';
 export * from './prefs';
+export * from './yakuPath';

@@ -8,6 +8,8 @@ export interface HelpPrefs {
   readonly waits: boolean;
   /** Aviso de No Yaku (ron × tsumo). */
   readonly noYaku: boolean;
+  /** Caminho de yaku: qual yaku a mão está seguindo (ex.: Toitoi). */
+  readonly yakuPath: boolean;
   /** Aviso de furiten. */
   readonly furiten: boolean;
   /** Painel "Indicador → Dora". */
@@ -27,6 +29,7 @@ export const DEFAULT_HELP_PREFS: HelpPrefs = Object.freeze({
   rules: true,
   waits: true,
   noYaku: true,
+  yakuPath: true,
   furiten: true,
   doraHint: true,
   bonusGlow: true,

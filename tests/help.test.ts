@@ -1,7 +1,9 @@
 // Ajudas (spec 9.2–9.5): só com PlayerView. Os estados de teste são montados com o motor e convertidos
 // em PlayerView antes de chegar às ajudas.
 import {
+  applyAction,
   buildRuleSet,
+  getLegalActions,
   getPlayerView,
   parseKinds,
   PRESET_YONMA,
@@ -9,7 +11,7 @@ import {
   type Seat,
 } from '../src/engine';
 import { riggedMatch, type RiggedLayout } from '../src/engine/testing/rigged';
-import { analyzeHand, DEFAULT_LABELS, doraPairs, labelFor } from '../src/help';
+import { analyzeHand, DEFAULT_LABELS, doraPairs, labelFor, yakuPath } from '../src/help';
 
 const B = '1147m2288p3669s6z';
 const C = '2288m3399p1447s7z';
@@ -133,5 +135,41 @@ describe('rótulos e Indicador → Dora', () => {
   it('indicador 9m ⇒ dora 1m; Leste ⇒ Sul', () => {
     const s = rig({ hands: [B, C, D, '123m456p789s1122z'], draws: '9m', dora: '9m' });
     expect(doraPairs(view(s, 0))).toEqual([{ indicator: k('9m'), dora: k('1m') }]);
+  });
+});
+
+describe('caminho de yaku (pedido do desenvolvedor)', () => {
+  it('em tenpai, sai das esperas: yakuhai do vento', () => {
+    const s = rig({ hands: [B, '123m456p789s1122z', C, D], draws: '9m', dora: '8p' });
+    const v = view(s, 1);
+    const path = yakuPath(v, analyzeHand(v));
+    expect(path.source).toBe('waits');
+    expect(path.yaku).toEqual(expect.arrayContaining(['yakuhaiRoundWind', 'yakuhaiSeatWind']));
+  });
+
+  it('depois de um pon de dragão com pares na mão: Toitoi e Yakuhai', () => {
+    let s = rig({
+      hands: ['1147m2288p3669s5z', '22m113p1799s4556z', C, D],
+      draws: '9m',
+      dora: '8p',
+    });
+    s = applyAction(s, 0, {
+      type: 'discard',
+      tile: s.hand!.players[0]!.hand.find((x) => x.kind === k('5z'))!,
+    }).state;
+    const use = getLegalActions(s, 1).pon[0]!;
+    s = applyAction(s, 1, { type: 'pon', use: [use[0], use[1]] }).state;
+    const v = view(s, 1);
+    const path = yakuPath(v, analyzeHand(v));
+    expect(path.source).toBe('shape');
+    expect(path.yaku).toEqual(expect.arrayContaining(['toitoi', 'yakuhaiHaku']));
+    expect(path.openWithoutYaku).toBe(false);
+  });
+
+  it('fechada com muitos pares: Chiitoitsu e Riichi', () => {
+    const s = rig({ hands: [B, '11335578p99s224z', C, D], draws: '9m', dora: '8p' });
+    const v = view(s, 1);
+    const path = yakuPath(v, analyzeHand(v));
+    expect(path.yaku).toEqual(expect.arrayContaining(['chiitoitsu', 'riichi']));
   });
 });

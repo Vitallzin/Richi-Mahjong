@@ -30,6 +30,7 @@ import { ACTION_KEYS, availableActions, type ActionKey } from './actions';
 import { CallBanner } from './CallBanner';
 import { buildDialog, isAction, type Dialog } from './decisions';
 import { HelpPanel } from './HelpPanel';
+import { MatchIntro } from './MatchIntro';
 import { ExitIcon, FullscreenIcon, MusicIcon, SoundIcon } from './MenuIcons';
 import { NUMBER_KANJI, relativeSide, seatName, windKanji, windName } from './labels';
 import { PlayerHand } from './PlayerHand';
@@ -68,10 +69,16 @@ export function Table({
 
   // Camada de destaques: bônus (dora/vermelhas) e cópias visíveis da peça sob o mouse.
   const [exitOpen, setExitOpen] = useState(false);
-  // Com a janela de sair aberta, a partida (relógio e bots) fica parada.
+  // Apresentação dos jogadores ao abrir a mesa (partida nova ou retomada).
+  const [intro, setIntro] = useState(() => ({
+    open: view.phase !== 'matchEnded',
+    resumed: view.handsPlayed > 0 || view.players.some((p) => p.discards.length > 0),
+  }));
+  // Com a apresentação ou a janela de sair abertas, a partida (relógio e bots) fica parada.
+  const paused = exitOpen || intro.open;
   useEffect(() => {
-    session.setPaused(exitOpen);
-  }, [exitOpen, session]);
+    session.setPaused(paused);
+  }, [paused, session]);
   const [hoverKind, setHoverKind] = useState<TileKind | null>(null);
   const highlight = useMemo<TileHighlight>(
     () => ({
@@ -137,7 +144,7 @@ export function Table({
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (dialog || exitOpen || e.repeat) return;
+      if (dialog || paused || e.repeat) return;
       const key = (Object.keys(ACTION_KEYS) as ActionKey[]).find(
         (k) => ACTION_KEYS[k].toLowerCase() === e.key.toLowerCase(),
       );
@@ -375,6 +382,15 @@ export function Table({
                 if (action) submit(action);
               }}
               onCancel={() => setDialog(null)}
+            />
+          )}
+
+          {intro.open && (
+            <MatchIntro
+              view={view}
+              session={session}
+              resumed={intro.resumed}
+              onDone={() => setIntro((x) => ({ ...x, open: false }))}
             />
           )}
 
