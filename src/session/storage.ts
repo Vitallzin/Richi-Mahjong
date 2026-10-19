@@ -3,6 +3,7 @@
  * Saves de outra versão são descartados com aviso.
  */
 import type { MatchState, Seat } from '../engine';
+import type { LoggedWin } from './history';
 import type { MatchSettings, SeatSetup } from './types';
 
 export const SAVE_KEY = 'match:v1';
@@ -17,6 +18,8 @@ export interface MatchSnapshot {
   readonly localSeat: Seat;
   /** Banco de tempo restante por assento humano (ms). */
   readonly banks: Partial<Record<Seat, number>>;
+  /** Vitórias já registradas (histórico); ausente em saves antigos. */
+  readonly winLog?: readonly LoggedWin[];
 }
 
 export type LoadResult =

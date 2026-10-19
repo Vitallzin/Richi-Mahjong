@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000
+    },
+    {
+      "name": "dev-emulators",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:emulators"],
+      "port": 3100
     }
   ]
 }

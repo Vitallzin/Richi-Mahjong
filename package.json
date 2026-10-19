@@ -21,7 +21,9 @@
     "test:sim": "vitest run --config vitest.sim.config.ts",
     "icons": "node scripts/gen-icons.mjs",
     "sim": "tsx scripts/simulate.ts",
-    "sounds": "node scripts/gen-sounds.mjs"
+    "sounds": "node scripts/gen-sounds.mjs",
+    "emulators": "firebase emulators:start --only auth,database",
+    "dev:emulators": "vite --port 3100 --mode emulators"
   },
   "dependencies": {
     "@fontsource/noto-sans-sc": "^5.3.1",

@@ -2,6 +2,7 @@
 import type { BotSkill, CharacterId } from '../bots';
 import type { Action, PlayerEvent, PlayerView, RuleSet, Seat, Tile } from '../engine';
 import type { TimerSettings } from './clock';
+import type { LoggedWin } from './history';
 
 export type SeatSetup =
   | { readonly kind: 'human'; readonly name: string }
@@ -30,6 +31,8 @@ export interface MatchSession {
   readonly settings: MatchSettings;
   readonly seats: readonly SeatSetup[];
   readonly localSeat: Seat;
+  /** Partida solo contra bots ou em sala com amigos (histórico, spec 12.4). */
+  readonly source: 'solo' | 'room';
   getView(): PlayerView;
   subscribe(listener: SessionListener): () => void;
   submit(action: Action): void;
@@ -45,5 +48,7 @@ export interface MatchSession {
    * Numa sala online o anfitrião decide; a sessão local sempre aceita.
    */
   setPaused(paused: boolean): void;
+  /** Vitórias registradas nesta partida (para o histórico, spec 12.4). */
+  getWinLog(): readonly LoggedWin[];
   dispose(): void;
 }

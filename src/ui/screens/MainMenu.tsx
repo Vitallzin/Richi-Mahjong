@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { loadMatch } from '../../session';
 import { resumeSavedMatch } from '../../state/match';
 import { useSettings } from '../../state/settings';
+import { useAccount } from '../../state/account';
+import { Avatar } from '../components/Avatar';
 import { enterGameDisplay } from '../platform/display';
 import { t, type MessageKey } from '../../i18n';
 import { parseTiles } from '../../engine';
@@ -19,6 +21,7 @@ const ITEMS: readonly MenuItem[] = [
   { key: 'menu.help', to: '/ajudas', glyph: '助' },
   { key: 'menu.settings', to: '/configuracoes', glyph: '設' },
   { key: 'menu.appearance', to: '/aparencia', glyph: '美' },
+  { key: 'menu.profile', to: '/perfil', glyph: '我' },
   { key: 'menu.rooms', to: '/salas', glyph: '房', comingSoon: true },
 ];
 
@@ -28,6 +31,7 @@ export function MainMenu() {
   const navigate = useNavigate();
   const [saved] = useState(() => loadMatch().status);
   const welcomeSeen = useSettings((s) => s.welcomeSeen);
+  const account = useAccount();
   const resume = () => {
     if (!resumeSavedMatch()) return;
     void enterGameDisplay();
@@ -36,6 +40,18 @@ export function MainMenu() {
   return (
     <main className={styles.screen}>
       <Backdrop />
+      <Link className={styles.account} to="/perfil">
+        {account.status === 'signedIn' && account.profile ? (
+          <>
+            <Avatar avatar={account.profile.avatar} photoURL={account.user?.photoURL} size={34} />
+            <span>{account.profile.displayName}</span>
+          </>
+        ) : (
+          <span>
+            {account.status === 'loading' ? t('account.loading') : t('account.signInShort')}
+          </span>
+        )}
+      </Link>
       <header className={styles.header}>
         <div className={styles.fan} aria-hidden="true">
           {FAN.map((tile, i) => (

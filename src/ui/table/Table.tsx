@@ -40,6 +40,7 @@ import { MatchResultDialog } from './SummaryDialogs';
 import styles from './Table.module.css';
 import { CenterPanel, HiddenHand, Melds, Pond } from './TableParts';
 import { useClock, useMatch } from './useMatch';
+import { useRecordHistory } from './useRecordHistory';
 
 export function Table({
   session,
@@ -51,6 +52,7 @@ export function Table({
   onPlayAgain: () => void;
 }) {
   const { view, events, tick, lastDiscardId } = useMatch(session);
+  useRecordHistory(session, view);
   const clock = useClock(session);
   const settings = useSettings();
   // A janela de decisão vale só para a situação (tick) em que foi aberta.

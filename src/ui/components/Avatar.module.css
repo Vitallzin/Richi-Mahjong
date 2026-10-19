@@ -1,0 +1,18 @@
+.avatar {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  object-fit: cover;
+  font-family: var(--font-brush);
+  font-weight: 800;
+  font-size: calc(var(--size) * 0.5);
+  line-height: 1;
+  color: var(--rice);
+  background: radial-gradient(circle at 35% 30%, var(--a, #7a5fc4), var(--b, #2c1f52));
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 0 3px rgb(240 211 145 / 0.12);
+  text-shadow: 0 2px 0 rgb(0 0 0 / 0.35);
+}

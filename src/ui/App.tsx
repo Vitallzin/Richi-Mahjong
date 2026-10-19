@@ -3,6 +3,10 @@ import { Route, Routes } from 'react-router-dom';
 import { useSettings } from '../state/settings';
 import { applyAppearance } from '../theme/appearance';
 import { AppearanceScreen } from './screens/AppearanceScreen';
+import { HistoryScreen } from './screens/HistoryScreen';
+import { ProfileScreen } from './screens/ProfileScreen';
+import { MigrationPrompt } from './components/MigrationPrompt';
+import { devSignIn, initAccount } from '../state/account';
 import { useAmbientAudio } from './audio/useAmbientAudio';
 import { HelpsScreen } from './screens/HelpsScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
@@ -19,6 +23,12 @@ export function App() {
   const a11y = useSettings((s) => s.accessibility);
   const appearance = useSettings((s) => s.appearance);
   useAmbientAudio();
+  // Conta: só carrega o Firebase se o jogador já entrou neste aparelho (spec 12.1).
+  useEffect(() => {
+    initAccount();
+    if (import.meta.env.DEV && import.meta.env.VITE_FIREBASE_EMULATORS === 'true')
+      Object.assign(globalThis, { __devSignIn: devSignIn });
+  }, []);
   // Acessibilidade global (spec 10.7): atributos no <html> lidos pelo CSS.
   useEffect(() => {
     const root = document.documentElement;
@@ -28,17 +38,22 @@ export function App() {
   // Aparência escolhida (spec 11.2): variáveis CSS no <html>.
   useEffect(() => applyAppearance(appearance), [appearance]);
   return (
-    <Routes>
-      <Route path="/" element={<MainMenu />} />
-      <Route path="/jogar" element={<SetupScreen />} />
-      <Route path="/partida" element={<TableScreen />} />
-      <Route path="/tutorial/:capitulo?" element={<TutorialScreen />} />
-      <Route path="/boas-vindas" element={<WelcomeScreen />} />
-      <Route path="/ajudas" element={<HelpsScreen />} />
-      <Route path="/configuracoes" element={<SettingsScreen />} />
-      <Route path="/aparencia" element={<AppearanceScreen />} />
-      {import.meta.env.DEV && <Route path="/dev/pecas" element={<DevTiles />} />}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <>
+      <MigrationPrompt />
+      <Routes>
+        <Route path="/" element={<MainMenu />} />
+        <Route path="/jogar" element={<SetupScreen />} />
+        <Route path="/partida" element={<TableScreen />} />
+        <Route path="/tutorial/:capitulo?" element={<TutorialScreen />} />
+        <Route path="/boas-vindas" element={<WelcomeScreen />} />
+        <Route path="/ajudas" element={<HelpsScreen />} />
+        <Route path="/configuracoes" element={<SettingsScreen />} />
+        <Route path="/aparencia" element={<AppearanceScreen />} />
+        <Route path="/perfil" element={<ProfileScreen />} />
+        <Route path="/historico" element={<HistoryScreen />} />
+        {import.meta.env.DEV && <Route path="/dev/pecas" element={<DevTiles />} />}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
   );
 }

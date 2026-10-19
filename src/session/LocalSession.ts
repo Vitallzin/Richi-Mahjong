@@ -25,6 +25,7 @@ import {
   type Tile,
 } from '../engine';
 import { consume, type TimerSettings } from './clock';
+import { winsFromEvents, type LoggedWin } from './history';
 import { PACING } from './pacing';
 import { clearMatch, saveMatch, SAVE_SCHEMA_VERSION, type MatchSnapshot } from './storage';
 import type { ClockView, MatchSession, MatchSettings, SeatSetup, SessionListener } from './types';
@@ -86,6 +87,7 @@ export interface LocalSessionOptions {
   readonly seed?: () => number;
   /** Autosave (padrão: localStorage). `false` desliga. */
   readonly autosave?: boolean;
+  readonly winLog?: readonly LoggedWin[];
 }
 
 interface HumanClock {
@@ -102,6 +104,7 @@ export class LocalSession implements MatchSession {
   readonly settings: MatchSettings;
   readonly seats: readonly SeatSetup[];
   readonly localSeat: Seat;
+  readonly source: 'solo' | 'room' = 'solo';
 
   private state: MatchState;
   private readonly listeners = new Set<SessionListener>();
@@ -120,6 +123,7 @@ export class LocalSession implements MatchSession {
   private frozen: { readonly seat: Seat; readonly baseMs: number; readonly bankMs: number } | null =
     null;
   private version = 0;
+  private readonly winLog: LoggedWin[];
   private disposed = false;
 
   constructor(opts: LocalSessionOptions) {
@@ -135,6 +139,7 @@ export class LocalSession implements MatchSession {
     this.botRng = createRng(this.seed());
     this.delayRng = createRng(this.seed());
     this.banks = { ...opts.banks };
+    this.winLog = [...(opts.winLog ?? [])];
     opts.seats.forEach((setup, i) => {
       const seat = i as Seat;
       if (setup.kind === 'bot') this.bots[seat] = createBot(setup.skill, setup.characterId);
@@ -169,6 +174,7 @@ export class LocalSession implements MatchSession {
       seats: snapshot.seats,
       localSeat: snapshot.localSeat,
       banks: snapshot.banks,
+      winLog: snapshot.winLog ?? [],
     });
   }
 
@@ -238,6 +244,10 @@ export class LocalSession implements MatchSession {
     this.frozen = null;
   }
 
+  getWinLog(): readonly LoggedWin[] {
+    return this.winLog;
+  }
+
   dispose(): void {
     this.disposed = true;
     this.cancelTimers();
@@ -250,6 +260,8 @@ export class LocalSession implements MatchSession {
     this.stopClock(seat);
     const result = applyAction(this.state, seat, action);
     this.state = result.state;
+    const summary = result.state.summary;
+    if (summary) this.winLog.push(...winsFromEvents(result.events, summary));
     this.afterChange(result.events);
   }
 
@@ -368,6 +380,7 @@ export class LocalSession implements MatchSession {
       seats: this.seats,
       localSeat: this.localSeat,
       banks: this.banks,
+      winLog: this.winLog,
     });
   }
 }

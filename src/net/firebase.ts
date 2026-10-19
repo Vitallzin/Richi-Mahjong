@@ -4,8 +4,8 @@
  * Sem Analytics: a spec 12.6 proíbe analytics de terceiros.
  */
 import { initializeApp, type FirebaseApp, type FirebaseOptions } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, type Auth } from 'firebase/auth';
-import { getDatabase, type Database } from 'firebase/database';
+import { connectAuthEmulator, getAuth, GoogleAuthProvider, type Auth } from 'firebase/auth';
+import { connectDatabaseEmulator, getDatabase, type Database } from 'firebase/database';
 
 function readConfig(): FirebaseOptions {
   const env = import.meta.env;
@@ -31,8 +31,28 @@ export function firebaseApp(): FirebaseApp {
   return app;
 }
 
-export const firebaseAuth = (): Auth => getAuth(firebaseApp());
-export const firebaseDatabase = (): Database => getDatabase(firebaseApp());
+/** Desenvolvimento: VITE_FIREBASE_EMULATORS=true conecta Auth e Realtime Database aos emuladores locais. */
+export const emulatorsEnabled = () => import.meta.env.VITE_FIREBASE_EMULATORS === 'true';
+
+let auth: Auth | null = null;
+let database: Database | null = null;
+
+export function firebaseAuth(): Auth {
+  if (!auth) {
+    auth = getAuth(firebaseApp());
+    if (emulatorsEnabled())
+      connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+  }
+  return auth;
+}
+
+export function firebaseDatabase(): Database {
+  if (!database) {
+    database = getDatabase(firebaseApp());
+    if (emulatorsEnabled()) connectDatabaseEmulator(database, '127.0.0.1', 9000);
+  }
+  return database;
+}
 
 /** Provedor Google (o único método de login; login anônimo não é usado — spec 12.2). */
 export function googleProvider(): GoogleAuthProvider {

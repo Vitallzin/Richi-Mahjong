@@ -5,6 +5,7 @@ coverage
 *.local
 .env*
 !.env.example
+!.env.emulators
 .firebase
 firebase-debug.log
 database-debug.log

@@ -75,6 +75,38 @@ export const DEFAULT_SETTINGS: SettingsData = {
   appearance: DEFAULT_APPEARANCE,
 };
 
+/**
+ * Completa preferências salvas (localStorage ou conta) com os padrões: versões antigas não têm os
+ * campos novos e objetos aninhados são mesclados campo a campo.
+ */
+export function mergeSettings(base: SettingsData, saved: unknown): SettingsData {
+  const p = (saved && typeof saved === 'object' ? saved : {}) as Partial<SettingsData>;
+  return {
+    ...base,
+    ...p,
+    schemaVersion: 1,
+    helps: {
+      ...base.helps,
+      ...p.helps,
+      labels: { ...base.helps.labels, ...p.helps?.labels },
+    },
+    accessibility: { ...base.accessibility, ...p.accessibility },
+    appearance: { ...base.appearance, ...p.appearance },
+  };
+}
+
+/** Só os dados (sem as ações), no formato salvo em localStorage e em users/{uid}/settings. */
+export function settingsData(state: SettingsData): SettingsData {
+  const out: Record<string, unknown> = {};
+  for (const key of Object.keys(DEFAULT_SETTINGS)) out[key] = state[key as keyof SettingsData];
+  return out as unknown as SettingsData;
+}
+
+/** As preferências diferem do padrão? (decide se vale perguntar sobre levar para a conta) */
+export const isCustomized = (state: SettingsData): boolean =>
+  JSON.stringify({ ...settingsData(state), welcomeSeen: false }) !==
+  JSON.stringify(settingsData(DEFAULT_SETTINGS));
+
 export const useSettings = create<SettingsData & SettingsActions>()(
   persist(
     (set) => ({
@@ -99,20 +131,7 @@ export const useSettings = create<SettingsData & SettingsActions>()(
       version: 1,
       storage: createJSONStorage(() => localStorage),
       // Preferências salvas por versões antigas não têm os campos novos: completa com os padrões.
-      merge: (persisted, current) => {
-        const p = (persisted ?? {}) as Partial<SettingsData>;
-        return {
-          ...current,
-          ...p,
-          helps: {
-            ...current.helps,
-            ...p.helps,
-            labels: { ...current.helps.labels, ...p.helps?.labels },
-          },
-          accessibility: { ...current.accessibility, ...p.accessibility },
-          appearance: { ...current.appearance, ...p.appearance },
-        };
-      },
+      merge: (persisted, current) => ({ ...current, ...mergeSettings(current, persisted) }),
       partialize: ({
         set: _set,
         setRule: _setRule,

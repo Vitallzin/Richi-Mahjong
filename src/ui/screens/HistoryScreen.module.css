@@ -1,0 +1,128 @@
+.filters {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.chip {
+  composes: lift from '../components/Button.module.css';
+}
+
+.chipOn {
+  composes: lift from '../components/Button.module.css';
+}
+
+.chip,
+.chipOn {
+  min-height: 38px;
+  padding: 0 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--gold-dim);
+  background: rgb(0 0 0 / 0.2);
+  color: var(--rice);
+  font: inherit;
+  cursor: pointer;
+}
+
+.chipOn {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #1c1530;
+  font-weight: 700;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.6rem;
+}
+
+.stat {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gold-dim);
+  background:
+    radial-gradient(ellipse at 100% 0%, rgb(255 210 140 / 0.08), transparent 60%),
+    var(--color-surface);
+}
+
+.statValue {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--gold-bright);
+  font-variant-numeric: tabular-nums;
+}
+
+.statLabel {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.yakuList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.2rem;
+}
+
+.matches {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.match {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.7rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.place {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  font-family: var(--font-brush);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--rice);
+  background: linear-gradient(180deg, #4f3a7a, #2c1f52);
+  border: 1px solid var(--gold-dim);
+}
+
+.first {
+  background: linear-gradient(180deg, var(--cinnabar-bright), #8e1f1b);
+  border-color: var(--gold-bright);
+}
+
+.matchInfo {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.points {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--gold-bright);
+  font-variant-numeric: tabular-nums;
+}
