@@ -87,17 +87,28 @@ export interface LocalSessionOptions {
   readonly seed?: () => number;
   /** Autosave (padrão: localStorage). `false` desliga. */
   readonly autosave?: boolean;
+  /** Chave do autosave (sala: uma por código). */
+  readonly saveKey?: string;
   readonly winLog?: readonly LoggedWin[];
+  /** Tolerância de rede somada ao prazo de jogadores remotos (spec 13.5). */
+  readonly remoteGraceMs?: number;
 }
 
 interface HumanClock {
-  readonly seat: Seat;
   readonly startedAt: number;
   readonly baseMs: number;
   readonly bankMs: number;
 }
 
+interface Remaining {
+  readonly baseMs: number;
+  readonly bankMs: number;
+}
+
 const bankMsOf = (t: TimerSettings) => (t.mode === 'timed' ? t.bankSeconds * 1000 : 0);
+
+/** Bot que assume o assento de um amigo desconectado (spec 13.6): Normal, estilo equilibrado. */
+const coverBot = (): BotPolicy => createBot('normal', 'sora');
 
 export class LocalSession implements MatchSession {
   readonly rules: RuleSet;
@@ -106,25 +117,29 @@ export class LocalSession implements MatchSession {
   readonly localSeat: Seat;
   readonly source: 'solo' | 'room' = 'solo';
 
-  private state: MatchState;
+  protected state: MatchState;
   private readonly listeners = new Set<SessionListener>();
   private readonly bots: Partial<Record<Seat, BotPolicy>> = {};
+  /** Humanos ausentes cobertos por bot (sala). */
+  private readonly covered = new Map<Seat, BotPolicy>();
   private readonly botRng: Rng;
   private readonly delayRng: Rng;
-  private readonly scheduler: Scheduler;
+  protected readonly scheduler: Scheduler;
   private readonly delays: BotDelays;
   private readonly seed: () => number;
   private readonly autosave: boolean;
-  private readonly banks: Partial<Record<Seat, number>>;
+  private readonly saveKey: string | undefined;
+  private readonly remoteGraceMs: number;
+  protected readonly banks: Partial<Record<Seat, number>>;
   private timers: unknown[] = [];
-  private clock: HumanClock | null = null;
-  /** Pausada: relógio congelado (tempo que restava) e nenhum temporizador ativo. */
+  /** Relógio de cada humano decidindo agora (vários podem decidir ao mesmo tempo, ex.: chamadas). */
+  private readonly clocks = new Map<Seat, HumanClock>();
+  /** Pausada: relógios congelados (tempo que restava) e nenhum temporizador ativo. */
   private paused = false;
-  private frozen: { readonly seat: Seat; readonly baseMs: number; readonly bankMs: number } | null =
-    null;
+  private readonly frozen = new Map<Seat, Remaining>();
   private version = 0;
   private readonly winLog: LoggedWin[];
-  private disposed = false;
+  protected disposed = false;
 
   constructor(opts: LocalSessionOptions) {
     this.state = opts.state;
@@ -136,6 +151,8 @@ export class LocalSession implements MatchSession {
     this.delays = opts.delays ?? HUMAN_LIKE_DELAYS;
     this.seed = opts.seed ?? randomSeed;
     this.autosave = opts.autosave ?? true;
+    this.saveKey = opts.saveKey;
+    this.remoteGraceMs = opts.remoteGraceMs ?? 0;
     this.botRng = createRng(this.seed());
     this.delayRng = createRng(this.seed());
     this.banks = { ...opts.banks };
@@ -167,7 +184,14 @@ export class LocalSession implements MatchSession {
     snapshot: MatchSnapshot,
     extra: Omit<LocalSessionOptions, 'state' | 'settings' | 'seats' | 'localSeat' | 'banks'> = {},
   ): LocalSession {
-    return new LocalSession({
+    return new LocalSession(LocalSession.optionsFrom(snapshot, extra));
+  }
+
+  protected static optionsFrom(
+    snapshot: MatchSnapshot,
+    extra: Omit<LocalSessionOptions, 'state' | 'settings' | 'seats' | 'localSeat' | 'banks'>,
+  ): LocalSessionOptions {
+    return {
       ...extra,
       state: snapshot.state,
       settings: snapshot.settings,
@@ -175,7 +199,7 @@ export class LocalSession implements MatchSession {
       localSeat: snapshot.localSeat,
       banks: snapshot.banks,
       winLog: snapshot.winLog ?? [],
-    });
+    };
   }
 
   getView(): PlayerView {
@@ -198,26 +222,20 @@ export class LocalSession implements MatchSession {
   }
 
   getClock(): ClockView | null {
-    if (this.paused && this.frozen && this.settings.timer.mode === 'timed') {
-      return {
-        seat: this.frozen.seat,
-        baseMs: this.frozen.baseMs,
-        bankMs: this.frozen.bankMs,
-        hasBank: this.settings.timer.bankSeconds > 0,
-        at: this.scheduler.now(),
-      };
-    }
-    const c = this.clock;
-    if (!c || this.settings.timer.mode !== 'timed') return null;
+    return this.clockFor(this.localSeat);
+  }
+
+  /** Relógio de qualquer assento humano decidindo agora (o anfitrião publica para cada um). */
+  clockFor(seat: Seat): ClockView | null {
+    if (this.settings.timer.mode !== 'timed') return null;
     const now = this.scheduler.now();
+    const hasBank = this.settings.timer.bankSeconds > 0;
+    const frozen = this.paused ? this.frozen.get(seat) : undefined;
+    if (frozen) return { seat, ...frozen, hasBank, at: now };
+    const c = this.clocks.get(seat);
+    if (!c) return null;
     const r = consume(c.baseMs, c.bankMs, now - c.startedAt);
-    return {
-      seat: c.seat,
-      baseMs: r.baseMs,
-      bankMs: r.bankMs,
-      hasBank: this.settings.timer.bankSeconds > 0,
-      at: now,
-    };
+    return { seat, baseMs: r.baseMs, bankMs: r.bankMs, hasBank, at: now };
   }
 
   getRevealedHands(): Readonly<Partial<Record<Seat, readonly Tile[]>>> | null {
@@ -228,11 +246,13 @@ export class LocalSession implements MatchSession {
   setPaused(paused: boolean): void {
     if (this.disposed || paused === this.paused) return;
     if (paused) {
-      const c = this.clock;
-      this.frozen = c
-        ? { seat: c.seat, ...consume(c.baseMs, c.bankMs, this.scheduler.now() - c.startedAt) }
-        : null;
-      this.clock = null;
+      this.frozen.clear();
+      const now = this.scheduler.now();
+      for (const [seat, c] of this.clocks) {
+        const r = consume(c.baseMs, c.bankMs, now - c.startedAt);
+        this.frozen.set(seat, { baseMs: r.baseMs, bankMs: r.bankMs });
+      }
+      this.clocks.clear();
       this.paused = true;
       this.version += 1;
       this.cancelTimers();
@@ -241,7 +261,8 @@ export class LocalSession implements MatchSession {
     this.paused = false;
     this.version += 1;
     this.proceed(0);
-    this.frozen = null;
+    this.frozen.clear();
+    this.onChange([]);
   }
 
   getWinLog(): readonly LoggedWin[] {
@@ -252,6 +273,40 @@ export class LocalSession implements MatchSession {
     this.disposed = true;
     this.cancelTimers();
     this.listeners.clear();
+  }
+
+  // -------------------------------------------------------------------------------------------
+  // Para a sessão do anfitrião (sala)
+
+  /** Ação de outro jogador humano (convidado da sala). O motor valida; ação ilegal lança erro. */
+  protected submitFor(seat: Seat, action: Action): void {
+    if (this.disposed) return;
+    if (this.seats[seat]?.kind !== 'human' || this.covered.has(seat)) {
+      throw new Error('Assento não é de um jogador presente');
+    }
+    this.apply(seat, action);
+  }
+
+  /** Liga/desliga o bot que cobre um humano ausente; a mesa segue na hora. */
+  protected setCovered(seat: Seat, covered: boolean): void {
+    if (this.seats[seat]?.kind !== 'human' || covered === this.covered.has(seat)) return;
+    this.stopClock(seat);
+    if (covered) this.covered.set(seat, coverBot());
+    else this.covered.delete(seat);
+    if (this.paused || this.disposed) return;
+    this.version += 1;
+    this.cancelTimers();
+    this.proceed(0);
+    this.onChange([]);
+  }
+
+  protected isCovered(seat: Seat): boolean {
+    return this.covered.has(seat);
+  }
+
+  /** Chamado depois de cada mudança (o anfitrião publica as visões de todos aqui). */
+  protected onChange(_events: readonly GameEvent[]): void {
+    // a sessão solo não publica nada
   }
 
   // -------------------------------------------------------------------------------------------
@@ -269,17 +324,18 @@ export class LocalSession implements MatchSession {
     if (this.disposed) return;
     this.version += 1;
     this.cancelTimers();
+    this.clocks.clear();
     if (events.some((e) => e.type === 'HandStarted')) this.refillBanks();
     this.persist();
     const view = this.getView();
     const playerEvents = eventsForSeat(events, this.localSeat);
     for (const l of this.listeners) l(view, playerEvents);
 
-    if (this.paused) return;
-    this.proceed(this.delays.presentation ? presentationPause(events) : 0);
+    if (!this.paused) this.proceed(this.delays.presentation ? presentationPause(events) : 0);
+    this.onChange(events);
   }
 
-  /** Segue a partida: próxima mão, ou bots e relógio depois da pausa de apresentação. */
+  /** Segue a partida: próxima mão, ou bots e relógios depois da pausa de apresentação. */
   private proceed(pause: number): void {
     if (this.state.phase === 'matchEnded') return;
     if (canStartNextHand(this.state)) {
@@ -298,7 +354,10 @@ export class LocalSession implements MatchSession {
     }
     const version = this.version;
     this.schedule(() => {
-      if (this.version === version) this.scheduleActors();
+      if (this.version !== version) return;
+      this.scheduleActors();
+      // Relógios novos depois da apresentação: o anfitrião publica os prazos.
+      this.onChange([]);
     }, pause);
   }
 
@@ -309,7 +368,7 @@ export class LocalSession implements MatchSession {
       const seat = i as Seat;
       const legal = getLegalActions(this.state, seat);
       if (!hasAnyAction(legal)) continue;
-      const bot = this.bots[seat];
+      const bot = this.bots[seat] ?? this.covered.get(seat);
       if (bot) {
         const delay = legal.ackSummary
           ? 0
@@ -329,22 +388,26 @@ export class LocalSession implements MatchSession {
     const timer = this.settings.timer;
     if (timer.mode !== 'timed') return;
     // Retomando de uma pausa, o relógio continua de onde parou.
-    const resumed = this.frozen?.seat === seat ? this.frozen : null;
+    const resumed = this.frozen.get(seat);
     const baseMs = resumed ? resumed.baseMs : timer.baseSeconds * 1000;
     const bankMs = resumed ? resumed.bankMs : (this.banks[seat] ?? 0);
-    this.clock = { seat, startedAt: this.scheduler.now(), baseMs, bankMs };
-    this.schedule(() => {
-      if (this.version !== version) return;
-      this.apply(seat, defaultAction(this.state, seat, legal));
-    }, baseMs + bankMs);
+    this.clocks.set(seat, { startedAt: this.scheduler.now(), baseMs, bankMs });
+    const grace = seat === this.localSeat ? 0 : this.remoteGraceMs;
+    this.schedule(
+      () => {
+        if (this.version !== version) return;
+        this.apply(seat, defaultAction(this.state, seat, legal));
+      },
+      baseMs + bankMs + grace,
+    );
   }
 
   private stopClock(seat: Seat): void {
-    const c = this.clock;
-    if (!c || c.seat !== seat) return;
+    const c = this.clocks.get(seat);
+    if (!c) return;
     const r = consume(c.baseMs, c.bankMs, this.scheduler.now() - c.startedAt);
     this.banks[seat] = r.bankMs;
-    this.clock = null;
+    this.clocks.delete(seat);
   }
 
   private refillBanks(): void {
@@ -366,13 +429,8 @@ export class LocalSession implements MatchSession {
     this.timers = [];
   }
 
-  private persist(): void {
-    if (!this.autosave) return;
-    if (this.state.phase === 'matchEnded') {
-      clearMatch();
-      return;
-    }
-    saveMatch({
+  protected snapshot(): MatchSnapshot {
+    return {
       schemaVersion: SAVE_SCHEMA_VERSION,
       savedAt: Date.now(),
       state: this.state,
@@ -381,7 +439,16 @@ export class LocalSession implements MatchSession {
       localSeat: this.localSeat,
       banks: this.banks,
       winLog: this.winLog,
-    });
+    };
+  }
+
+  private persist(): void {
+    if (!this.autosave) return;
+    if (this.state.phase === 'matchEnded') {
+      clearMatch(undefined, this.saveKey);
+      return;
+    }
+    saveMatch(this.snapshot(), undefined, this.saveKey);
   }
 }
 

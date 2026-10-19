@@ -5,7 +5,13 @@ import type { TimerSettings } from './clock';
 import type { LoggedWin } from './history';
 
 export type SeatSetup =
-  | { readonly kind: 'human'; readonly name: string }
+  | {
+      readonly kind: 'human';
+      readonly name: string;
+      /** Conta do jogador em sala (spec 13): para quem vai a visão privada. */
+      readonly uid?: string;
+      readonly avatar?: string;
+    }
   | { readonly kind: 'bot'; readonly skill: BotSkill; readonly characterId: CharacterId };
 
 /** Configurações fora do motor (spec 6.3): tempo, adversários, treino. */

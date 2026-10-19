@@ -3,7 +3,7 @@
  * são gerados da lista RULE_OPTIONS; validação e resumo vêm de validateRules.
  */
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { BotSkill } from '../../bots';
 import { CHARACTERS } from '../../bots';
 import {
@@ -27,6 +27,7 @@ import {
   type TimerSettings,
 } from '../../session';
 import { startSoloMatch } from '../../state/match';
+import { useAccount } from '../../state/account';
 import { useSettings, type CharacterChoice, type RuleDraft } from '../../state/settings';
 import { enterGameDisplay } from '../platform/display';
 import styles from './SetupScreen.module.css';
@@ -147,6 +148,11 @@ function RuleControl({
 export function SetupScreen() {
   const navigate = useNavigate();
   const s = useSettings();
+  // /jogar?sala=1: a mesma tela cria uma sala privada (spec 13.2).
+  const [params] = useSearchParams();
+  const roomMode = params.get('sala') === '1';
+  const account = useAccount();
+  const [creating, setCreating] = useState(false);
   const mode = s.mode;
   const advanced = s.advanced[mode];
   const draft = s.rules[mode];
@@ -184,8 +190,40 @@ export function SetupScreen() {
     s.set({ timer: { ...base, ...patch } as TimerSettings });
   };
 
+  const createRoom = async () => {
+    const { user, profile } = account;
+    if (!user || !profile) return;
+    setCreating(true);
+    try {
+      const rules = buildRuleSet(mode, draft, advanced);
+      const { createRoom: create } = await import('../../net/room');
+      const code = await create(
+        user.uid,
+        { displayName: profile.displayName, avatar: profile.avatar },
+        {
+          rules: JSON.stringify(rules),
+          settings: JSON.stringify({
+            timer: s.timer,
+            training: false,
+            difficulty: s.difficulty === 'hard' ? 'normal' : s.difficulty,
+            characters: s.characters,
+          }),
+          mode,
+          players: rules.players,
+        },
+      );
+      navigate(`/sala/${code}`);
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const start = () => {
     if (!canStart) return;
+    if (roomMode) {
+      void createRoom();
+      return;
+    }
     const rules = buildRuleSet(mode, draft, advanced);
     startSoloMatch({
       rules,
@@ -209,8 +247,8 @@ export function SetupScreen() {
   return (
     <main className={styles.screen}>
       <header className={styles.header}>
-        <BackLink label={t('setup.back')} />
-        <h1 className={styles.title}>{t('setup.title')}</h1>
+        <BackLink to={roomMode ? '/salas' : '/'} label={t('setup.back')} />
+        <h1 className={styles.title}>{roomMode ? t('room.createTitle') : t('setup.title')}</h1>
       </header>
 
       <section className={styles.card} aria-labelledby="sec-mode">
@@ -365,19 +403,21 @@ export function SetupScreen() {
                   />
                 ))}
             </div>
-            <div className={styles.rule}>
-              <span className={styles.ruleLabel}>{t('setup.training')}</span>
-              <Segmented<boolean>
-                label={t('setup.training')}
-                value={s.training}
-                options={[
-                  { value: false, label: t('rules.value.off') },
-                  { value: true, label: t('rules.value.on') },
-                ]}
-                onChange={(v) => s.set({ training: v })}
-              />
-              <p className={styles.help}>{t('setup.training.desc')}</p>
-            </div>
+            {!roomMode && (
+              <div className={styles.rule}>
+                <span className={styles.ruleLabel}>{t('setup.training')}</span>
+                <Segmented<boolean>
+                  label={t('setup.training')}
+                  value={s.training}
+                  options={[
+                    { value: false, label: t('rules.value.off') },
+                    { value: true, label: t('rules.value.on') },
+                  ]}
+                  onChange={(v) => s.set({ training: v })}
+                />
+                <p className={styles.help}>{t('setup.training.desc')}</p>
+              </div>
+            )}
             <button type="button" className={styles.link} onClick={() => s.resetRules(mode)}>
               {t('setup.advanced.restore')}
             </button>
@@ -418,8 +458,13 @@ export function SetupScreen() {
             {t('setup.invalid')}
           </p>
         )}
-        <button type="button" className={styles.start} disabled={!canStart} onClick={start}>
-          {t('setup.start')}
+        <button
+          type="button"
+          className={styles.start}
+          disabled={!canStart || creating || (roomMode && account.status !== 'signedIn')}
+          onClick={start}
+        >
+          {roomMode ? t('room.createButton') : t('setup.start')}
         </button>
       </section>
     </main>

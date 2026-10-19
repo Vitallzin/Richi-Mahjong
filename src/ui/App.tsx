@@ -5,6 +5,8 @@ import { applyAppearance } from '../theme/appearance';
 import { AppearanceScreen } from './screens/AppearanceScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
+import { RoomScreen } from './screens/RoomScreen';
+import { RoomsScreen } from './screens/RoomsScreen';
 import { MigrationPrompt } from './components/MigrationPrompt';
 import { devSignIn, initAccount } from '../state/account';
 import { useAmbientAudio } from './audio/useAmbientAudio';
@@ -51,6 +53,8 @@ export function App() {
         <Route path="/aparencia" element={<AppearanceScreen />} />
         <Route path="/perfil" element={<ProfileScreen />} />
         <Route path="/historico" element={<HistoryScreen />} />
+        <Route path="/salas" element={<RoomsScreen />} />
+        <Route path="/sala/:codigo" element={<RoomScreen />} />
         {import.meta.env.DEV && <Route path="/dev/pecas" element={<DevTiles />} />}
         <Route path="*" element={<NotFound />} />
       </Routes>

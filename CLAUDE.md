@@ -18,7 +18,8 @@ Especificação completa: docs/spec.md (prevalece sobre qualquer outra coisa).
 
 - npm run dev | build | lint | typecheck | test | test:sim | test:coverage | format
 - npm run sim -- --games 100 [--mode yonma] [--seed 1] [--check] # simulador de linha de comando
+- npm run emulators | dev:emulators | test:rules # Firebase local (Java 21+)
 
 ## Fase atual
 
-Fase 4 — Sanma: implementada; aguardando validação do desenvolvedor. Próxima: Fase 5 — Conta, histórico, salas privadas e tela Aparência (só com liberação do desenvolvedor).
+Fase 5 — Conta, histórico, salas privadas e Aparência: implementada; aguardando validação do desenvolvedor (deploy das regras do banco pendente). Próxima: Fase 6 — Bots avançados e acabamento (só com liberação do desenvolvedor).

@@ -4,3 +4,6 @@ export * from './storage';
 export * from './LocalSession';
 export * from './pacing';
 export * from './history';
+export * from './room';
+export * from './HostSession';
+export * from './GuestSession';

@@ -22,7 +22,7 @@ const ITEMS: readonly MenuItem[] = [
   { key: 'menu.settings', to: '/configuracoes', glyph: '設' },
   { key: 'menu.appearance', to: '/aparencia', glyph: '美' },
   { key: 'menu.profile', to: '/perfil', glyph: '我' },
-  { key: 'menu.rooms', to: '/salas', glyph: '房', comingSoon: true },
+  { key: 'menu.rooms', to: '/salas', glyph: '房' },
 ];
 
 const FAN = parseTiles('1z5z6z7z4z');

@@ -19,7 +19,9 @@ describe('Menu principal', () => {
       'href',
       '/boas-vindas',
     );
-    expect(screen.getByText('Salas privadas')).toHaveAttribute('aria-disabled', 'true');
+    // Fase 5: salas liberadas; sem login, o canto mostra "Entrar".
+    expect(screen.getByRole('link', { name: 'Salas privadas' })).toHaveAttribute('href', '/salas');
+    expect(screen.getByRole('link', { name: 'Entrar' })).toHaveAttribute('href', '/perfil');
   });
 
   it('mostra página não encontrada para rotas desconhecidas', () => {

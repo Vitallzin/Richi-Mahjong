@@ -41,18 +41,18 @@ const defaultStore = (): KeyValueStore | null => {
   }
 };
 
-export function saveMatch(snapshot: MatchSnapshot, store = defaultStore()): void {
+export function saveMatch(snapshot: MatchSnapshot, store = defaultStore(), key = SAVE_KEY): void {
   try {
-    store?.setItem(SAVE_KEY, JSON.stringify(snapshot));
+    store?.setItem(key, JSON.stringify(snapshot));
   } catch {
     // Armazenamento cheio ou bloqueado: o jogo continua, só não há autosave.
   }
 }
 
-export function loadMatch(store = defaultStore()): LoadResult {
+export function loadMatch(store = defaultStore(), key = SAVE_KEY): LoadResult {
   let raw: string | null;
   try {
-    raw = store?.getItem(SAVE_KEY) ?? null;
+    raw = store?.getItem(key) ?? null;
   } catch {
     return { status: 'none' };
   }
@@ -75,9 +75,9 @@ export function loadMatch(store = defaultStore()): LoadResult {
   }
 }
 
-export function clearMatch(store = defaultStore()): void {
+export function clearMatch(store = defaultStore(), key = SAVE_KEY): void {
   try {
-    store?.removeItem(SAVE_KEY);
+    store?.removeItem(key);
   } catch {
     // ignora
   }
