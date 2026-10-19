@@ -88,6 +88,7 @@ nav {
 }
 
 .item {
+  composes: shine from '../components/Button.module.css';
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -143,6 +144,11 @@ button.item:focus-visible {
   border-color: var(--gold);
   transform: translateX(4px);
   outline: none;
+}
+
+a.item:active,
+button.item:active {
+  transform: translateX(4px) scale(0.98);
 }
 
 .primary {

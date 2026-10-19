@@ -25,6 +25,7 @@ export const ptBR = {
   'screen.underConstruction.title': 'Em construção',
   'screen.underConstruction.body': 'Esta parte do jogo ainda está sendo preparada. Volte em breve!',
   'common.back': 'Voltar ao menu',
+  'common.cancel': 'Cancelar',
 
   'notFound.title': 'Página não encontrada',
   'notFound.body': 'O endereço "{path}" não existe.',

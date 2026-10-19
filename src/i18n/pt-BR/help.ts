@@ -120,6 +120,9 @@ export const help = {
   'settings.data.clearMatchDone': 'Partida salva apagada.',
   'settings.data.reset': 'Restaurar todas as preferências',
   'settings.data.resetConfirm': 'Restaurar todas as preferências para o padrão?',
+  'settings.data.resetMessage':
+    'Sons, ajudas, acessibilidade e aparência voltam ao padrão. A partida salva não é apagada.',
+  'settings.data.resetAction': 'Restaurar',
   'settings.data.resetDone': 'Preferências restauradas.',
   'settings.welcomeAgain': 'Ver a tela de boas-vindas de novo',
 
@@ -131,8 +134,11 @@ export const help = {
   // Tutorial
   'tutorial.title': 'Tutorial e regras',
   'tutorial.chapters': 'Capítulos',
-  'tutorial.prev': '← Anterior',
-  'tutorial.next': 'Próximo →',
+  'tutorial.prev': 'Anterior',
+  'tutorial.next': 'Próximo',
+  'tutorial.progress': 'Capítulo {n} de {total}',
+  'tutorial.done': 'Pronto para jogar?',
+  'tutorial.play': 'Começar uma partida',
   'tutorial.notFound': 'Capítulo não encontrado.',
 
   // Anúncios para leitor de tela

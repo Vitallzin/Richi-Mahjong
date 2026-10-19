@@ -763,7 +763,7 @@ type TileLabels = {
 | `/tutorial/:capitulo` | Tutorial |
 | `/ajudas` | Configuração das ajudas + rótulos |
 | `/configuracoes` | Som, idioma (pt-BR), acessibilidade, tela cheia, dados salvos |
-| `/aparencia` | Tema, feltro, faces, versos (Fase 6; antes disso, tema único) |
+| `/aparencia` | Tema, feltro, faces, versos (Fase 5, ADR 0014; antes disso, tema único) |
 | `/perfil`, `/historico` | Conta Google (Fase 5) |
 | `/salas`, `/sala/:codigo` | Criar/entrar em sala privada (Fase 5) |
 
@@ -882,7 +882,7 @@ Faces em **SVG ou CSS** (ver 11.3), nomeadas pela notação: `1m…9m`, `1p…9p
 }
 ```
 
-Na v1 existe **um tema**, mas o carregamento já é por `theme.json`. Personalização (Fase 6): tela "Aparência" com escolha **independente** de fundo, feltro, faces e verso, com **prévia ao vivo**. Tudo desbloqueado. A escolha é local de cada jogador (em sala, **não** sincroniza entre jogadores).
+Na v1 existe **um tema**, mas o carregamento já é por `theme.json`. Personalização (Fase 5, ADR 0014): tela "Aparência" com escolha **independente** de fundo, feltro, faces e verso, com **prévia ao vivo**. Tudo desbloqueado. A escolha é local de cada jogador (em sala, **não** sincroniza entre jogadores).
 
 ### 11.3 Placeholders e licenças
 
@@ -1180,11 +1180,11 @@ GitHub Actions: `lint`, `typecheck`, `test` (unit + simulação curta). Deploy n
 - **Aceite:** testes dedicados (7.13) passam; simulação de ≥ 5.000 partidas sanma sem violar invariantes; jogável de ponta a ponta com ajudas.
 
 ### Fase 5 — Conta, histórico e salas privadas
-- Login Google, perfil/avatares, migração de preferências, histórico (resumos), `HostSession`/`GuestSession`, criar/entrar por código ou link, lobby, bots em assentos vazios, presença, bot cobrindo amigo desconectado, pausa se o anfitrião cair, relógio do anfitrião, regras de segurança + testes no emulador.
+- Tela **Aparência** (fundo/feltro/faces/verso independentes, prévia ao vivo, tudo desbloqueado — antecipada da Fase 6, ADR 0014), login Google, perfil/avatares, migração de preferências, histórico (resumos), `HostSession`/`GuestSession`, criar/entrar por código ou link, lobby, bots em assentos vazios, presença, bot cobrindo amigo desconectado, pausa se o anfitrião cair, relógio do anfitrião, regras de segurança + testes no emulador.
 - **Aceite:** 2–3 pessoas em aparelhos diferentes jogam uma partida completa em sala privada; convidado não consegue ler a visão de outro (teste de regras); resumo é gravado no histórico de cada um; tudo opera no plano Spark.
 
-### Fase 6 — Bots avançados, personalização e acabamento
-- Bot **Difícil** (Web Worker), personagens completos com estilos, tela **Aparência** (fundo/feltro/faces/verso independentes, prévia ao vivo, tudo desbloqueado), arte final, polimento de animações e sons, README de portfólio explicando as decisões (host-as-server, motor puro, tipos como barreira de informação).
+### Fase 6 — Bots avançados e acabamento
+- Bot **Difícil** (Web Worker), personagens completos com estilos, arte final, polimento de animações e sons, README de portfólio explicando as decisões (host-as-server, motor puro, tipos como barreira de informação).
 - **Aceite:** Difícil vence Fácil/Normal de forma consistente em simulação (sem acesso a informação oculta); trocar tema não exige mudar código; Lighthouse/performance aceitável no celular.
 
 ---

@@ -3,14 +3,13 @@ import { Link } from 'react-router-dom';
 import { t } from '../../i18n';
 import { HelpSettings } from '../components/HelpSettings';
 import styles from './Page.module.css';
+import { BackLink } from '../components/BackLink';
 
 export function HelpsScreen() {
   return (
     <main className={styles.page}>
       <header className={styles.header}>
-        <Link className={styles.link} to="/">
-          ← {t('common.back')}
-        </Link>
+        <BackLink />
         <h1 className={styles.title}>{t('helps.title')}</h1>
       </header>
       <HelpSettings />

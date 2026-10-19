@@ -57,6 +57,7 @@
 }
 
 .option {
+  composes: lift from './Button.module.css';
   display: grid;
   gap: 8px;
   justify-items: center;
@@ -87,6 +88,7 @@
 }
 
 .cancel {
+  composes: lift from './Button.module.css';
   min-width: 170px;
   min-height: 52px;
   border-radius: 10px;

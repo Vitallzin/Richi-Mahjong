@@ -1,14 +1,16 @@
 /** /configuracoes: som, idioma, acessibilidade e dados salvos (spec 10.1 e 10.7). */
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { t } from '../../i18n';
 import { abandonSavedMatch } from '../../state/match';
 import { useSettings } from '../../state/settings';
+import { BackLink } from '../components/BackLink';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import styles from './Page.module.css';
 
 export function SettingsScreen() {
   const s = useSettings();
   const [notice, setNotice] = useState<string | null>(null);
+  const [resetOpen, setResetOpen] = useState(false);
   const a11y = s.accessibility;
   const scales = [
     { value: 1, label: t('settings.tileScale.normal') },
@@ -19,9 +21,7 @@ export function SettingsScreen() {
   return (
     <main className={styles.page}>
       <header className={styles.header}>
-        <Link className={styles.link} to="/">
-          ← {t('common.back')}
-        </Link>
+        <BackLink />
         <h1 className={styles.title}>{t('settings.title')}</h1>
       </header>
 
@@ -150,15 +150,7 @@ export function SettingsScreen() {
           >
             {t('settings.data.clearMatch')}
           </button>
-          <button
-            type="button"
-            className={styles.secondary}
-            onClick={() => {
-              if (!globalThis.confirm(t('settings.data.resetConfirm'))) return;
-              s.resetAll();
-              setNotice(t('settings.data.resetDone'));
-            }}
-          >
+          <button type="button" className={styles.secondary} onClick={() => setResetOpen(true)}>
             {t('settings.data.reset')}
           </button>
           <button
@@ -169,6 +161,21 @@ export function SettingsScreen() {
             {t('settings.welcomeAgain')}
           </button>
         </div>
+        {resetOpen && (
+          <ConfirmDialog
+            glyph="复"
+            title={t('settings.data.resetConfirm')}
+            message={t('settings.data.resetMessage')}
+            confirmLabel={t('settings.data.resetAction')}
+            cancelLabel={t('common.cancel')}
+            onConfirm={() => {
+              setResetOpen(false);
+              s.resetAll();
+              setNotice(t('settings.data.resetDone'));
+            }}
+            onCancel={() => setResetOpen(false)}
+          />
+        )}
         {notice && (
           <p className={styles.note} role="status">
             {notice}

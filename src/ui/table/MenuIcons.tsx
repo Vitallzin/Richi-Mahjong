@@ -46,16 +46,6 @@ export function MusicIcon({ off }: { off: boolean }) {
   );
 }
 
-export function SortIcon() {
-  return (
-    <Svg>
-      <rect x="3.5" y="12" width="4" height="7" rx="1" />
-      <rect x="10" y="8.5" width="4" height="10.5" rx="1" />
-      <rect x="16.5" y="5" width="4" height="14" rx="1" />
-    </Svg>
-  );
-}
-
 export function FullscreenIcon() {
   return (
     <Svg>

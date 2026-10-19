@@ -101,6 +101,19 @@
   box-shadow: 0 8px 20px rgb(0 0 0 / 0.35);
 }
 
+.menuButton {
+  composes: shine from '../components/Button.module.css';
+}
+
+.menuOff {
+  composes: shine from '../components/Button.module.css';
+}
+
+.menuButton:active,
+.menuOff:active {
+  transform: scale(0.92);
+}
+
 .menuButton,
 .menuOff {
   position: relative;
@@ -117,7 +130,8 @@
   transition:
     background-color 140ms ease,
     border-color 140ms ease,
-    color 140ms ease;
+    color 140ms ease,
+    transform 120ms var(--ease-out);
 }
 
 .menuButton:hover,
@@ -136,19 +150,16 @@
   color: var(--color-text-muted);
 }
 
-.menuExit {
-  margin-left: 6px;
-  color: #ffb3a8;
+.menuDivider {
+  align-self: center;
+  width: 1px;
+  height: 26px;
+  margin: 0 3px;
+  background: var(--gold-dim);
 }
 
-.menuExit::before {
-  content: '';
-  position: absolute;
-  left: -6px;
-  top: 8px;
-  bottom: 8px;
-  width: 1px;
-  background: var(--gold-dim);
+.menuExit {
+  color: #ffb3a8;
 }
 
 /* ---------- Plano da mesa (perspectiva suave, spec 10.2) ---------- */
@@ -850,6 +861,7 @@
 }
 
 .actionButton {
+  composes: shine from '../components/Button.module.css';
   min-width: 128px;
   min-height: 70px;
   padding: 0 20px 0 14px;
@@ -878,6 +890,11 @@
 .actionButton:hover {
   transform: translateY(-3px);
   filter: brightness(1.12);
+}
+
+.actionButton:active {
+  transform: translateY(1px) scale(0.97);
+  transition-duration: 60ms;
 }
 
 @keyframes actionIn {

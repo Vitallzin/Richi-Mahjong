@@ -18,6 +18,7 @@ import { formatClock, type MatchSession } from '../../session';
 import { useSettings } from '../../state/settings';
 import { useGameSounds } from '../audio/useGameSounds';
 import { Backdrop } from '../components/Backdrop';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { DecisionDialog } from '../components/DecisionDialog';
 import { Tile } from '../components/Tile';
 import { TileHighlightContext, type TileHighlight } from '../components/tileHighlight';
@@ -29,7 +30,7 @@ import { ACTION_KEYS, availableActions, type ActionKey } from './actions';
 import { CallBanner } from './CallBanner';
 import { buildDialog, isAction, type Dialog } from './decisions';
 import { HelpPanel } from './HelpPanel';
-import { ExitIcon, FullscreenIcon, MusicIcon, SortIcon, SoundIcon } from './MenuIcons';
+import { ExitIcon, FullscreenIcon, MusicIcon, SoundIcon } from './MenuIcons';
 import { NUMBER_KANJI, relativeSide, seatName, windKanji, windName } from './labels';
 import { PlayerHand } from './PlayerHand';
 import { RoundResult } from './RoundResult';
@@ -66,6 +67,7 @@ export function Table({
   const revealed = session.getRevealedHands();
 
   // Camada de destaques: bônus (dora/vermelhas) e cópias visíveis da peça sob o mouse.
+  const [exitOpen, setExitOpen] = useState(false);
   const [hoverKind, setHoverKind] = useState<TileKind | null>(null);
   const highlight = useMemo<TileHighlight>(
     () => ({
@@ -131,7 +133,7 @@ export function Table({
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (dialog || e.repeat) return;
+      if (dialog || exitOpen || e.repeat) return;
       const key = (Object.keys(ACTION_KEYS) as ActionKey[]).find(
         (k) => ACTION_KEYS[k].toLowerCase() === e.key.toLowerCase(),
       );
@@ -225,16 +227,6 @@ export function Table({
             </button>
             <button
               type="button"
-              className={settings.autoSort ? styles.menuButton : styles.menuOff}
-              onClick={() => settings.set({ autoSort: !settings.autoSort })}
-              aria-pressed={settings.autoSort}
-              aria-label={t('table.menu.autoSort')}
-              title={t('table.menu.autoSort')}
-            >
-              <SortIcon />
-            </button>
-            <button
-              type="button"
               className={styles.menuButton}
               onClick={() => void toggleFullscreen()}
               aria-label={t('table.menu.fullscreen')}
@@ -242,11 +234,12 @@ export function Table({
             >
               <FullscreenIcon />
             </button>
+            <span className={styles.menuDivider} aria-hidden="true" />
             <button
               type="button"
               className={`${styles.menuButton} ${styles.menuExit}`}
               onClick={() => {
-                if (globalThis.confirm(t('table.menu.exitConfirm'))) onExit();
+                setExitOpen(true);
               }}
               aria-label={t('table.menu.exit')}
               title={t('table.menu.exit')}
@@ -333,7 +326,6 @@ export function Table({
             hand={view.hand}
             drawn={view.drawn}
             discardable={discardable}
-            autoSort={settings.autoSort}
             scale={settings.accessibility.tileScale}
             onDiscard={(tile) => submit({ type: 'discard', tile })}
             onFocusTile={(tile) => setFocusTile(tile ? { tick, tile } : null)}
@@ -370,6 +362,20 @@ export function Table({
                 if (action) submit(action);
               }}
               onCancel={() => setDialog(null)}
+            />
+          )}
+
+          {exitOpen && (
+            <ConfirmDialog
+              onStage
+              danger
+              glyph="退"
+              title={t('table.exit.title')}
+              message={t('table.exit.message')}
+              confirmLabel={t('table.exit.confirm')}
+              cancelLabel={t('table.exit.cancel')}
+              onConfirm={onExit}
+              onCancel={() => setExitOpen(false)}
             />
           )}
 

@@ -3,7 +3,7 @@
  * são gerados da lista RULE_OPTIONS; validação e resumo vêm de validateRules.
  */
 import { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { BotSkill } from '../../bots';
 import { CHARACTERS } from '../../bots';
 import {
@@ -30,6 +30,7 @@ import { startSoloMatch } from '../../state/match';
 import { useSettings, type CharacterChoice, type RuleDraft } from '../../state/settings';
 import { enterGameDisplay } from '../platform/display';
 import styles from './SetupScreen.module.css';
+import { BackLink } from '../components/BackLink';
 
 const TIMER_IDS: readonly TimerPresetId[] = ['3+5', '5+10', '5+20', '60+0', '300+0', 'unlimited'];
 
@@ -208,9 +209,7 @@ export function SetupScreen() {
   return (
     <main className={styles.screen}>
       <header className={styles.header}>
-        <Link className={styles.back} to="/">
-          ← {t('setup.back')}
-        </Link>
+        <BackLink label={t('setup.back')} />
         <h1 className={styles.title}>{t('setup.title')}</h1>
       </header>
 

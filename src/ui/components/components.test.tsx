@@ -3,6 +3,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { NO_ACTIONS, parseTiles } from '../../engine';
 import { ActionBar } from '../table/ActionBar';
 import { availableActions } from '../table/actions';
+import { ConfirmDialog } from './ConfirmDialog';
 import { DecisionDialog } from './DecisionDialog';
 import { Tile } from './Tile';
 import { TileHighlightContext } from './tileHighlight';
@@ -118,5 +119,30 @@ describe('destaques da camada de ajudas', () => {
       </TileHighlightContext.Provider>,
     );
     expect(container.querySelector('[data-tile]')?.className).not.toMatch(/bonus/);
+  });
+});
+
+describe('ConfirmDialog', () => {
+  it('foca o botão seguro, confirma no clique e cancela com Esc', () => {
+    const onConfirm = vi.fn();
+    const onCancel = vi.fn();
+    render(
+      <ConfirmDialog
+        glyph="退"
+        title="Sair da partida?"
+        message="A partida fica salva."
+        confirmLabel="Sair"
+        cancelLabel="Continuar jogando"
+        danger
+        onConfirm={onConfirm}
+        onCancel={onCancel}
+      />,
+    );
+    const dialog = screen.getByRole('alertdialog', { name: 'Sair da partida?' });
+    expect(screen.getByRole('button', { name: 'Continuar jogando' })).toHaveFocus();
+    fireEvent.click(screen.getByRole('button', { name: 'Sair' }));
+    expect(onConfirm).toHaveBeenCalledOnce();
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    expect(onCancel).toHaveBeenCalledOnce();
   });
 });

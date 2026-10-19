@@ -1,11 +1,12 @@
 /** Rota /partida: retoma a sessão atual (ou a salva) e mostra a mesa. */
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { t } from '../../i18n';
 import { closeSession, currentSession, resumeSavedMatch } from '../../state/match';
 import { exitGameDisplay } from '../platform/display';
 import { Table } from '../table/Table';
 import styles from './SimpleScreen.module.css';
+import { BackLink } from '../components/BackLink';
 
 export function TableScreen() {
   const navigate = useNavigate();
@@ -15,9 +16,7 @@ export function TableScreen() {
     return (
       <main className={styles.screen}>
         <p className={styles.body}>{t('table.noSession')}</p>
-        <Link className={styles.back} to="/">
-          {t('common.back')}
-        </Link>
+        <BackLink />
       </main>
     );
   }

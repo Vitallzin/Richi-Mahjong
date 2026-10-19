@@ -14,7 +14,6 @@ interface Props {
   readonly drawn: TileData | null;
   /** Ids que podem ser descartados agora (vazio = não é a vez). */
   readonly discardable: ReadonlySet<number>;
-  readonly autoSort: boolean;
   /** Escala de acessibilidade das peças (spec 10.7). */
   readonly scale?: number;
   readonly onDiscard: (tile: TileData) => void;
@@ -28,7 +27,6 @@ export function PlayerHand({
   hand,
   drawn,
   discardable,
-  autoSort,
   scale = 1,
   onDiscard,
   onFocusTile,
@@ -39,7 +37,8 @@ export function PlayerHand({
   const myTurn = discardable.size > 0;
 
   const rest = hand.filter((t) => t.id !== drawn?.id);
-  const ordered = autoSort ? [...rest].sort(compareTiles) : rest;
+  // A mão é sempre organizada (pedido do desenvolvedor); a peça comprada fica à parte.
+  const ordered = [...rest].sort(compareTiles);
   const tiles = drawn ? [...ordered, drawn] : ordered;
 
   // Fora da vez, nada fica selecionado (derivado, sem efeito).

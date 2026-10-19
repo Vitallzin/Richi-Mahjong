@@ -132,6 +132,7 @@
 }
 
 .primary {
+  composes: lift from '../components/Button.module.css';
   border: 0;
   background: linear-gradient(180deg, var(--cinnabar-bright), var(--cinnabar));
   color: var(--rice);
@@ -142,6 +143,7 @@
 }
 
 .secondary {
+  composes: lift from '../components/Button.module.css';
   border: 1px solid var(--gold);
   background: transparent;
   color: var(--rice);

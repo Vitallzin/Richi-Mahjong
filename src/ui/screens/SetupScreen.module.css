@@ -54,6 +54,25 @@
   gap: 0.4rem;
 }
 
+.seg {
+  composes: lift from '../components/Button.module.css';
+}
+
+.segActive {
+  composes: lift from '../components/Button.module.css';
+  animation: selectPop 280ms var(--ease-spring);
+}
+
+.seg:not(:disabled):hover {
+  border-color: var(--gold);
+}
+
+@keyframes selectPop {
+  40% {
+    transform: scale(1.06);
+  }
+}
+
 .seg,
 .segActive {
   min-height: 44px;
@@ -175,6 +194,7 @@
 }
 
 .start {
+  composes: lift from '../components/Button.module.css';
   min-height: 56px;
   border: 0;
   border-radius: var(--radius-md);

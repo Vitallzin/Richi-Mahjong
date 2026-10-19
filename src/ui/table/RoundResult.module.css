@@ -313,6 +313,7 @@
 }
 
 .next {
+  composes: lift from '../components/Button.module.css';
   justify-self: center;
   min-width: 280px;
   min-height: 64px;

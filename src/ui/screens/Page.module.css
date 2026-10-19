@@ -50,6 +50,20 @@
   align-items: center;
 }
 
+.primary {
+  composes: lift from '../components/Button.module.css';
+}
+
+.secondary {
+  composes: lift from '../components/Button.module.css';
+}
+
+.secondary:hover,
+.secondary:focus-visible {
+  border-color: var(--gold);
+  background: rgb(240 211 145 / 0.08);
+}
+
 .primary,
 .secondary {
   min-height: 48px;

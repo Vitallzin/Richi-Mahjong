@@ -72,7 +72,7 @@ describe('tutorial (spec 10.8)', () => {
     at('/tutorial/pedras');
     expect(screen.getByRole('heading', { level: 1, name: '1. As pedras' })).toBeInTheDocument();
     expect(screen.getAllByRole('img', { name: '5 de bambu, vermelho' }).length).toBeGreaterThan(0);
-    fireEvent.click(screen.getByRole('link', { name: 'Próximo →' }));
+    fireEvent.click(screen.getByRole('link', { name: /^Próximo/ }));
     expect(
       screen.getByRole('heading', { level: 1, name: '2. Como formar uma mão' }),
     ).toBeInTheDocument();

@@ -23,28 +23,9 @@
   top: 1rem;
 }
 
-.back,
-.nav a,
-.pager a {
-  color: var(--color-accent);
-  text-underline-offset: 3px;
-}
-
 .navTitle {
   margin: 0;
   font-family: var(--font-display);
-}
-
-.toc {
-  margin: 0;
-  padding-left: 1.2rem;
-  display: grid;
-  gap: 0.4rem;
-}
-
-.current {
-  font-weight: 800;
-  color: var(--color-text-strong) !important;
 }
 
 .article {
@@ -99,8 +80,199 @@
   margin: 2px 2px;
 }
 
-.pager {
+/* Entrada suave a cada capítulo. */
+.article {
+  animation: chapterIn 380ms var(--ease-out) both;
+}
+
+@keyframes chapterIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* ---------- Progresso ---------- */
+.progress {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.progressBar {
+  height: 6px;
+  border-radius: 999px;
+  background: rgb(18 13 31 / 0.8);
+  border: 1px solid var(--gold-dim);
+  overflow: hidden;
+}
+
+.progressFill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+  box-shadow: 0 0 10px rgb(240 211 145 / 0.6);
+  transition: width 500ms var(--ease-out);
+}
+
+/* ---------- Índice: selos numerados (é uma sequência) ---------- */
+.toc {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.tocItem {
+  composes: shine from '../components/Button.module.css';
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.45rem 0.7rem 0.45rem 0.45rem;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms var(--ease-out);
+}
+
+.tocItem:hover,
+.tocItem:focus-visible {
+  color: var(--rice);
+  border-color: var(--gold-dim);
+  background: rgb(240 211 145 / 0.06);
+  transform: translateX(3px);
+}
+
+.tocSeal {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  font-family: var(--font-brush);
+  font-weight: 800;
+  color: var(--gold-bright);
+  border: 1px solid var(--gold-dim);
+  background: rgb(18 13 31 / 0.85);
+  transition:
+    background-color 200ms ease,
+    transform 260ms var(--ease-spring);
+}
+
+.tocItem:hover .tocSeal {
+  transform: rotate(-6deg) scale(1.06);
+}
+
+.done .tocSeal {
+  border-color: var(--gold);
+}
+
+.current {
+  color: var(--rice);
+  font-weight: 700;
+  border-color: var(--gold);
+  background: linear-gradient(90deg, rgb(150 38 32 / 0.55), rgb(42 26 58 / 0.6));
+}
+
+.current .tocSeal {
+  color: var(--rice);
+  border-color: var(--gold-bright);
+  background: linear-gradient(180deg, var(--cinnabar-bright), var(--cinnabar));
+}
+
+/* ---------- Anterior / próximo ---------- */
+.pager {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
   margin-top: 2rem;
+}
+
+.pageButton {
+  composes: lift from '../components/Button.module.css';
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  min-height: 64px;
+  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--gold-dim);
+  background: linear-gradient(180deg, rgb(47 29 66 / 0.92), rgb(27 17 40 / 0.92));
+  color: var(--rice);
+  text-decoration: none;
+}
+
+.pageButton:hover,
+.pageButton:focus-visible {
+  border-color: var(--gold);
+}
+
+.pagePrev {
+  justify-self: start;
+}
+
+.pageNext {
+  grid-column: 2;
+  justify-self: end;
+  text-align: right;
+  border-color: var(--cinnabar-bright);
+  background: linear-gradient(180deg, var(--cinnabar-bright), var(--cinnabar));
+  box-shadow:
+    inset 0 0 0 2px rgb(255 220 180 / 0.35),
+    0 8px 20px rgb(120 20 15 / 0.35);
+}
+
+.pageText {
+  display: grid;
+  line-height: 1.25;
+}
+
+.pageHint {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.pageTitle {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.pageArrow {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  border: 1px solid rgb(255 230 180 / 0.45);
+  background: rgb(0 0 0 / 0.2);
+  color: var(--gold-bright);
+  transition: transform 240ms var(--ease-spring);
+}
+
+.pagePrev:hover .pageArrow {
+  transform: translateX(-4px);
+}
+
+.pageNext:hover .pageArrow {
+  transform: translateX(4px);
+}
+
+@media (max-width: 560px) {
+  .pager {
+    grid-template-columns: 1fr;
+  }
+
+  .pageNext {
+    grid-column: auto;
+  }
 }
