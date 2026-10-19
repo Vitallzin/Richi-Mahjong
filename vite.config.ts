@@ -12,6 +12,8 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Registro do service worker sem bloquear a primeira pintura.
+      injectRegister: 'script-defer',
       includeAssets: ['icons/favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
         name: 'Riichi Mahjong',
@@ -36,9 +38,9 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Fontes japonesas vêm em ~100 subconjuntos por peso: precacheia só o latino; o resto é
-        // guardado sob demanda (CacheFirst) quando o navegador pede.
-        globPatterns: ['**/*.{js,css,html,svg,png,webp,webm,mp3,wav,ttf}', '**/*latin*.woff2'],
+        // Só as fatias de fonte usadas vão para o build (npm run fonts): todas cabem no precache,
+        // e o jogo funciona offline desde a primeira visita.
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,webm,mp3,wav,woff2}'],
         runtimeCaching: [
           {
             urlPattern: /\.woff2$/,

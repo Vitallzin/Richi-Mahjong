@@ -11,11 +11,44 @@ inspiradas no Mahjong Soul e um guia opcional que ajuda iniciantes sem jogar por
 React + TypeScript (strict) + Vite · Zustand · React Router · Vitest · Firebase (Hosting, Auth Google,
 Realtime Database, plano Spark) · PWA.
 
+## O que tem aqui
+
+- Regras completas de **4 e 3 jogadores** (yonma e sanma, com kita), fiéis à partida ranqueada do
+  Mahjong Soul, com opções de sala amistosa (pontos, vermelhas, tanyao aberto, han mínimo…).
+- **Guia opcional** para iniciantes: o que falta para tenpai, esperas e cópias não vistas, caminho de
+  yaku, avisos de No Yaku e furiten — sem nunca dizer o que descartar.
+- **Bots** com três forças (Fácil, Normal, Difícil) e três personagens com estilos diferentes.
+- **Salas privadas** por código ou link, conta Google, histórico com estatísticas e aparência
+  personalizável. Tudo em português, como PWA instalável.
+
 ## Arquitetura em uma frase
 
 Um **motor de regras puro e determinístico** (`src/engine/`, sem React/DOM/rede, imposto por lint) é a
 única fonte da verdade; ajudas e bots só enxergam a `PlayerView` de um jogador (barreira de tipos contra
 informação oculta); a UI fala apenas com uma `MatchSession` (local, anfitrião ou convidado).
+
+## Decisões que valem a leitura
+
+**Motor puro.** `applyAction(state, seat, action)` devolve um estado novo e eventos; nada de React, DOM,
+rede ou relógio dentro dele (regra de lint própria em `eslint/boundaries.js`). Isso permite simular
+milhares de partidas em testes de propriedade (conservação de peças e pontos, coerência entre ações
+legais e aplicadas) e reaproveitar o mesmo código no solo, no anfitrião da sala e nos bots.
+
+**Tipos como barreira de informação.** Bots e ajudas recebem só `PlayerView` — a mão do próprio jogador
+e o que é público. Outro lint impede que `src/bots` e `src/help` importem o estado completo. Não existe
+caminho de código para um bot "espiar" o muro: o Difícil vence por cálculo, não por trapaça.
+
+**Anfitrião como servidor.** Sem Cloud Functions no plano gratuito, o navegador de quem cria a sala roda
+o motor (`HostSession`); o banco é só canal. Cada convidado lê apenas a própria visão (regras de
+segurança testadas no emulador) e envia ações por um inbox idempotente. Detalhes e limites abaixo.
+
+**Bots com dois eixos.** Força (precisão do cálculo) e estilo (personagem) são independentes: Akari é
+agressiva no Fácil e no Difícil, mas só no Difícil chama com critério. O Difícil estima o valor esperado
+das esperas, a qualidade do futuro tenpai e o risco de cada peça (genbutsu, suji, kabe), e decide
+avançar ou recuar conforme a mão, a ameaça e o placar; roda num Web Worker para não travar a mesa.
+
+**Desempenho no celular.** Telas carregadas sob demanda, Firebase baixado só quando o jogador entra e
+fontes auto-hospedadas só com as fatias de caracteres que o jogo usa (`npm run fonts`).
 
 ## Desenvolvimento
 
@@ -27,6 +60,7 @@ npm run typecheck    # tsc
 npm test             # Vitest
 npm run build        # build de produção (PWA)
 npm run test:sim     # simulações longas (5.000 partidas yonma e sanma)
+npm run arena -- --games 200 --a hard --b normal   # força dos bots, lado a lado
 ```
 
 ### Firebase local (emuladores)
@@ -72,4 +106,4 @@ Firebase Hosting a cada push na `main`. Pré-requisitos (uma vez):
 | 3    | Ajudas, onboarding e tutorial       | ✅           |
 | 4    | Sanma                               | ✅           |
 | 5    | Conta, histórico, salas e Aparência | 🔍 validação |
-| 6    | Bots avançados e acabamento         | —            |
+| 6    | Bots avançados e acabamento         | 🔍 validação |

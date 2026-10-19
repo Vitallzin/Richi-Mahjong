@@ -4,7 +4,9 @@
  */
 @font-face {
   font-family: 'Cinzel';
-  src: url('/fonts/Cinzel-Variable.ttf') format('truetype');
+  src:
+    url('/fonts/Cinzel-Variable.woff2') format('woff2'),
+    url('/fonts/Cinzel-Variable.ttf') format('truetype');
   font-weight: 400 900;
   font-style: normal;
   font-display: swap;
@@ -40,7 +42,8 @@
   --color-negative: #ff9b8f;
 
   --font-display: 'Cinzel', 'Noto Sans SC', Georgia, serif;
-  --font-body: 'Noto Sans SC', system-ui, sans-serif;
+  /* Hanzi do texto caem no Shippori (fatias só com os caracteres usados, npm run fonts). */
+  --font-body: 'Noto Sans SC', 'Shippori Mincho', system-ui, sans-serif;
   /* Hanzi decorativos e faces das pedras: traço caligráfico. */
   --font-tile: 'Shippori Mincho', 'Noto Serif SC', 'Songti SC', serif;
   --font-brush: 'Shippori Mincho', 'Noto Serif SC', serif;

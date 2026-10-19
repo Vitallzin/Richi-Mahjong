@@ -25,7 +25,6 @@ export const game = {
   'setup.difficulty.easy': 'Fácil',
   'setup.difficulty.normal': 'Normal',
   'setup.difficulty.hard': 'Difícil',
-  'setup.difficulty.hardSoon': 'Em breve',
   'setup.character.random': 'Aleatório',
   'setup.seat': 'Assento {n}',
   'setup.helps': 'Ajudas',
@@ -45,16 +44,22 @@ export const game = {
   // Personagens (spec 8.3)
   'characters.ren.name': 'Ren',
   'characters.ren.tag': 'Defensivo',
+  'characters.ren.say.riichi': 'Esperei o momento certo.',
+  'characters.ren.say.win': 'Paciência ganha mãos.',
   'characters.ren.quote': 'Paciência ganha mais mãos do que pressa.',
   'characters.ren.style':
     'Defensivo: prioriza segurança, evita descartes perigosos e recua quando alguém declara riichi.',
   'characters.akari.name': 'Akari',
   'characters.akari.tag': 'Agressiva',
+  'characters.akari.say.riichi': 'Riichi! Segurem essa!',
+  'characters.akari.say.win': 'Rápido demais pra vocês!',
   'characters.akari.quote': 'Quem hesita perde a vez!',
   'characters.akari.style':
     'Agressiva: busca mãos rápidas, chama chi/pon/kan quando vale e pressiona os adversários.',
   'characters.sora.name': 'Sora',
   'characters.sora.tag': 'Equilibrado',
+  'characters.sora.say.riichi': 'Vamos ver no que dá.',
+  'characters.sora.say.win': 'Na medida certa.',
   'characters.sora.quote': 'Um pouco de tudo, na medida certa.',
   'characters.sora.style': 'Equilibrado: eficiência, valor da mão e defesa; é o oponente padrão.',
 

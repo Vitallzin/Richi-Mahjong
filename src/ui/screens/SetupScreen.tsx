@@ -205,7 +205,7 @@ export function SetupScreen() {
           settings: JSON.stringify({
             timer: s.timer,
             training: false,
-            difficulty: s.difficulty === 'hard' ? 'normal' : s.difficulty,
+            difficulty: s.difficulty,
             characters: s.characters,
           }),
           mode,
@@ -337,12 +337,8 @@ export function SetupScreen() {
           options={[
             { value: 'easy', label: t('setup.difficulty.easy') },
             { value: 'normal', label: t('setup.difficulty.normal') },
-            {
-              value: 'hard',
-              label: `${t('setup.difficulty.hard')} (${t('setup.difficulty.hardSoon')})`,
-            },
+            { value: 'hard', label: t('setup.difficulty.hard') },
           ]}
-          disabled={['hard']}
           onChange={(d) => s.set({ difficulty: d })}
         />
         <div className={styles.characters}>

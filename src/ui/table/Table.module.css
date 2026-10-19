@@ -755,6 +755,86 @@
   font-size: 16px;
 }
 
+/* Fala do personagem: balão que aparece e some sozinho. */
+.speech {
+  position: absolute;
+  z-index: 3;
+  max-width: 260px;
+  padding: 8px 14px;
+  border-radius: 14px;
+  background: var(--rice);
+  color: #2a1a10;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: normal;
+  box-shadow: 0 8px 20px rgb(0 0 0 / 0.45);
+  pointer-events: none;
+  animation: speech 3200ms var(--ease-out) both;
+}
+
+.speech::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: var(--rice);
+  rotate: 45deg;
+}
+
+/* direita e baixo: balão acima da placa */
+.speech0,
+.speech1 {
+  bottom: calc(100% + 12px);
+  left: 20px;
+}
+
+.speech0::after,
+.speech1::after {
+  bottom: -6px;
+  left: 24px;
+}
+
+/* frente: abaixo da placa compacta */
+.speech2 {
+  top: calc(100% + 12px);
+  left: 50%;
+  translate: -50% 0;
+}
+
+.speech2::after {
+  top: -6px;
+  left: calc(50% - 7px);
+}
+
+/* esquerda: à direita da placa */
+.speech3 {
+  left: calc(100% + 12px);
+  top: 16px;
+  width: max-content;
+}
+
+.speech3::after {
+  left: -6px;
+  top: 16px;
+}
+
+@keyframes speech {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.9);
+  }
+  10%,
+  80% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
 /* ---------- Vez do jogador ---------- */
 .yourTurn {
   position: absolute;

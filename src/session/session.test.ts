@@ -1,4 +1,5 @@
-import { PRESET_YONMA, type Seat } from '../engine';
+import { createBot } from '../bots';
+import { createRng, PRESET_YONMA, type Seat } from '../engine';
 import {
   consume,
   DEFAULT_TIMER,
@@ -110,6 +111,40 @@ describe('LocalSession', () => {
     expect(session.getView().result).not.toBeNull();
     expect(notifications).toBeGreaterThan(100);
     expect(sawDiscard).toBe(true);
+    session.dispose();
+  });
+
+  it('bots assíncronos (Worker): a jogada só entra quando a resposta chega e o atraso passou', async () => {
+    const scheduler = new ManualScheduler();
+    const answered: number[] = [];
+    const session = LocalSession.create(
+      PRESET_YONMA,
+      { timer: DEFAULT_TIMER, training: false },
+      BOTS.map((b) => (b.kind === 'bot' ? { ...b, skill: 'hard' as const } : b)),
+      0,
+      {
+        scheduler,
+        delays: { turn: [100, 100], call: [100, 100], presentation: false },
+        seed,
+        autosave: false,
+        botRunner: {
+          decide: (skill, character, view, legal) => {
+            answered.push(view.seat);
+            // Responde "no futuro" com a mesma decisão que o Worker tomaria.
+            return Promise.resolve(createBot(skill, character).decide(view, legal, createRng(1)));
+          },
+        },
+      },
+    );
+    scheduler.advance(0);
+    const before = session.getState().hand!.players[0]!.discards.length;
+    scheduler.advance(50); // resposta pronta, mas o atraso humano ainda não passou
+    await Promise.resolve();
+    expect(session.getState().hand!.players[0]!.discards.length).toBe(before);
+    scheduler.advance(60);
+    await Promise.resolve();
+    expect(session.getState().hand!.players[0]!.discards.length).toBe(before + 1);
+    expect(answered[0]).toBe(0);
     session.dispose();
   });
 

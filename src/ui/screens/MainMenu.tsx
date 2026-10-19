@@ -1,7 +1,6 @@
 import { useState, type CSSProperties } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { loadMatch } from '../../session';
-import { resumeSavedMatch } from '../../state/match';
+import { loadMatch } from '../../session/storage';
 import { useSettings } from '../../state/settings';
 import { useAccount } from '../../state/account';
 import { Avatar } from '../components/Avatar';
@@ -32,7 +31,9 @@ export function MainMenu() {
   const [saved] = useState(() => loadMatch().status);
   const welcomeSeen = useSettings((s) => s.welcomeSeen);
   const account = useAccount();
-  const resume = () => {
+  // O motor e os bots só carregam quando o jogador continua (o menu abre leve).
+  const resume = async () => {
+    const { resumeSavedMatch } = await import('../../state/match');
     if (!resumeSavedMatch()) return;
     void enterGameDisplay();
     navigate('/partida');
@@ -74,7 +75,11 @@ export function MainMenu() {
         <ul className={styles.list}>
           {saved === 'ok' && (
             <li>
-              <button type="button" className={`${styles.item} ${styles.primary}`} onClick={resume}>
+              <button
+                type="button"
+                className={`${styles.item} ${styles.primary}`}
+                onClick={() => void resume()}
+              >
                 <span className={styles.glyph} aria-hidden="true">
                   再
                 </span>

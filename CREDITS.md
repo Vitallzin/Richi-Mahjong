@@ -10,7 +10,8 @@ Destaques: React, React Router, Zustand, Firebase JS SDK (Apache-2.0), Howler.js
 ## Fontes
 
 - **Cinzel** — The Cinzel Project Authors (SIL Open Font License 1.1). Títulos.
-  Arquivo variável fornecido pelo desenvolvedor: `public/fonts/Cinzel-Variable.ttf` (licença em
+  Arquivo variável fornecido pelo desenvolvedor: `public/fonts/Cinzel-Variable.ttf` (e a mesma fonte
+  convertida para `.woff2`, mais leve; licença em
   `public/fonts/Cinzel-OFL.txt`) — https://github.com/NDISCOVER/Cinzel
 - **Noto Sans SC** — Adobe/Google (SIL Open Font License 1.1). Interface. Via `@fontsource/noto-sans-sc`
   (mesma fonte do Google Fonts, fatiada em subconjuntos woff2) —

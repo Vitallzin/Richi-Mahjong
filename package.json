@@ -24,7 +24,9 @@
     "sounds": "node scripts/gen-sounds.mjs",
     "emulators": "firebase emulators:start --only auth,database",
     "dev:emulators": "vite --port 3100 --mode emulators",
-    "test:rules": "firebase emulators:exec --only database --project demo-richimahjong \"vitest run --config vitest.rules.config.ts\""
+    "test:rules": "firebase emulators:exec --only database --project demo-richimahjong \"vitest run --config vitest.rules.config.ts\"",
+    "arena": "tsx scripts/arena.ts",
+    "fonts": "node scripts/gen-fonts.mjs"
   },
   "dependencies": {
     "@fontsource/noto-sans-sc": "^5.3.1",

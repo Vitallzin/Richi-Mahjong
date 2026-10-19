@@ -5,7 +5,7 @@
  */
 import { create } from 'zustand';
 import type { AccountUser, Profile } from '../net/account';
-import { idsToPrune, normalizeSummary, type MatchSummary } from '../session';
+import { idsToPrune, normalizeSummary, type MatchSummary } from '../session/history';
 import {
   DEFAULT_SETTINGS,
   isCustomized,

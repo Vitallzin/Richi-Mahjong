@@ -1,11 +1,8 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import '@fontsource/noto-sans-sc/400.css';
-import '@fontsource/noto-sans-sc/500.css';
-import '@fontsource/noto-sans-sc/700.css';
-import '@fontsource/shippori-mincho/600.css';
-import '@fontsource/shippori-mincho/800.css';
+// Fontes auto-hospedadas só com as fatias usadas (gerado por npm run fonts).
+import './ui/styles/fonts.css';
 import { App } from './ui/App';
 import './ui/styles/global.css';
 

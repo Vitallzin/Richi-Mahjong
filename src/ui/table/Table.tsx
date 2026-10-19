@@ -20,6 +20,7 @@ import { useGameSounds } from '../audio/useGameSounds';
 import { Backdrop } from '../components/Backdrop';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { DecisionDialog } from '../components/DecisionDialog';
+import { portraitOf, portraitStyle } from '../components/seatPortrait';
 import { Tile } from '../components/Tile';
 import { TileHighlightContext, type TileHighlight } from '../components/tileHighlight';
 import { TileLabelsContext } from '../components/tileLabels';
@@ -41,6 +42,8 @@ import styles from './Table.module.css';
 import { CenterPanel, HiddenHand, Melds, Pond } from './TableParts';
 import { useClock, useMatch } from './useMatch';
 import { useRecordHistory } from './useRecordHistory';
+import { SpeechBubble } from './SpeechBubble';
+import { useSpeech } from './useSpeech';
 
 export function Table({
   session,
@@ -53,6 +56,7 @@ export function Table({
 }) {
   const { view, events, tick, lastDiscardId } = useMatch(session);
   useRecordHistory(session, view);
+  const speech = useSpeech(events, tick, session.seats);
   const clock = useClock(session);
   const settings = useSettings();
   // A janela de decisão vale só para a situação (tick) em que foi aberta.
@@ -308,8 +312,12 @@ export function Table({
                 className={`${styles.badge} ${styles[`badge${side}`]} ${isTurn ? styles.badgeTurn : ''}`}
                 aria-current={isTurn ? 'true' : undefined}
               >
-                <span className={styles.portrait} aria-hidden="true">
-                  {name.slice(0, 1)}
+                <span
+                  className={styles.portrait}
+                  style={portraitStyle(session.seats[p.seat], name)}
+                  aria-hidden="true"
+                >
+                  {portraitOf(session.seats[p.seat], name).glyph}
                 </span>
                 <span className={styles.badgeName}>{name}</span>
                 <span className={styles.badgeScore}>{p.score.toLocaleString('pt-BR')}</span>
@@ -323,6 +331,7 @@ export function Table({
                 {p.riichi?.established && (
                   <span className={styles.badgeRiichi}>{t('table.riichi')}</span>
                 )}
+                {speech?.seat === p.seat && <SpeechBubble speech={speech} side={side} />}
                 {p.kita.length > 0 && (
                   <span
                     className={styles.badgeKita}

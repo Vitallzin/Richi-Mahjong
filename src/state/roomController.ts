@@ -3,7 +3,8 @@
  * jogo (HostSession no anfitrião, GuestSession nos convidados). Fala com o Firebase só por
  * net/room (carregado sob demanda). A interface lê o estado com subscribe/getState.
  */
-import type { CharacterId } from '../bots';
+import type { BotSkill, CharacterId } from '../bots';
+import { workerBotRunner } from '../bots/workerClient';
 import type { RuleSet, Seat } from '../engine';
 import {
   GuestSession,
@@ -22,7 +23,7 @@ import type { CharacterChoice } from './settings';
 
 /** Configuração da sala (meta.settings): o que a partida solo tem + adversários bots. */
 export interface RoomSettings extends MatchSettings {
-  readonly difficulty: 'easy' | 'normal';
+  readonly difficulty: BotSkill;
   readonly characters: readonly CharacterChoice[];
 }
 
@@ -258,6 +259,7 @@ export class RoomController {
       seats: setups,
       localSeat: this.state.mySeat as Seat,
       saveKey: saveKeyOf(this.code),
+      botRunner: workerBotRunner,
       transport: { publish: (u) => void n.publishHostUpdate(this.code, u) },
     });
     this.set({ session: this.host, phase: 'playing' });
@@ -275,6 +277,7 @@ export class RoomController {
     void net().then((n) => {
       this.host = HostSession.resumeRoom(saved.snapshot, {
         saveKey: saveKeyOf(this.code),
+        botRunner: workerBotRunner,
         transport: { publish: (u) => void n.publishHostUpdate(this.code, u) },
       });
       for (const s of this.state.seats)

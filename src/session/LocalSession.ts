@@ -3,6 +3,7 @@
  * "humano" variável para que a velocidade não revele se tinham chamada (spec 5.2).
  */
 import { createBot, type BotPolicy } from '../bots';
+import type { BotRunner } from '../bots/workerClient';
 import {
   applyAction,
   canStartNextHand,
@@ -92,6 +93,8 @@ export interface LocalSessionOptions {
   readonly winLog?: readonly LoggedWin[];
   /** Tolerância de rede somada ao prazo de jogadores remotos (spec 13.5). */
   readonly remoteGraceMs?: number;
+  /** Decide bots fora da thread principal (Worker do Difícil); sem ele, tudo síncrono. */
+  readonly botRunner?: BotRunner;
 }
 
 interface HumanClock {
@@ -130,6 +133,7 @@ export class LocalSession implements MatchSession {
   private readonly autosave: boolean;
   private readonly saveKey: string | undefined;
   private readonly remoteGraceMs: number;
+  private readonly botRunner: BotRunner | undefined;
   protected readonly banks: Partial<Record<Seat, number>>;
   private timers: unknown[] = [];
   /** Relógio de cada humano decidindo agora (vários podem decidir ao mesmo tempo, ex.: chamadas). */
@@ -153,6 +157,7 @@ export class LocalSession implements MatchSession {
     this.autosave = opts.autosave ?? true;
     this.saveKey = opts.saveKey;
     this.remoteGraceMs = opts.remoteGraceMs ?? 0;
+    this.botRunner = opts.botRunner;
     this.botRng = createRng(this.seed());
     this.delayRng = createRng(this.seed());
     this.banks = { ...opts.banks };
@@ -373,6 +378,40 @@ export class LocalSession implements MatchSession {
         const delay = legal.ackSummary
           ? 0
           : this.randomDelay(legal.pass ? this.delays.call : this.delays.turn);
+        const setup = this.seats[seat];
+        const view = getPlayerView(this.state, seat);
+        const pending =
+          setup?.kind === 'bot' && !legal.ackSummary
+            ? this.botRunner?.decide(
+                setup.skill,
+                setup.characterId,
+                view,
+                legal,
+                this.botRng.int(2 ** 32),
+              )
+            : null;
+        if (pending) {
+          // Bot pensando no Worker: aplica quando a resposta chegou E o atraso humano passou.
+          let answer: Action | null = null;
+          let due = false;
+          const play = () => {
+            if (this.version === version && answer && due) this.apply(seat, answer);
+          };
+          pending
+            .then((a) => {
+              answer = a;
+              play();
+            })
+            .catch(() => {
+              answer = bot.decide(getPlayerView(this.state, seat), legal, this.botRng);
+              play();
+            });
+          this.schedule(() => {
+            due = true;
+            play();
+          }, delay);
+          continue;
+        }
         this.schedule(() => {
           if (this.version !== version) return;
           const action = bot.decide(getPlayerView(this.state, seat), legal, this.botRng);

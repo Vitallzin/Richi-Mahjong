@@ -9,6 +9,7 @@ import { play } from '../../audio/sounds';
 import { compareTiles, type HandSummary, type Seat, type WinRecord } from '../../engine';
 import { t } from '../../i18n';
 import type { SeatSetup } from '../../session';
+import { portraitOf, portraitStyle } from '../components/seatPortrait';
 import { Tile } from '../components/Tile';
 import { relativeSide, seatName, windKanji, windName } from './labels';
 import styles from './RoundResult.module.css';
@@ -235,8 +236,12 @@ function WinStep({
       onClick={instant ? undefined : onSkip}
     >
       <header className={styles.winHeader}>
-        <span className={styles.portrait} aria-hidden="true">
-          {seatName(seats, win.seat).slice(0, 1)}
+        <span
+          className={styles.portrait}
+          style={portraitStyle(seats[win.seat], seatName(seats, win.seat))}
+          aria-hidden="true"
+        >
+          {portraitOf(seats[win.seat], seatName(seats, win.seat)).glyph}
         </span>
         <div>
           <h2 className={styles.winName}>{seatName(seats, win.seat)}</h2>

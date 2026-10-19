@@ -5,9 +5,9 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { BotSkill, CharacterId } from '../bots';
-import { DEFAULT_HELP_PREFS, type HelpPrefs } from '../help';
+import { DEFAULT_HELP_PREFS, type HelpPrefs } from '../help/prefs';
 import type { Mode, RuleOptionId } from '../engine';
-import { DEFAULT_TIMER, type TimerSettings } from '../session';
+import { DEFAULT_TIMER, type TimerSettings } from '../session/clock';
 import { DEFAULT_APPEARANCE, type Appearance } from '../theme/appearance';
 
 export type CharacterChoice = CharacterId | 'random';

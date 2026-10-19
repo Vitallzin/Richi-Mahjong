@@ -3,6 +3,7 @@
  * sobreviver à navegação entre telas.
  */
 import { CHARACTERS, type BotSkill, type CharacterId } from '../bots';
+import { workerBotRunner } from '../bots/workerClient';
 import type { RuleSet, Seat } from '../engine';
 import {
   clearMatch,
@@ -68,6 +69,7 @@ export function startSoloMatch(opts: SoloOptions): MatchSession {
     { timer: opts.timer, training: opts.training },
     seats,
     localSeat,
+    { botRunner: workerBotRunner },
   );
   return current;
 }
@@ -80,7 +82,7 @@ export function resumeSavedMatch(): MatchSession | null {
     if (saved.status === 'incompatible') clearMatch();
     return null;
   }
-  current = LocalSession.resume(saved.snapshot);
+  current = LocalSession.resume(saved.snapshot, { botRunner: workerBotRunner });
   return current;
 }
 

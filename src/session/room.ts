@@ -2,7 +2,7 @@
  * Protocolo das salas privadas (spec 13): o anfitrião é o servidor. Tipos do que trafega pelo
  * Realtime Database, sem depender do Firebase (o transporte é injetado), para testar a lógica.
  */
-import type { CharacterId } from '../bots';
+import type { BotSkill, CharacterId } from '../bots';
 import type { Action, Mode, RuleSet } from '../engine';
 import type { MatchSettings, SeatSetup } from './types';
 
@@ -109,7 +109,7 @@ export const isLobbyRequest = (a: { readonly type: string }): a is LobbyRequest 
 /** Assentos do lobby → assentos da partida (vazios viram bots, spec 13.2). */
 export function seatsForMatch(
   seats: readonly RoomSeat[],
-  difficulty: 'easy' | 'normal',
+  difficulty: BotSkill,
   fallback: readonly CharacterId[],
 ): SeatSetup[] {
   let bot = 0;

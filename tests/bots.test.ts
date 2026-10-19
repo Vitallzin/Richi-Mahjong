@@ -85,3 +85,31 @@ describe('bots Fácil e Normal', () => {
     expect(normalPlacement / (games * 2)).toBeLessThan(easyPlacement / (games * 2));
   });
 });
+
+describe('bot Difícil (Fase 6)', () => {
+  it('joga partidas completas só com ações legais, nos três estilos', () => {
+    for (let seed = 21; seed <= 22; seed++) {
+      const bots = CHARS.map((c) => createBot('hard', c));
+      const r = playMatch(bots, seed);
+      expect(r.state.result).not.toBeNull();
+    }
+  });
+
+  it('termina melhor colocado que o Fácil, em média', () => {
+    let hard = 0;
+    let easy = 0;
+    const games = 12;
+    for (let seed = 2000; seed < 2000 + games; seed++) {
+      const hardSeats = seed % 2 === 0 ? [0, 2] : [1, 3];
+      const bots = ([0, 1, 2, 3] as Seat[]).map((s) =>
+        createBot(hardSeats.includes(s) ? 'hard' : 'easy', 'sora'),
+      );
+      const { state } = playMatch(bots, seed);
+      rankSeats(state.result!.finalScores).forEach((seat, place) => {
+        if (hardSeats.includes(seat)) hard += place + 1;
+        else easy += place + 1;
+      });
+    }
+    expect(hard / (games * 2)).toBeLessThan(easy / (games * 2));
+  });
+});
