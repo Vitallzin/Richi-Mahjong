@@ -96,8 +96,13 @@ export const help = {
   'helps.labels.both': 'Nome e abreviação',
   'helps.labels.preview': 'Prévia',
   'helps.keyboard.title': 'Atalhos de teclado',
-  'helps.keyboard.list':
-    '←/→ escolher peça · Enter descartar · C chi · P pon · K kan · R riichi · W ron · T tsumo · N kita · 9 nove órfãos · Esc passar',
+  'helps.keyboard.lead': 'Jogue sem mouse: as teclas valem sempre que a ação aparece na mesa.',
+  'helps.keyboard.hand': 'Na sua mão',
+  'helps.keyboard.actions': 'Ações',
+  'helps.keyboard.left': 'Seta para a esquerda',
+  'helps.keyboard.right': 'Seta para a direita',
+  'helps.keyboard.choose': 'Escolher peça',
+  'helps.keyboard.discard': 'Descartar a peça escolhida',
   'helps.saved': 'As escolhas ficam salvas neste aparelho.',
 
   // Configurações

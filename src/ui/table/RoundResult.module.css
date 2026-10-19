@@ -563,7 +563,8 @@
   }
 }
 
-.boardNext {
+/* Seletor composto: vence qualquer base de botão, mesmo com folhas antigas em cache. */
+.board .boardNext {
   position: absolute;
   right: 60px;
   bottom: 50px;

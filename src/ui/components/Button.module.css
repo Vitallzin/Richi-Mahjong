@@ -97,3 +97,15 @@
 .back:focus-visible .backArrow {
   transform: translateX(-4px);
 }
+
+/* Mesma pílula, seta à direita (avançar). */
+.forward {
+  composes: back;
+  flex-direction: row-reverse;
+  padding: 0 0.55rem 0 1.1rem;
+}
+
+.forward:hover .backArrow,
+.forward:focus-visible .backArrow {
+  transform: translateX(4px);
+}
