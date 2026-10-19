@@ -115,6 +115,10 @@ export class LocalSession implements MatchSession {
   private readonly banks: Partial<Record<Seat, number>>;
   private timers: unknown[] = [];
   private clock: HumanClock | null = null;
+  /** Pausada: relógio congelado (tempo que restava) e nenhum temporizador ativo. */
+  private paused = false;
+  private frozen: { readonly seat: Seat; readonly baseMs: number; readonly bankMs: number } | null =
+    null;
   private version = 0;
   private disposed = false;
 
@@ -188,6 +192,15 @@ export class LocalSession implements MatchSession {
   }
 
   getClock(): ClockView | null {
+    if (this.paused && this.frozen && this.settings.timer.mode === 'timed') {
+      return {
+        seat: this.frozen.seat,
+        baseMs: this.frozen.baseMs,
+        bankMs: this.frozen.bankMs,
+        hasBank: this.settings.timer.bankSeconds > 0,
+        at: this.scheduler.now(),
+      };
+    }
     const c = this.clock;
     if (!c || this.settings.timer.mode !== 'timed') return null;
     const now = this.scheduler.now();
@@ -204,6 +217,25 @@ export class LocalSession implements MatchSession {
   getRevealedHands(): Readonly<Partial<Record<Seat, readonly Tile[]>>> | null {
     if (!this.settings.training) return null;
     return getTrainingView(this.state, this.localSeat).revealedHands;
+  }
+
+  setPaused(paused: boolean): void {
+    if (this.disposed || paused === this.paused) return;
+    if (paused) {
+      const c = this.clock;
+      this.frozen = c
+        ? { seat: c.seat, ...consume(c.baseMs, c.bankMs, this.scheduler.now() - c.startedAt) }
+        : null;
+      this.clock = null;
+      this.paused = true;
+      this.version += 1;
+      this.cancelTimers();
+      return;
+    }
+    this.paused = false;
+    this.version += 1;
+    this.proceed(0);
+    this.frozen = null;
   }
 
   dispose(): void {
@@ -231,6 +263,12 @@ export class LocalSession implements MatchSession {
     const playerEvents = eventsForSeat(events, this.localSeat);
     for (const l of this.listeners) l(view, playerEvents);
 
+    if (this.paused) return;
+    this.proceed(this.delays.presentation ? presentationPause(events) : 0);
+  }
+
+  /** Segue a partida: próxima mão, ou bots e relógio depois da pausa de apresentação. */
+  private proceed(pause: number): void {
     if (this.state.phase === 'matchEnded') return;
     if (canStartNextHand(this.state)) {
       const next = this.state;
@@ -242,7 +280,6 @@ export class LocalSession implements MatchSession {
       }, 0);
       return;
     }
-    const pause = this.delays.presentation ? presentationPause(events) : 0;
     if (pause === 0) {
       this.scheduleActors();
       return;
@@ -279,8 +316,10 @@ export class LocalSession implements MatchSession {
   private startClock(seat: Seat, legal: LegalActions, version: number): void {
     const timer = this.settings.timer;
     if (timer.mode !== 'timed') return;
-    const baseMs = timer.baseSeconds * 1000;
-    const bankMs = this.banks[seat] ?? 0;
+    // Retomando de uma pausa, o relógio continua de onde parou.
+    const resumed = this.frozen?.seat === seat ? this.frozen : null;
+    const baseMs = resumed ? resumed.baseMs : timer.baseSeconds * 1000;
+    const bankMs = resumed ? resumed.bankMs : (this.banks[seat] ?? 0);
     this.clock = { seat, startedAt: this.scheduler.now(), baseMs, bankMs };
     this.schedule(() => {
       if (this.version !== version) return;

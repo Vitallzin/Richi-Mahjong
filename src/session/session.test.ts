@@ -141,6 +141,30 @@ describe('LocalSession', () => {
     session.dispose();
   });
 
+  it('pausa congela o relógio e retoma de onde parou', () => {
+    const scheduler = new ManualScheduler();
+    const seats: SeatSetup[] = [{ kind: 'human', name: 'Eu' }, ...BOTS.slice(1)];
+    const session = LocalSession.create(
+      PRESET_YONMA,
+      { timer: DEFAULT_TIMER, training: false },
+      seats,
+      0,
+      { scheduler, delays: NO_DELAYS, seed, autosave: false },
+    );
+    scheduler.step();
+    scheduler.advance(6000);
+    session.setPaused(true);
+    scheduler.advance(60_000); // janela aberta por um minuto: nada acontece
+    expect(session.getClock()).toMatchObject({ baseMs: 0, bankMs: 19000 });
+    expect(session.getView().players[0]!.discards).toHaveLength(0);
+    session.setPaused(false);
+    scheduler.advance(10_000);
+    expect(session.getClock()).toMatchObject({ baseMs: 0, bankMs: 9000 });
+    scheduler.advance(9_000);
+    expect(session.getView().players[0]!.discards).toHaveLength(1);
+    session.dispose();
+  });
+
   it('ação do humano dentro do tempo: banco preservado quando usa só a base', () => {
     const scheduler = new ManualScheduler();
     const seats: SeatSetup[] = [{ kind: 'human', name: 'Eu' }, ...BOTS.slice(1)];

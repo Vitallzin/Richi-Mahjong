@@ -68,6 +68,10 @@ export function Table({
 
   // Camada de destaques: bônus (dora/vermelhas) e cópias visíveis da peça sob o mouse.
   const [exitOpen, setExitOpen] = useState(false);
+  // Com a janela de sair aberta, a partida (relógio e bots) fica parada.
+  useEffect(() => {
+    session.setPaused(exitOpen);
+  }, [exitOpen, session]);
   const [hoverKind, setHoverKind] = useState<TileKind | null>(null);
   const highlight = useMemo<TileHighlight>(
     () => ({

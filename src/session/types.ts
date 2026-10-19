@@ -40,5 +40,10 @@ export interface MatchSession {
    * Usado apenas pela apresentação — nunca por bots ou ajudas.
    */
   getRevealedHands(): Readonly<Partial<Record<Seat, readonly Tile[]>>> | null;
+  /**
+   * Pausa a partida (ex.: janela de sair aberta): o relógio congela e ninguém age até retomar.
+   * Numa sala online o anfitrião decide; a sessão local sempre aceita.
+   */
+  setPaused(paused: boolean): void;
   dispose(): void;
 }
