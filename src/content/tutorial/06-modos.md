@@ -10,7 +10,25 @@ Se ninguém atingir os **pontos mínimos para vencer** ao fim da última mão, a
 
 ## 4 jogadores × 3 jogadores
 
-O modo de **4 jogadores (yonma)** é o padrão. No de **3 jogadores (sanma)**: não existem os caracteres de 2 a 8, não há chi, e o Norte pode ser retirado da mão como bônus (**kita**). Esse modo chega numa próxima atualização.
+O modo de **4 jogadores (yonma)** é o padrão. O de **3 jogadores (sanma)** é mais rápido e explosivo:
+
+- **108 pedras:** os caracteres de 2 a 8 não existem; sobram só o 1 e o 9 de caracteres. [[19m]]
+- **Sem chi.** Pon e kan funcionam normalmente.
+- Começa com **35.000** pontos e o alvo é **40.000**.
+- Só existem os ventos Leste, Sul e Oeste nos assentos; o **Norte** não é vento de ninguém.
+- Peças vermelhas: um 5 de círculos e um 5 de bambu.
+
+### Kita (北)
+
+Na sua vez, você pode tirar um **Norte** [[4z]] da mão e colocá-lo ao lado: cada kita vale **+1 dora** e você compra uma pedra de reposição. A mão **continua fechada** (dá para declarar riichi).
+
+- Vencer com a pedra de reposição do kita conta como **rinshan**.
+- Os outros podem fazer **ron** com o Norte que você retirou, se ele completar a mão deles.
+- O kita conta como uma chamada para ippatsu, riichi duplo, nove órfãos e a vitória na primeira compra.
+
+### Tsumo no sanma
+
+Na vitória por tsumo só **dois** jogadores pagam. Com **tsumo-loss** (padrão), a parte que seria do quarto jogador simplesmente não é paga; desligando, ela é dividida entre os dois.
 
 ## Regras que você pode mudar
 

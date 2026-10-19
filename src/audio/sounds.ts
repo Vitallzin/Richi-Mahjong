@@ -70,7 +70,8 @@ export function soundFor(event: PlayerEvent, localSeat: Seat): SoundId | null {
     case 'HandStarted':
       return 'roundStart';
     case 'TileDrawn':
-      return event.seat === localSeat ? 'draw' : null;
+      // A reposição (kan/kita) não toca: o som da chamada que veio antes é o que importa.
+      return event.seat === localSeat && !event.rinshan ? 'draw' : null;
     case 'TileDiscarded':
       return event.riichi ? 'riichi' : 'discard';
     case 'CallMade':

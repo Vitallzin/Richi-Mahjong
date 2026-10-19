@@ -5,7 +5,9 @@ export const game = {
   'setup.mode': 'Modalidade',
   'setup.mode.yonma': '4 jogadores',
   'setup.mode.sanma': '3 jogadores',
-  'setup.mode.sanmaSoon': 'O modo de 3 jogadores chega em breve.',
+  'setup.mode.yonmaDesc': 'O clássico: 4 jogadores, 136 peças, 25.000 pontos iniciais.',
+  'setup.mode.sanmaDesc':
+    '3 jogadores e 108 peças (sem 2 a 8 de caracteres). Sem chi; cada Norte vira kita (+1 dora). Começa com 35.000.',
   'setup.timer': 'Tempo por jogada',
   'setup.timer.unlimited': 'Ilimitado',
   'setup.timer.custom': 'Personalizado',
@@ -96,6 +98,7 @@ export const game = {
   'action.tsumo': 'Tsumo',
   'action.pass': 'Passar',
   'action.kita': 'Kita',
+  'table.kitaCount': '{n} kita (+{n} dora)',
   'action.kyuushu': 'Nove órfãos',
   'action.cancel': 'Cancelar',
   'action.confirm': 'Confirmar',

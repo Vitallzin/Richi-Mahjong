@@ -21,4 +21,4 @@ Especificação completa: docs/spec.md (prevalece sobre qualquer outra coisa).
 
 ## Fase atual
 
-Fase 3 — Ajudas, onboarding e tutorial: implementada; aguardando validação do desenvolvedor. Próxima: Fase 4 — Sanma (só com liberação do desenvolvedor).
+Fase 4 — Sanma: implementada; aguardando validação do desenvolvedor. Próxima: Fase 5 — Conta, histórico, salas privadas e tela Aparência (só com liberação do desenvolvedor).

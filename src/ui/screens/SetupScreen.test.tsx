@@ -48,8 +48,15 @@ describe('Jogar partida (spec 6.6)', () => {
     expect(screen.getByRole('button', { name: 'Iniciar partida' })).toBeDisabled();
   });
 
-  it('modo de 3 jogadores aparece desabilitado até a Fase 4', () => {
+  it('modo de 3 jogadores: 2 adversários e regras próprias (tsumo-loss, kita travado)', () => {
     renderSetup();
-    expect(screen.getByRole('radio', { name: '3 jogadores' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('radio', { name: '3 jogadores' }));
+    expect(useSettings.getState().mode).toBe('sanma');
+    expect(screen.getByText(/108 peças/)).toBeInTheDocument();
+    expect(screen.getAllByRole('combobox')).toHaveLength(2);
+    fireEvent.click(screen.getByRole('radio', { name: 'Ativadas' }));
+    expect(screen.getByText('Tsumo-loss')).toBeInTheDocument();
+    expect(screen.getByLabelText('Pontos iniciais')).toHaveValue(35000);
+    expect(screen.getByRole('button', { name: 'Iniciar partida' })).toBeEnabled();
   });
 });

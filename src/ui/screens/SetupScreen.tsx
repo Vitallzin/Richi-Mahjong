@@ -222,10 +222,9 @@ export function SetupScreen() {
             { value: 'yonma', label: t('setup.mode.yonma') },
             { value: 'sanma', label: t('setup.mode.sanma') },
           ]}
-          disabled={['sanma']}
           onChange={(m) => s.set({ mode: m })}
         />
-        <p className={styles.help}>{t('setup.mode.sanmaSoon')}</p>
+        <p className={styles.help}>{t(`setup.mode.${mode}Desc`)}</p>
         {options
           .filter((o) => o.group === 'basic')
           .map((o) => (

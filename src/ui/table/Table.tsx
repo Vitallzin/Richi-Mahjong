@@ -314,6 +314,15 @@ export function Table({
                 {p.riichi?.established && (
                   <span className={styles.badgeRiichi}>{t('table.riichi')}</span>
                 )}
+                {p.kita.length > 0 && (
+                  <span
+                    className={styles.badgeKita}
+                    title={t('table.kitaCount', { n: p.kita.length })}
+                    aria-label={t('table.kitaCount', { n: p.kita.length })}
+                  >
+                    <span aria-hidden="true">北</span>×{p.kita.length}
+                  </span>
+                )}
               </div>
             );
           })}
