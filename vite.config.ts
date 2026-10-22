@@ -49,6 +49,8 @@ export default defineConfig({
           },
         ],
         navigateFallback: '/index.html',
+        // /__/auth/* e /__/firebase/* são do Firebase (login): nunca responder com o app.
+        navigateFallbackDenylist: [/^\/__\//],
       },
     }),
   ],
