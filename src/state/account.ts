@@ -60,6 +60,11 @@ export const useAccount = create<AccountState>()(() => ({
 const net = () => import('../net/account');
 
 let unwatch: (() => void) | null = null;
+/**
+ * Login em andamento: o "ninguém logado" inicial do Firebase chega antes de ir ao Google e não pode
+ * apagar a marca de login, senão a volta do redirecionamento não restaura a conta.
+ */
+let signingIn = false;
 let stopSync: (() => void) | null = null;
 let remoteSettings: unknown = null;
 
@@ -115,6 +120,7 @@ function watch(): void {
     unwatch = n.watchAuth((user) => {
       if (!user) {
         stopSync?.();
+        if (signingIn) return;
         storage.set(HINT_KEY, null);
         useAccount.setState({ status: 'guest', user: null, profile: null, askMigration: false });
         return;
@@ -150,10 +156,14 @@ export async function signIn(): Promise<void> {
   useAccount.setState({ error: null });
   // Login por redirecionamento: ao voltar, o site precisa saber que deve restaurar a conta.
   storage.set(HINT_KEY, '1');
+  signingIn = true;
   watch();
   try {
     await (await net()).signInWithGoogle();
+    // Popup (dev) termina aqui; no redirecionamento a página já saiu para o Google.
+    signingIn = false;
   } catch (e) {
+    signingIn = false;
     const code = (e as { code?: string }).code ?? '';
     // Fechar a janela do Google não é erro.
     if (code !== 'auth/popup-closed-by-user' && code !== 'auth/cancelled-popup-request')
@@ -168,6 +178,7 @@ export async function devSignIn(uid: string, name: string): Promise<void> {
 }
 
 export async function signOut(): Promise<void> {
+  signingIn = false;
   stopSync?.();
   await (await net()).signOut();
 }
