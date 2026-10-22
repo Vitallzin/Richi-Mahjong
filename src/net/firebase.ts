@@ -7,11 +7,21 @@ import { initializeApp, type FirebaseApp, type FirebaseOptions } from 'firebase/
 import { connectAuthEmulator, getAuth, GoogleAuthProvider, type Auth } from 'firebase/auth';
 import { connectDatabaseEmulator, getDatabase, type Database } from 'firebase/database';
 
+/**
+ * No Firebase Hosting (web.app / firebaseapp.com), o login usa o próprio domínio do site: com o
+ * armazenamento de terceiros bloqueado (Chrome, Safari), a janela do Google num domínio diferente não
+ * consegue devolver o resultado e o login "some". Fora dele (dev local), vale o .env.
+ */
+function authDomainFor(fallback: string | undefined): string | undefined {
+  const host = globalThis.location?.host ?? '';
+  return /(^|\.)(web\.app|firebaseapp\.com)$/.test(host) ? host : fallback;
+}
+
 function readConfig(): FirebaseOptions {
   const env = import.meta.env;
   const config: FirebaseOptions = {
     apiKey: env.VITE_FIREBASE_API_KEY,
-    authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
+    authDomain: authDomainFor(env.VITE_FIREBASE_AUTH_DOMAIN),
     projectId: env.VITE_FIREBASE_PROJECT_ID,
     appId: env.VITE_FIREBASE_APP_ID,
     messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID,

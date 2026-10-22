@@ -70,7 +70,7 @@ export function ProfileScreen() {
           <p className={page.desc}>{t('account.guestNote')}</p>
           {error && (
             <p className={styles.error} role="alert">
-              {t('account.error')}
+              {t('account.error')} <small>({error})</small>
             </p>
           )}
         </section>
