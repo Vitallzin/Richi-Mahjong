@@ -120,8 +120,13 @@ function watch(): void {
         return;
       }
       useAccount.setState({ status: 'loading' });
-      onSignedIn(user).catch((e: unknown) => {
-        useAccount.setState({ status: 'signedIn', user, error: String(e) });
+      // Banco sem resposta não pode deixar o login preso em "carregando".
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('banco sem resposta (database-timeout)')), 15_000),
+      );
+      Promise.race([onSignedIn(user), timeout]).catch((e: unknown) => {
+        const code = (e as { code?: string }).code;
+        useAccount.setState({ status: 'signedIn', user, error: code ?? String(e) });
       });
     });
   });
@@ -132,11 +137,19 @@ export function initAccount(): void {
   if (storage.get(HINT_KEY) === '1') {
     useAccount.setState({ status: 'loading' });
     watch();
+    // Voltando do Google: se o login falhou lá, mostra o motivo.
+    void net()
+      .then((n) => n.redirectError())
+      .then((error) => {
+        if (error) useAccount.setState({ error });
+      });
   }
 }
 
 export async function signIn(): Promise<void> {
   useAccount.setState({ error: null });
+  // Login por redirecionamento: ao voltar, o site precisa saber que deve restaurar a conta.
+  storage.set(HINT_KEY, '1');
   watch();
   try {
     await (await net()).signInWithGoogle();

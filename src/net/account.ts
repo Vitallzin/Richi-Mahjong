@@ -4,6 +4,7 @@
  * baixa o Firebase.
  */
 import {
+  getRedirectResult,
   GoogleAuthProvider,
   onAuthStateChanged,
   signInWithCredential,
@@ -38,9 +39,19 @@ export function watchAuth(cb: (user: AccountUser | null) => void): () => void {
   return onAuthStateChanged(firebaseAuth(), (u) => cb(u ? toUser(u) : null));
 }
 
+/**
+ * Login Google. No site publicado (authDomain = domínio da página) vai por redirecionamento: a página
+ * vai ao Google e volta, sem depender de popup nem de armazenamento de terceiros. Em desenvolvimento
+ * (authDomain de outro domínio), por popup.
+ */
 export async function signInWithGoogle(): Promise<void> {
+  const auth = firebaseAuth();
+  if (auth.config.authDomain === globalThis.location?.host) {
+    await signInWithRedirect(auth, googleProvider());
+    return;
+  }
   try {
-    await signInWithPopup(firebaseAuth(), googleProvider());
+    await signInWithPopup(auth, googleProvider());
   } catch (e) {
     // Navegadores que bloqueiam popup (alguns celulares): login por redirecionamento.
     const code = (e as { code?: string }).code;
@@ -48,8 +59,18 @@ export async function signInWithGoogle(): Promise<void> {
       code === 'auth/popup-blocked' ||
       code === 'auth/operation-not-supported-in-this-environment'
     )
-      await signInWithRedirect(firebaseAuth(), googleProvider());
+      await signInWithRedirect(auth, googleProvider());
     else throw e;
+  }
+}
+
+/** Erro da volta do redirecionamento do Google (null se não houve erro ou nem houve login). */
+export async function redirectError(): Promise<string | null> {
+  try {
+    await getRedirectResult(firebaseAuth());
+    return null;
+  } catch (e) {
+    return (e as { code?: string }).code ?? String(e);
   }
 }
 
