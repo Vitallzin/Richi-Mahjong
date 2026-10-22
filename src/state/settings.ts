@@ -95,11 +95,27 @@ export function mergeSettings(base: SettingsData, saved: unknown): SettingsData 
   };
 }
 
+/** Só as chaves que existem no padrão (as regras do banco recusam chaves desconhecidas). */
+function pickKnown<T extends object>(defaults: T, value: T): T {
+  const out: Record<string, unknown> = {};
+  for (const key of Object.keys(defaults)) out[key] = value[key as keyof T];
+  return out as T;
+}
+
 /** Só os dados (sem as ações), no formato salvo em localStorage e em users/{uid}/settings. */
 export function settingsData(state: SettingsData): SettingsData {
-  const out: Record<string, unknown> = {};
-  for (const key of Object.keys(DEFAULT_SETTINGS)) out[key] = state[key as keyof SettingsData];
-  return out as unknown as SettingsData;
+  const out = pickKnown(DEFAULT_SETTINGS, state);
+  return {
+    ...out,
+    advanced: pickKnown(DEFAULT_SETTINGS.advanced, state.advanced),
+    timer: pickKnown(DEFAULT_SETTINGS.timer, state.timer),
+    helps: {
+      ...pickKnown(DEFAULT_SETTINGS.helps, state.helps),
+      labels: pickKnown(DEFAULT_SETTINGS.helps.labels, state.helps.labels),
+    },
+    accessibility: pickKnown(DEFAULT_SETTINGS.accessibility, state.accessibility),
+    appearance: pickKnown(DEFAULT_SETTINGS.appearance, state.appearance),
+  };
 }
 
 /** As preferências diferem do padrão? (decide se vale perguntar sobre levar para a conta) */

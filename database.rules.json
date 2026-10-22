@@ -19,11 +19,136 @@
           }
         },
         "settings": {
-          ".validate": "newData.hasChild('schemaVersion')"
+          ".validate": "newData.hasChild('schemaVersion')",
+          "schemaVersion": { ".validate": "newData.isNumber()" },
+          "mode": { ".validate": "newData.val() === 'yonma' || newData.val() === 'sanma'" },
+          "advanced": {
+            "yonma": { ".validate": "newData.isBoolean()" },
+            "sanma": { ".validate": "newData.isBoolean()" },
+            "$other": { ".validate": false }
+          },
+          "rules": {
+            "yonma": {
+              "$opt": {
+                ".validate": "$opt.matches(/^(length|startingPoints|targetPoints|tobi|agariYame|akaDora|kuitan|hanMinimum|kiriageMangan|tsumoLoss|nukiDora)$/) && (newData.isBoolean() || newData.isNumber() || (newData.isString() && newData.val().length <= 16))"
+              }
+            },
+            "sanma": {
+              "$opt": {
+                ".validate": "$opt.matches(/^(length|startingPoints|targetPoints|tobi|agariYame|akaDora|kuitan|hanMinimum|kiriageMangan|tsumoLoss|nukiDora)$/) && (newData.isBoolean() || newData.isNumber() || (newData.isString() && newData.val().length <= 16))"
+              }
+            },
+            "$other": { ".validate": false }
+          },
+          "timer": {
+            "mode": { ".validate": "newData.isString() && newData.val().length <= 16" },
+            "baseSeconds": { ".validate": "newData.isNumber()" },
+            "bankSeconds": { ".validate": "newData.isNumber()" },
+            "$other": { ".validate": false }
+          },
+          "difficulty": { ".validate": "newData.isString() && newData.val().length <= 16" },
+          "characters": {
+            "$i": {
+              ".validate": "$i.matches(/^[0-3]$/) && newData.isString() && newData.val().length <= 32"
+            }
+          },
+          "volume": { ".validate": "newData.isNumber()" },
+          "muted": { ".validate": "newData.isBoolean()" },
+          "music": { ".validate": "newData.isBoolean()" },
+          "musicVolume": { ".validate": "newData.isNumber()" },
+          "hoverSounds": { ".validate": "newData.isBoolean()" },
+          "helps": {
+            "rules": { ".validate": "newData.isBoolean()" },
+            "waits": { ".validate": "newData.isBoolean()" },
+            "noYaku": { ".validate": "newData.isBoolean()" },
+            "yakuPath": { ".validate": "newData.isBoolean()" },
+            "furiten": { ".validate": "newData.isBoolean()" },
+            "doraHint": { ".validate": "newData.isBoolean()" },
+            "bonusGlow": { ".validate": "newData.isBoolean()" },
+            "seenHighlight": { ".validate": "newData.isBoolean()" },
+            "noCalls": { ".validate": "newData.isBoolean()" },
+            "riichi": { ".validate": "newData.isString() && newData.val().length <= 16" },
+            "labels": {
+              "numbers": { ".validate": "newData.isBoolean()" },
+              "winds": { ".validate": "newData.isString() && newData.val().length <= 16" },
+              "dragons": { ".validate": "newData.isString() && newData.val().length <= 16" },
+              "$other": { ".validate": false }
+            },
+            "$other": { ".validate": false }
+          },
+          "welcomeSeen": { ".validate": "newData.isBoolean()" },
+          "training": { ".validate": "newData.isBoolean()" },
+          "accessibility": {
+            "reduceMotion": { ".validate": "newData.isBoolean()" },
+            "highContrast": { ".validate": "newData.isBoolean()" },
+            "tileScale": { ".validate": "newData.isNumber()" },
+            "$other": { ".validate": false }
+          },
+          "appearance": {
+            "background": { ".validate": "newData.isString() && newData.val().length <= 32" },
+            "felt": { ".validate": "newData.isString() && newData.val().length <= 32" },
+            "faces": { ".validate": "newData.isString() && newData.val().length <= 32" },
+            "back": { ".validate": "newData.isString() && newData.val().length <= 32" },
+            "$other": { ".validate": false }
+          },
+          "$other": { ".validate": false }
         },
         "history": {
           "$matchId": {
-            ".validate": "newData.hasChildren(['endedAt', 'mode', 'placement', 'finalPoints']) && newData.child('endedAt').isNumber() && newData.child('endedAt').val() <= now && (newData.child('mode').val() === 'yonma' || newData.child('mode').val() === 'sanma') && newData.child('placement').isNumber() && newData.child('placement').val() >= 1 && newData.child('placement').val() <= 4 && newData.child('finalPoints').isNumber()"
+            ".validate": "$matchId.length <= 40 && newData.hasChildren(['endedAt', 'mode', 'placement', 'finalPoints']) && newData.child('endedAt').isNumber() && newData.child('endedAt').val() <= now && (newData.child('mode').val() === 'yonma' || newData.child('mode').val() === 'sanma') && newData.child('placement').isNumber() && newData.child('placement').val() >= 1 && newData.child('placement').val() <= 4 && newData.child('finalPoints').isNumber()",
+            "id": { ".validate": "newData.val() === $matchId" },
+            "endedAt": { ".validate": "newData.isNumber()" },
+            "source": { ".validate": "newData.val() === 'solo' || newData.val() === 'room'" },
+            "mode": { ".validate": "newData.isString()" },
+            "length": {
+              ".validate": "newData.val() === 'oneHand' || newData.val() === 'east' || newData.val() === 'south'"
+            },
+            "rules": {
+              "startingPoints": { ".validate": "newData.isNumber()" },
+              "targetPoints": { ".validate": "newData.isNumber()" },
+              "tobi": { ".validate": "newData.isBoolean()" },
+              "akaDora": { ".validate": "newData.isNumber()" },
+              "kuitan": { ".validate": "newData.isBoolean()" },
+              "hanMinimum": { ".validate": "newData.isNumber()" },
+              "kiriageMangan": { ".validate": "newData.isBoolean()" },
+              "$other": { ".validate": false }
+            },
+            "training": { ".validate": "newData.isBoolean()" },
+            "placement": { ".validate": "newData.isNumber()" },
+            "finalPoints": { ".validate": "newData.isNumber()" },
+            "players": {
+              "$i": {
+                ".validate": "$i.matches(/^[0-3]$/) && newData.hasChildren(['seat', 'name', 'points', 'isBot'])",
+                "seat": { ".validate": "newData.isNumber()" },
+                "name": { ".validate": "newData.isString() && newData.val().length <= 32" },
+                "points": { ".validate": "newData.isNumber()" },
+                "isBot": { ".validate": "newData.isBoolean()" },
+                "characterId": {
+                  ".validate": "newData.isString() && newData.val().length <= 32"
+                },
+                "$other": { ".validate": false }
+              }
+            },
+            "wins": {
+              "$i": {
+                ".validate": "$i.matches(/^[0-9]{1,2}$/) && newData.hasChildren(['round', 'type', 'han', 'fu', 'points'])",
+                "round": { ".validate": "newData.isString() && newData.val().length <= 8" },
+                "type": { ".validate": "newData.val() === 'ron' || newData.val() === 'tsumo'" },
+                "yaku": {
+                  "$j": {
+                    ".validate": "$j.matches(/^[0-9]{1,2}$/) && newData.isString() && newData.val().length <= 32"
+                  }
+                },
+                "han": { ".validate": "newData.isNumber()" },
+                "fu": { ".validate": "newData.isNumber()" },
+                "points": { ".validate": "newData.isNumber()" },
+                "$other": { ".validate": false }
+              }
+            },
+            "endReason": {
+              ".validate": "newData.val() === 'normal' || newData.val() === 'tobi' || newData.val() === 'agariYame' || newData.val() === 'abandoned'"
+            },
+            "$other": { ".validate": false }
           }
         },
         "$other": {
@@ -38,19 +163,38 @@
         "meta": {
           ".read": "auth != null && auth.token.firebase.sign_in_provider === 'google.com'",
           ".write": "auth != null && auth.token.firebase.sign_in_provider === 'google.com' && (!data.exists() ? newData.child('hostUid').val() === auth.uid : data.child('hostUid').val() === auth.uid)",
-          ".validate": "!newData.exists() || (newData.hasChildren(['hostUid', 'status', 'createdAt', 'expiresAt', 'mode', 'protocolVersion']) && (newData.child('status').val() === 'lobby' || newData.child('status').val() === 'playing' || newData.child('status').val() === 'ended') && (!data.exists() || newData.child('hostUid').val() === data.child('hostUid').val()))"
+          ".validate": "!newData.exists() || (newData.hasChildren(['hostUid', 'status', 'createdAt', 'expiresAt', 'mode', 'protocolVersion']) && (newData.child('status').val() === 'lobby' || newData.child('status').val() === 'playing' || newData.child('status').val() === 'ended') && (!data.exists() || newData.child('hostUid').val() === data.child('hostUid').val()))",
+          "hostUid": { ".validate": "newData.isString() && newData.val().length <= 128" },
+          "status": { ".validate": "newData.isString()" },
+          "createdAt": { ".validate": "newData.isNumber() && newData.val() <= now + 300000" },
+          "expiresAt": {
+            ".validate": "newData.isNumber() && newData.val() <= newData.parent().child('createdAt').val() + 90000000"
+          },
+          "mode": { ".validate": "newData.val() === 'yonma' || newData.val() === 'sanma'" },
+          "rules": { ".validate": "newData.isString() && newData.val().length <= 4096" },
+          "settings": { ".validate": "newData.isString() && newData.val().length <= 4096" },
+          "protocolVersion": { ".validate": "newData.isNumber()" },
+          "$other": { ".validate": false }
         },
         "seats": {
           ".read": "auth != null && (root.child('rooms').child($code).child('members').child(auth.uid).exists() || root.child('rooms').child($code).child('meta/hostUid').val() === auth.uid)",
           ".write": "auth != null && root.child('rooms').child($code).child('meta/hostUid').val() === auth.uid",
           "$seat": {
-            ".validate": "$seat.matches(/^[0-3]$/)"
+            ".validate": "$seat.matches(/^[0-3]$/) && newData.hasChild('type')",
+            "type": {
+              ".validate": "newData.val() === 'empty' || newData.val() === 'human' || newData.val() === 'bot'"
+            },
+            "uid": { ".validate": "newData.isString() && newData.val().length <= 128" },
+            "displayName": { ".validate": "newData.isString() && newData.val().length <= 24" },
+            "avatar": { ".validate": "newData.isString() && newData.val().length <= 64" },
+            "characterId": { ".validate": "newData.isString() && newData.val().length <= 32" },
+            "$other": { ".validate": false }
           }
         },
         "members": {
           "$uid": {
             ".read": "auth != null && ($uid === auth.uid || root.child('rooms').child($code).child('meta/hostUid').val() === auth.uid)",
-            ".write": "auth != null && auth.token.firebase.sign_in_provider === 'google.com' && (($uid === auth.uid && root.child('rooms').child($code).child('meta/status').val() === 'lobby') || root.child('rooms').child($code).child('meta/hostUid').val() === auth.uid)",
+            ".write": "auth != null && auth.token.firebase.sign_in_provider === 'google.com' && (($uid === auth.uid && root.child('rooms').child($code).child('meta/status').val() === 'lobby' && root.child('rooms').child($code).child('meta/expiresAt').val() > now) || root.child('rooms').child($code).child('meta/hostUid').val() === auth.uid)",
             ".validate": "!newData.exists() || newData.val() === true"
           },
           ".read": "auth != null && root.child('rooms').child($code).child('meta/hostUid').val() === auth.uid"
@@ -65,12 +209,30 @@
         },
         "public": {
           ".read": "auth != null && (root.child('rooms').child($code).child('members').child(auth.uid).exists() || root.child('rooms').child($code).child('meta/hostUid').val() === auth.uid)",
-          ".write": "auth != null && root.child('rooms').child($code).child('meta/hostUid').val() === auth.uid"
+          ".write": "auth != null && root.child('rooms').child($code).child('meta/hostUid').val() === auth.uid",
+          "seq": { ".validate": "newData.isNumber()" },
+          "phase": { ".validate": "newData.isString() && newData.val().length <= 32" },
+          "scores": {
+            "$i": { ".validate": "$i.matches(/^[0-3]$/) && newData.isNumber()" }
+          },
+          "handsPlayed": { ".validate": "newData.isNumber()" },
+          "$other": { ".validate": false }
         },
         "private": {
           "$uid": {
             ".read": "auth != null && auth.uid === $uid",
-            ".write": "auth != null && root.child('rooms').child($code).child('meta/hostUid').val() === auth.uid"
+            ".write": "auth != null && root.child('rooms').child($code).child('meta/hostUid').val() === auth.uid",
+            "seq": { ".validate": "newData.isNumber()" },
+            "view": { ".validate": "newData.isString() && newData.val().length <= 131072" },
+            "events": { ".validate": "newData.isString() && newData.val().length <= 65536" },
+            "clock": {
+              "baseMs": { ".validate": "newData.isNumber()" },
+              "bankMs": { ".validate": "newData.isNumber()" },
+              "hasBank": { ".validate": "newData.isBoolean()" },
+              "$other": { ".validate": false }
+            },
+            "lastError": { ".validate": "newData.isString() && newData.val().length <= 500" },
+            "$other": { ".validate": false }
           }
         },
         "inbox": {
@@ -78,7 +240,35 @@
             ".read": "auth != null && root.child('rooms').child($code).child('meta/hostUid').val() === auth.uid",
             ".write": "auth != null && (($uid === auth.uid && root.child('rooms').child($code).child('members').child(auth.uid).exists()) || root.child('rooms').child($code).child('meta/hostUid').val() === auth.uid)",
             "$pushId": {
-              ".validate": "!newData.exists() || (newData.hasChildren(['clientSeq', 'action', 'ts']) && newData.child('clientSeq').isNumber() && newData.child('action/type').isString() && newData.child('action/type').val().length <= 24 && newData.child('ts').isNumber() && newData.child('ts').val() <= now)"
+              ".validate": "!newData.exists() || (newData.hasChildren(['clientSeq', 'action', 'ts']) && newData.child('clientSeq').isNumber() && newData.child('action/type').isString() && newData.child('action/type').val().length <= 24 && newData.child('ts').isNumber() && newData.child('ts').val() <= now)",
+              "clientSeq": { ".validate": "newData.isNumber()" },
+              "ts": { ".validate": "newData.isNumber()" },
+              "action": {
+                "type": { ".validate": "newData.isString()" },
+                "tile": {
+                  ".validate": "newData.hasChildren(['id', 'kind'])",
+                  "id": { ".validate": "newData.isNumber()" },
+                  "kind": { ".validate": "newData.isNumber()" },
+                  "red": { ".validate": "newData.isBoolean()" },
+                  "$other": { ".validate": false }
+                },
+                "riichi": { ".validate": "newData.isBoolean()" },
+                "use": {
+                  "$i": {
+                    ".validate": "$i.matches(/^[01]$/) && newData.hasChildren(['id', 'kind'])",
+                    "id": { ".validate": "newData.isNumber()" },
+                    "kind": { ".validate": "newData.isNumber()" },
+                    "red": { ".validate": "newData.isBoolean()" },
+                    "$other": { ".validate": false }
+                  }
+                },
+                "kind": { ".validate": "newData.isNumber()" },
+                "seat": { ".validate": "newData.isNumber()" },
+                "name": { ".validate": "newData.isString() && newData.val().length <= 64" },
+                "avatar": { ".validate": "newData.isString() && newData.val().length <= 64" },
+                "$other": { ".validate": false }
+              },
+              "$other": { ".validate": false }
             }
           },
           ".read": "auth != null && root.child('rooms').child($code).child('meta/hostUid').val() === auth.uid"

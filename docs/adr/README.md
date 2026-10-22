@@ -18,3 +18,10 @@ Um arquivo curto por decisão não óbvia. Valores de regra confirmados ficam em
 | 0010 | Decisões das ajudas, tutorial e acessibilidade (Fase 3)             |
 | 0011 | Visual com ar chinês, animações e ritmo da mesa                     |
 | 0012 | Música ambiente, sons de hover e destaques de peças                 |
+| 0013 | Zonas de descarte, painéis fora da mesa e anúncio do ron            |
+| 0014 | Polimento de interface e Aparência antecipada para a Fase 5         |
+| 0015 | Sanma (Fase 4)                                                      |
+| 0016 | Apresentação dos jogadores e caminho de yaku                        |
+| 0017 | Fase 5: Aparência, conta, histórico e salas privadas                |
+| 0018 | Fase 6: bot Difícil, personagens e acabamento                       |
+| 0019 | Endurecimento: cabeçalhos HTTP, limites no banco, código de sala    |

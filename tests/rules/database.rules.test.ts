@@ -8,6 +8,15 @@ import {
 } from '@firebase/rules-unit-testing';
 import { get, push, ref, remove, serverTimestamp, set, update } from 'firebase/database';
 import { readFileSync } from 'node:fs';
+import {
+  sampleActions,
+  sampleMeta,
+  samplePrivate,
+  samplePublic,
+  sampleSeats,
+  sampleSettings,
+  sampleSummary,
+} from '../support/dbSamples';
 
 const CODE = 'ABC234';
 const google = { firebase: { sign_in_provider: 'google.com' as const } };
@@ -36,16 +45,7 @@ beforeEach(async () => {
 
 const db = (uid: string) => env.authenticatedContext(uid, google).database();
 
-const META = {
-  hostUid: 'host',
-  status: 'lobby',
-  createdAt: 1,
-  expiresAt: 2,
-  mode: 'yonma',
-  rules: '{}',
-  settings: '{}',
-  protocolVersion: 1,
-};
+const META = sampleMeta('host');
 
 /** Sala com anfitrião e uma convidada já membro, em andamento. */
 async function seedRoom(status = 'playing') {
@@ -128,6 +128,89 @@ describe('salas (spec 13.7)', () => {
     await assertFails(set(ref(anon, `rooms/QQQ235/meta`), META));
     await assertFails(set(ref(env.unauthenticatedContext().database(), `rooms/QQQ236/meta`), META));
   });
+
+  it('não entra em sala expirada', async () => {
+    await seedRoom('lobby');
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await set(ref(ctx.database(), `rooms/${CODE}/meta/expiresAt`), Date.now() - 1000);
+    });
+    await assertFails(set(ref(db('ze'), `rooms/${CODE}/members/ze`), true));
+  });
+
+  it('meta: tipos, tamanhos e validade limitados', async () => {
+    const host = db('host');
+    await assertFails(set(ref(host, `rooms/QQQ234/meta`), { ...META, extra: 'x' }));
+    await assertFails(set(ref(host, `rooms/QQQ234/meta`), { ...META, rules: 'x'.repeat(5000) }));
+    await assertFails(
+      set(ref(host, `rooms/QQQ234/meta`), {
+        ...META,
+        expiresAt: META.createdAt + 365 * 86_400_000,
+      }),
+    );
+    await assertFails(set(ref(host, `rooms/QQQ234/meta`), { ...META, mode: 'x' }));
+    // mudar só o status continua valendo
+    await assertSucceeds(set(ref(host, `rooms/QQQ234/meta`), META));
+    await assertSucceeds(update(ref(host, `rooms/QQQ234/meta`), { status: 'playing' }));
+  });
+
+  it('o que o anfitrião publica é aceito; campos estranhos ou grandes demais, não', async () => {
+    await seedRoom();
+    const host = db('host');
+    await assertSucceeds(set(ref(host, `rooms/${CODE}/seats`), sampleSeats('host')));
+    await assertSucceeds(
+      update(ref(host, `rooms/${CODE}`), {
+        public: samplePublic(),
+        'private/bia': samplePrivate(),
+      }),
+    );
+    await assertFails(
+      set(ref(host, `rooms/${CODE}/seats/1`), { type: 'bot', displayName: '', lixo: 'x' }),
+    );
+    await assertFails(
+      set(ref(host, `rooms/${CODE}/seats/1`), { type: 'human', displayName: 'x'.repeat(25) }),
+    );
+    await assertFails(
+      set(ref(host, `rooms/${CODE}/private/bia`), {
+        ...samplePrivate(),
+        view: 'x'.repeat(140_000),
+      }),
+    );
+    await assertFails(set(ref(host, `rooms/${CODE}/public`), { ...samplePublic(), lixo: 1 }));
+  });
+
+  it('inbox: toda ação do app é aceita; campos extras, não', async () => {
+    await seedRoom();
+    const bia = db('bia');
+    for (const action of sampleActions()) {
+      await assertSucceeds(
+        set(push(ref(bia, `rooms/${CODE}/inbox/bia`)), {
+          clientSeq: 1,
+          action,
+          ts: serverTimestamp(),
+        }),
+      );
+    }
+    const msg = { clientSeq: 1, ts: serverTimestamp() };
+    await assertFails(
+      set(push(ref(bia, `rooms/${CODE}/inbox/bia`)), {
+        ...msg,
+        action: { type: 'pass', lixo: 'x'.repeat(1000) },
+      }),
+    );
+    await assertFails(
+      set(push(ref(bia, `rooms/${CODE}/inbox/bia`)), {
+        ...msg,
+        action: { type: 'discard', tile: { id: 1, kind: 1, red: false, extra: 1 } },
+      }),
+    );
+    await assertFails(
+      set(push(ref(bia, `rooms/${CODE}/inbox/bia`)), {
+        ...msg,
+        action: { type: 'pass' },
+        extra: 1,
+      }),
+    );
+  });
 });
 
 describe('dados do jogador (spec 12)', () => {
@@ -175,5 +258,41 @@ describe('dados do jogador (spec 12)', () => {
         finalPoints: 0,
       }),
     );
+  });
+
+  it('preferências e resumo completos do app são aceitos', async () => {
+    const ana = db('ana');
+    await assertSucceeds(set(ref(ana, 'users/ana/settings'), sampleSettings()));
+    const summary = sampleSummary('m9');
+    await assertSucceeds(
+      set(ref(ana, 'users/ana/history/m9'), { ...summary, endedAt: serverTimestamp() }),
+    );
+  });
+
+  it('preferências e histórico recusam chaves desconhecidas e textos grandes', async () => {
+    const ana = db('ana');
+    const settings = sampleSettings() as Record<string, unknown>;
+    await assertFails(set(ref(ana, 'users/ana/settings'), { ...settings, lixo: 'x' }));
+    await assertFails(
+      set(ref(ana, 'users/ana/settings'), {
+        ...settings,
+        appearance: { background: 'x'.repeat(100) },
+      }),
+    );
+    await assertFails(
+      set(ref(ana, 'users/ana/settings'), {
+        ...settings,
+        rules: { yonma: { inventada: true }, sanma: {} },
+      }),
+    );
+    const summary = { ...sampleSummary('m8'), endedAt: serverTimestamp() };
+    await assertFails(set(ref(ana, 'users/ana/history/m8'), { ...summary, lixo: 1 }));
+    await assertFails(
+      set(ref(ana, 'users/ana/history/m8'), {
+        ...summary,
+        players: [{ seat: 0, name: 'x'.repeat(40), points: 0, isBot: false }],
+      }),
+    );
+    await assertFails(set(ref(ana, 'users/ana/history/m8'), { ...summary, id: 'outro' }));
   });
 });

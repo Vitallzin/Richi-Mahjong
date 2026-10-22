@@ -123,6 +123,15 @@ describe('código da sala (spec 13.2)', () => {
     expect(parseRoomCode('ABCDE0')).toBeNull();
   });
 
+  it('código padrão vem do crypto e não repete', () => {
+    const spy = vi.spyOn(globalThis.crypto, 'getRandomValues');
+    const codes = new Set(Array.from({ length: 200 }, () => generateRoomCode()));
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore();
+    expect(codes.size).toBe(200);
+    for (const code of codes) expect(isRoomCode(code)).toBe(true);
+  });
+
   it('assentos vazios viram bots com personagem', () => {
     const seats = seatsForMatch(
       [

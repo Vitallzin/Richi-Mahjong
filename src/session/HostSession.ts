@@ -52,7 +52,9 @@ export class HostSession extends LocalSession {
       this.submitFor(seat, msg.action);
     } catch (e) {
       // Ação ilegal ou fora de hora: o estado não muda; o convidado recebe um erro leve.
-      this.lastError.set(msg.uid, e instanceof Error ? e.message : String(e));
+      // Curto: as regras do banco limitam o tamanho e recusariam a publicação inteira.
+      const message = e instanceof Error ? e.message : String(e);
+      this.lastError.set(msg.uid, message.slice(0, 200));
       this.publish([]);
     }
   }

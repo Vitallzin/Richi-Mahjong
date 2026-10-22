@@ -17,7 +17,11 @@ export const ROOM_TTL_MS = 24 * 60 * 60 * 1000;
 export const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 export const CODE_LENGTH = 6;
 
-export function generateRoomCode(random: () => number = Math.random): string {
+/** Aleatório criptográfico em [0, 1): o código é a única chave para entrar na sala. */
+const secureRandom = (): number =>
+  (globalThis.crypto.getRandomValues(new Uint32Array(1))[0] ?? 0) / 2 ** 32;
+
+export function generateRoomCode(random: () => number = secureRandom): string {
   let code = '';
   for (let i = 0; i < CODE_LENGTH; i++)
     code += CODE_ALPHABET[Math.floor(random() * CODE_ALPHABET.length)] ?? 'A';
