@@ -1221,3 +1221,156 @@
   font-size: 13px;
   color: var(--color-text-muted);
 }
+
+/* ---------- Sala online (ADR 0020) ---------- */
+
+/* Código da sala ao lado do menu: clicar copia o link. */
+.roomCode {
+  composes: shine from '../components/Button.module.css';
+  position: absolute;
+  left: 250px;
+  top: 14px;
+  display: grid;
+  justify-items: start;
+  gap: 0;
+  min-width: 150px;
+  padding: 5px 16px 6px;
+  border-radius: 12px;
+  border: 1px solid var(--gold-dim);
+  background: linear-gradient(180deg, rgb(47 29 66 / 0.92), rgb(27 17 40 / 0.92));
+  box-shadow: 0 8px 20px rgb(0 0 0 / 0.35);
+  color: var(--rice);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 150ms ease;
+}
+
+.roomCode:hover,
+.roomCode:focus-visible {
+  border-color: var(--gold);
+  outline: none;
+}
+
+.roomCodeLabel {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  letter-spacing: 0.04em;
+}
+
+.roomCodeValue {
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 1.1;
+  letter-spacing: 0.18em;
+  color: var(--gold-bright);
+}
+
+/* "(bot)" ao lado do nome de quem está sendo coberto por um bot. */
+.badgeBot {
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  vertical-align: 2px;
+  color: #ffd0c9;
+  background: rgb(184 50 42 / 0.55);
+  box-shadow: inset 0 0 0 1px rgb(255 155 143 / 0.7);
+  animation: botTagIn 380ms var(--ease-spring) both;
+}
+
+@keyframes botTagIn {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+/* Avisos (saiu, parado, voltou, entrou): pilha no canto superior direito. */
+.notices {
+  position: absolute;
+  right: 24px;
+  top: 84px;
+  z-index: 30;
+  display: grid;
+  gap: 8px;
+  justify-items: end;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+}
+
+.notice,
+.noticeGood {
+  max-width: 330px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 1px solid rgb(255 155 143 / 0.65);
+  background: linear-gradient(180deg, rgb(90 22 30 / 0.95), rgb(42 14 22 / 0.95));
+  color: var(--rice);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+  box-shadow: 0 10px 24px rgb(0 0 0 / 0.45);
+  animation: noticeIn 420ms var(--ease-out) both;
+}
+
+.noticeGood {
+  border-color: rgb(127 209 176 / 0.7);
+  background: linear-gradient(180deg, rgb(28 72 60 / 0.95), rgb(14 36 30 / 0.95));
+}
+
+@keyframes noticeIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+}
+
+/* Um bot está jogando por mim: faixa com "Voltar a jogar". */
+.covered {
+  position: absolute;
+  left: 50%;
+  top: 84px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 8px 8px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--gold);
+  background: linear-gradient(180deg, rgb(47 29 66 / 0.97), rgb(27 17 40 / 0.97));
+  box-shadow: 0 14px 32px rgb(0 0 0 / 0.55);
+  color: var(--rice);
+  font-size: 19px;
+  font-weight: 600;
+  translate: -50% 0;
+  animation: noticeIn 420ms var(--ease-out) both;
+}
+
+.coveredGlyph {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-family: var(--font-brush);
+  font-size: 22px;
+  color: var(--rice);
+  background: radial-gradient(circle at 35% 30%, var(--cinnabar-bright), #5a1610);
+}
+
+.coveredButton {
+  composes: lift from '../components/Button.module.css';
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(180deg, var(--cinnabar-bright), var(--cinnabar));
+  color: var(--rice);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}

@@ -83,9 +83,12 @@ No plano Spark não há funções no servidor, então **o navegador de quem cria
 embaralha, valida cada ação, controla o relógio e os bots. O Realtime Database é só o canal: cada
 convidado recebe **apenas a sua** `PlayerView` (as regras de segurança impedem ler a de outro) e manda
 ações por um inbox próprio. Limitação aceita, por decisão de arquitetura: o anfitrião tecnicamente tem
-todo o estado, e se ele fechar a aba a partida pausa até ele voltar. Serve para jogar entre amigos; não é
-à prova de um anfitrião trapaceiro. A alternativa (servidor autoritativo com Cloud Functions) exige o
-plano Blaze.
+todo o estado, e se ele fechar a aba a partida pausa até ele voltar (se ele sair pelo menu, a partida
+termina). Serve para jogar entre amigos; não é à prova de um anfitrião trapaceiro. A alternativa
+(servidor autoritativo com Cloud Functions) exige o plano Blaze.
+
+Quem sai, cai ou fica parado é coberto por um bot até voltar (o menu oferece "Voltar à sala"); quem
+chega com a partida em andamento assume o lugar de um bot na mão seguinte (ADR 0020).
 
 ## Deploy
 

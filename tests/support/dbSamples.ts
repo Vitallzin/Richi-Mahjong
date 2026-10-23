@@ -18,6 +18,7 @@ import {
   type LobbyRequest,
   type PrivatePayload,
   type PublicPayload,
+  type RoomMember,
   type RoomMeta,
   type RoomSeat,
 } from '../../src/session';
@@ -95,8 +96,24 @@ export const sampleSeats = (hostUid: string): RoomSeat[] =>
     { type: 'human', uid: hostUid, displayName: 'Ana', avatar: 'chun' },
     { type: 'bot', displayName: '', characterId: 'ren' },
     { type: 'empty', displayName: '' },
-    { type: 'human', uid: 'bia', displayName: 'Bia', avatar: 'google' },
+    {
+      type: 'human',
+      uid: 'bia',
+      displayName: 'Bia',
+      avatar: 'google',
+      photoURL: SAMPLE_PHOTO,
+      cover: 'idle',
+    },
   ]);
+
+/** Foto de conta Google como o Firebase Auth devolve. */
+export const SAMPLE_PHOTO = 'https://lh3.googleusercontent.com/a/ACg8ocJ-exemplo=s96-c';
+
+export const sampleMember = (): RoomMember => ({
+  displayName: 'Bia',
+  avatar: 'google',
+  photoURL: SAMPLE_PHOTO,
+});
 
 export function samplePrivate(): PrivatePayload {
   const { state, events } = createMatch(PRESET_YONMA, 7);
@@ -136,4 +153,5 @@ export const sampleActions = (): (Action | LobbyRequest)[] =>
     { type: 'ackSummary' },
     { type: 'claimSeat', seat: 2, name: 'Bia', avatar: 'google' },
     { type: 'leaveSeat' },
+    { type: 'resume' },
   ]);

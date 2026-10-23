@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { RULE_OPTIONS } from '../src/engine';
 import {
   sampleActions,
+  sampleMember,
   sampleMeta,
   samplePrivate,
   samplePublic,
@@ -54,6 +55,7 @@ describe('regras do banco cobrem o que o app grava', () => {
   it('sala: meta, assentos, visões, placar e inbox', () => {
     expect(uncovered(child(room, 'meta'), sampleMeta('host'))).toEqual([]);
     expect(uncovered(child(room, 'seats'), sampleSeats('host'))).toEqual([]);
+    expect(uncovered(child(room, 'members', '$uid'), sampleMember())).toEqual([]);
     expect(uncovered(child(room, 'private', '$uid'), samplePrivate())).toEqual([]);
     expect(uncovered(child(room, 'public'), samplePublic())).toEqual([]);
     const inbox = child(room, 'inbox', '$uid', '$pushId');

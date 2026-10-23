@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { loadMatch } from '../../session/storage';
 import { useSettings } from '../../state/settings';
 import { useAccount } from '../../state/account';
+import { readActiveRoom } from '../../state/activeRoom';
 import { Avatar } from '../components/Avatar';
 import { enterGameDisplay } from '../platform/display';
 import { t, type MessageKey } from '../../i18n';
@@ -16,12 +17,12 @@ type MenuItem = { key: MessageKey; to: string; glyph: string; comingSoon?: boole
 
 const ITEMS: readonly MenuItem[] = [
   { key: 'menu.play', to: '/jogar', glyph: '打' },
-  { key: 'menu.tutorial', to: '/tutorial', glyph: '学' },
-  { key: 'menu.help', to: '/ajudas', glyph: '助' },
-  { key: 'menu.settings', to: '/configuracoes', glyph: '設' },
-  { key: 'menu.appearance', to: '/aparencia', glyph: '美' },
-  { key: 'menu.profile', to: '/perfil', glyph: '我' },
   { key: 'menu.rooms', to: '/salas', glyph: '房' },
+  { key: 'menu.tutorial', to: '/tutorial', glyph: '学' },
+  { key: 'menu.appearance', to: '/aparencia', glyph: '美' },
+  { key: 'menu.settings', to: '/configuracoes', glyph: '設' },
+  { key: 'menu.help', to: '/ajudas', glyph: '助' },
+  { key: 'menu.profile', to: '/perfil', glyph: '我' },
 ];
 
 const FAN = parseTiles('1z5z6z7z4z');
@@ -29,6 +30,8 @@ const FAN = parseTiles('1z5z6z7z4z');
 export function MainMenu() {
   const navigate = useNavigate();
   const [saved] = useState(() => loadMatch().status);
+  // Saiu (ou caiu) de uma sala online: oferece voltar (ADR 0020).
+  const [activeRoom] = useState(() => readActiveRoom());
   const welcomeSeen = useSettings((s) => s.welcomeSeen);
   const account = useAccount();
   // O motor e os bots só carregam quando o jogador continua (o menu abre leve).
@@ -73,8 +76,18 @@ export function MainMenu() {
       </header>
       <nav aria-label={t('menu.ariaLabel')}>
         <ul className={styles.list}>
+          {activeRoom && (
+            <li style={{ '--n': 0 } as CSSProperties}>
+              <Link className={`${styles.item} ${styles.primary}`} to={`/sala/${activeRoom.code}`}>
+                <span className={styles.glyph} aria-hidden="true">
+                  返
+                </span>
+                {t('menu.returnRoom', { code: activeRoom.code })}
+              </Link>
+            </li>
+          )}
           {saved === 'ok' && (
-            <li>
+            <li style={{ '--n': 0 } as CSSProperties}>
               <button
                 type="button"
                 className={`${styles.item} ${styles.primary}`}
@@ -87,8 +100,8 @@ export function MainMenu() {
               </button>
             </li>
           )}
-          {ITEMS.map((item) => (
-            <li key={item.key}>
+          {ITEMS.map((item, i) => (
+            <li key={item.key} style={{ '--n': i + 1 } as CSSProperties}>
               {item.comingSoon ? (
                 <span className={`${styles.item} ${styles.disabled}`} aria-disabled="true">
                   <span className={styles.glyph} aria-hidden="true">

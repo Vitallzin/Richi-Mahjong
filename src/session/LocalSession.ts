@@ -2,7 +2,7 @@
  * Sessão solo (spec 5.4): roda o motor e os bots no navegador, sem rede. Os bots respondem com atraso
  * "humano" variável para que a velocidade não revele se tinham chamada (spec 5.2).
  */
-import { createBot, type BotPolicy } from '../bots';
+import { CHARACTERS, createBot, type BotPolicy } from '../bots';
 import type { BotRunner } from '../bots/workerClient';
 import {
   applyAction,
@@ -28,6 +28,7 @@ import {
 import { consume, type TimerSettings } from './clock';
 import { winsFromEvents, type LoggedWin } from './history';
 import { PACING } from './pacing';
+import type { CoverReason, IdleRules } from './room';
 import { clearMatch, saveMatch, SAVE_SCHEMA_VERSION, type MatchSnapshot } from './storage';
 import type { ClockView, MatchSession, MatchSettings, SeatSetup, SessionListener } from './types';
 
@@ -95,6 +96,8 @@ export interface LocalSessionOptions {
   readonly remoteGraceMs?: number;
   /** Decide bots fora da thread principal (Worker do Difícil); sem ele, tudo síncrono. */
   readonly botRunner?: BotRunner;
+  /** Sala: bot assume quem fica parado (ADR 0020). Sem isso (solo), ninguém é coberto. */
+  readonly idle?: IdleRules;
 }
 
 interface HumanClock {
@@ -110,21 +113,28 @@ interface Remaining {
 
 const bankMsOf = (t: TimerSettings) => (t.mode === 'timed' ? t.bankSeconds * 1000 : 0);
 
-/** Bot que assume o assento de um amigo desconectado (spec 13.6): Normal, estilo equilibrado. */
-const coverBot = (): BotPolicy => createBot('normal', 'sora');
+/** Bot que assume o assento de um amigo ausente (spec 13.6, ADR 0020): Normal, personagem sorteado. */
+interface Cover {
+  readonly bot: BotPolicy;
+  readonly reason: CoverReason;
+}
 
 export class LocalSession implements MatchSession {
   readonly rules: RuleSet;
   readonly settings: MatchSettings;
-  readonly seats: readonly SeatSetup[];
   readonly localSeat: Seat;
   readonly source: 'solo' | 'room' = 'solo';
 
+  /** Assentos: numa sala, quem entra no meio da partida assume o lugar de um bot entre mãos. */
+  private seatList: readonly SeatSetup[];
   protected state: MatchState;
   private readonly listeners = new Set<SessionListener>();
-  private readonly bots: Partial<Record<Seat, BotPolicy>> = {};
-  /** Humanos ausentes cobertos por bot (sala). */
-  private readonly covered = new Map<Seat, BotPolicy>();
+  private readonly bots = new Map<Seat, BotPolicy>();
+  /** Humanos ausentes ou parados cobertos por bot (sala). */
+  private readonly covered = new Map<Seat, Cover>();
+  /** Estouros de tempo seguidos de cada humano (sala: muitos ⇒ bot assume). */
+  private readonly strikes = new Map<Seat, number>();
+  private readonly idle: IdleRules | undefined;
   private readonly botRng: Rng;
   private readonly delayRng: Rng;
   protected readonly scheduler: Scheduler;
@@ -149,8 +159,9 @@ export class LocalSession implements MatchSession {
     this.state = opts.state;
     this.rules = opts.state.rules;
     this.settings = opts.settings;
-    this.seats = opts.seats;
+    this.seatList = opts.seats;
     this.localSeat = opts.localSeat;
+    this.idle = opts.idle;
     this.scheduler = opts.scheduler ?? realScheduler;
     this.delays = opts.delays ?? HUMAN_LIKE_DELAYS;
     this.seed = opts.seed ?? randomSeed;
@@ -164,7 +175,7 @@ export class LocalSession implements MatchSession {
     this.winLog = [...(opts.winLog ?? [])];
     opts.seats.forEach((setup, i) => {
       const seat = i as Seat;
-      if (setup.kind === 'bot') this.bots[seat] = createBot(setup.skill, setup.characterId);
+      if (setup.kind === 'bot') this.bots.set(seat, createBot(setup.skill, setup.characterId));
       else if (this.banks[seat] === undefined) this.banks[seat] = bankMsOf(opts.settings.timer);
     });
     // Começa no próximo ciclo, para que a UI possa se inscrever antes.
@@ -207,6 +218,10 @@ export class LocalSession implements MatchSession {
     };
   }
 
+  get seats(): readonly SeatSetup[] {
+    return this.seatList;
+  }
+
   getView(): PlayerView {
     return getPlayerView(this.state, this.localSeat);
   }
@@ -223,6 +238,9 @@ export class LocalSession implements MatchSession {
 
   submit(action: Action): void {
     if (this.disposed) return;
+    // Agir é voltar: o bot que cobria por inatividade sai antes da jogada.
+    if (this.covered.has(this.localSeat)) this.setCovered(this.localSeat, null);
+    this.strikes.delete(this.localSeat);
     this.apply(this.localSeat, action);
   }
 
@@ -283,21 +301,34 @@ export class LocalSession implements MatchSession {
   // -------------------------------------------------------------------------------------------
   // Para a sessão do anfitrião (sala)
 
-  /** Ação de outro jogador humano (convidado da sala). O motor valida; ação ilegal lança erro. */
+  /**
+   * Ação de outro jogador humano (convidado da sala). O motor valida; ação ilegal lança erro.
+   * Se um bot cobria o assento, quem age está de volta: o bot sai antes da jogada.
+   */
   protected submitFor(seat: Seat, action: Action): void {
     if (this.disposed) return;
-    if (this.seats[seat]?.kind !== 'human' || this.covered.has(seat)) {
-      throw new Error('Assento não é de um jogador presente');
-    }
+    if (this.seats[seat]?.kind !== 'human') throw new Error('Assento não é de um jogador');
+    if (this.covered.has(seat)) this.setCovered(seat, null);
+    this.strikes.delete(seat);
     this.apply(seat, action);
   }
 
-  /** Liga/desliga o bot que cobre um humano ausente; a mesa segue na hora. */
-  protected setCovered(seat: Seat, covered: boolean): void {
-    if (this.seats[seat]?.kind !== 'human' || covered === this.covered.has(seat)) return;
+  /** Liga (com o motivo) ou desliga o bot que cobre um humano; a mesa segue na hora. */
+  protected setCovered(seat: Seat, reason: CoverReason | null): void {
+    if (this.seats[seat]?.kind !== 'human') return;
+    const current = this.covered.get(seat);
+    if ((current?.reason ?? null) === reason) return;
+    if (current && reason) {
+      // Só mudou o motivo (ex.: parado e depois caiu): o mesmo bot continua.
+      this.covered.set(seat, { bot: current.bot, reason });
+      this.onSeatsChange();
+      return;
+    }
     this.stopClock(seat);
-    if (covered) this.covered.set(seat, coverBot());
+    this.strikes.delete(seat);
+    if (reason) this.covered.set(seat, { bot: this.coverBot(), reason });
     else this.covered.delete(seat);
+    this.onSeatsChange();
     if (this.paused || this.disposed) return;
     this.version += 1;
     this.cancelTimers();
@@ -305,8 +336,41 @@ export class LocalSession implements MatchSession {
     this.onChange([]);
   }
 
+  /** Motivo do bot que cobre o assento (null: o próprio jogador decide). */
+  coverOf(seat: Seat): CoverReason | null {
+    return this.covered.get(seat)?.reason ?? null;
+  }
+
   protected isCovered(seat: Seat): boolean {
     return this.covered.has(seat);
+  }
+
+  /** Troca quem ocupa um assento (só entre mãos): um bot dá lugar a quem entrou na sala. */
+  protected replaceSeat(seat: Seat, setup: SeatSetup): void {
+    const seats = [...this.seatList];
+    seats[seat] = setup;
+    this.seatList = seats;
+    this.bots.delete(seat);
+    this.covered.delete(seat);
+    this.strikes.delete(seat);
+    if (setup.kind === 'bot') this.bots.set(seat, createBot(setup.skill, setup.characterId));
+    else this.banks[seat] = bankMsOf(this.settings.timer);
+    this.onSeatsChange();
+  }
+
+  /** Antes de começar a próxima mão (a sala encaixa aqui quem está esperando para entrar). */
+  protected beforeNextHand(): void {
+    // a sessão solo não troca assentos
+  }
+
+  /** Assentos ou coberturas mudaram (a sala grava no banco). */
+  protected onSeatsChange(): void {
+    // a sessão solo não publica nada
+  }
+
+  private coverBot(): BotPolicy {
+    const character = CHARACTERS[this.botRng.int(CHARACTERS.length)] ?? CHARACTERS[0];
+    return createBot('normal', character?.id ?? 'sora');
   }
 
   /** Chamado depois de cada mudança (o anfitrião publica as visões de todos aqui). */
@@ -347,6 +411,7 @@ export class LocalSession implements MatchSession {
       const next = this.state;
       this.schedule(() => {
         if (this.state !== next) return;
+        this.beforeNextHand();
         const r = startNextHand(this.state, this.seed());
         this.state = r.state;
         this.afterChange(r.events);
@@ -373,7 +438,7 @@ export class LocalSession implements MatchSession {
       const seat = i as Seat;
       const legal = getLegalActions(this.state, seat);
       if (!hasAnyAction(legal)) continue;
-      const bot = this.bots[seat] ?? this.covered.get(seat);
+      const bot = this.bots.get(seat) ?? this.covered.get(seat)?.bot;
       if (bot) {
         const delay = legal.ackSummary
           ? 0
@@ -417,10 +482,23 @@ export class LocalSession implements MatchSession {
           const action = bot.decide(getPlayerView(this.state, seat), legal, this.botRng);
           this.apply(seat, action);
         }, delay);
-      } else if (!legal.ackSummary) {
-        this.startClock(seat, legal, version);
+      } else {
+        if (!legal.ackSummary) this.startClock(seat, legal, version);
+        this.watchIdle(seat, legal, version);
       }
     }
+  }
+
+  /** Sala: sem relógio (tempo ilimitado ou resultado da mão), muito tempo parado ⇒ bot assume. */
+  private watchIdle(seat: Seat, legal: LegalActions, version: number): void {
+    const idle = this.idle;
+    if (!idle || (this.settings.timer.mode === 'timed' && !legal.ackSummary)) return;
+    this.schedule(
+      () => {
+        if (this.version === version) this.setCovered(seat, 'idle');
+      },
+      legal.ackSummary ? idle.summaryMs : idle.turnMs,
+    );
   }
 
   private startClock(seat: Seat, legal: LegalActions, version: number): void {
@@ -435,7 +513,11 @@ export class LocalSession implements MatchSession {
     this.schedule(
       () => {
         if (this.version !== version) return;
-        this.apply(seat, defaultAction(this.state, seat, legal));
+        // Sala: muitos estouros seguidos ⇒ um bot assume e decide esta jogada.
+        const strikes = (this.strikes.get(seat) ?? 0) + 1;
+        this.strikes.set(seat, strikes);
+        if (this.idle && strikes >= this.idle.timeouts) this.setCovered(seat, 'idle');
+        else this.apply(seat, defaultAction(this.state, seat, legal));
       },
       baseMs + bankMs + grace,
     );

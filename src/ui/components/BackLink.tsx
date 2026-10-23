@@ -2,6 +2,7 @@
  * Botão de navegação das telas de conteúdo: pílula dourada com seta animada. Por padrão volta ao menu;
  * com `forward`, a seta vai à direita (ex.: "Configurações").
  */
+import type { MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { t } from '../../i18n';
 import styles from './Button.module.css';
@@ -10,13 +11,16 @@ export function BackLink({
   to = '/',
   label,
   forward = false,
+  onClick,
 }: {
   to?: string;
   label?: string;
   forward?: boolean;
+  /** Antes de navegar (preventDefault cancela, ex.: para pedir confirmação). */
+  onClick?: (e: MouseEvent<HTMLAnchorElement>) => void;
 }) {
   return (
-    <Link className={forward ? styles.forward : styles.back} to={to}>
+    <Link className={forward ? styles.forward : styles.back} to={to} onClick={onClick}>
       <span className={styles.backArrow} aria-hidden="true">
         <svg
           viewBox="0 0 16 16"

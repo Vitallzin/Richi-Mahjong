@@ -15,10 +15,7 @@ describe('Menu principal', () => {
     renderAt('/');
     expect(screen.getByRole('heading', { level: 1, name: 'Riichi Mahjong' })).toBeInTheDocument();
     // No primeiro uso, passa pelas boas-vindas (spec 9.1).
-    expect(screen.getByRole('link', { name: 'Jogar partida' })).toHaveAttribute(
-      'href',
-      '/boas-vindas',
-    );
+    expect(screen.getByRole('link', { name: 'Jogar' })).toHaveAttribute('href', '/boas-vindas');
     // Fase 5: salas liberadas; sem login, o canto mostra "Entrar".
     expect(screen.getByRole('link', { name: 'Salas privadas' })).toHaveAttribute('href', '/salas');
     expect(screen.getByRole('link', { name: 'Entrar' })).toHaveAttribute('href', '/perfil');

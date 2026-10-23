@@ -28,13 +28,10 @@ const at = (path: string) =>
   );
 
 describe('boas-vindas (spec 9.1)', () => {
-  it('no primeiro uso, "Jogar partida" passa pelas boas-vindas; depois vai direto', () => {
+  it('no primeiro uso, "Jogar" passa pelas boas-vindas; depois vai direto', () => {
     at('/');
-    expect(screen.getByRole('link', { name: 'Jogar partida' })).toHaveAttribute(
-      'href',
-      '/boas-vindas',
-    );
-    fireEvent.click(screen.getByRole('link', { name: 'Jogar partida' }));
+    expect(screen.getByRole('link', { name: 'Jogar' })).toHaveAttribute('href', '/boas-vindas');
+    fireEvent.click(screen.getByRole('link', { name: 'Jogar' }));
     fireEvent.click(screen.getByRole('button', { name: 'Decidir depois' }));
     expect(screen.getByText('configurar')).toBeInTheDocument();
     expect(useSettings.getState().welcomeSeen).toBe(true);

@@ -138,3 +138,96 @@
     transform: scale(1.06);
   }
 }
+
+/* Entrada suave das telas da sala (só opacidade: não muda o posicionamento das janelas fixas). */
+.enter {
+  animation: roomFade 360ms var(--ease-out) both;
+}
+
+@keyframes roomFade {
+  from {
+    opacity: 0;
+  }
+}
+
+.count {
+  margin-left: 0.4rem;
+  padding: 0 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--gold-dim);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--gold-bright);
+  vertical-align: 0.15rem;
+}
+
+/* Quem está na sala: sentados e quem ainda não escolheu assento (destacado). */
+.members {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.member,
+.memberStanding {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.4rem 0.75rem 0.4rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid rgb(240 211 145 / 0.16);
+  background: rgb(18 13 31 / 0.55);
+  animation: roomFade 300ms var(--ease-out) both;
+}
+
+.memberStanding {
+  border-color: rgb(255 155 143 / 0.55);
+  background: rgb(90 22 30 / 0.35);
+}
+
+.memberName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.memberName small {
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.memberStatus {
+  flex: none;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.memberStanding .memberStatus {
+  color: #ffb3a8;
+  font-weight: 700;
+}
+
+.waitSeal {
+  display: grid;
+  place-items: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 50%;
+  font-family: var(--font-brush);
+  font-size: 1.6rem;
+  color: var(--rice);
+  background: radial-gradient(circle at 35% 30%, var(--cinnabar-bright), #5a1610);
+  box-shadow: 0 0 0 4px rgb(240 211 145 / 0.2);
+  animation: waitPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes waitPulse {
+  50% {
+    box-shadow: 0 0 0 10px rgb(240 211 145 / 0.06);
+  }
+}

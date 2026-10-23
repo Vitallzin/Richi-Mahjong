@@ -87,6 +87,18 @@ nav {
   width: min(23rem, 92vw);
 }
 
+.list > li {
+  animation: itemIn 520ms var(--ease-out) both;
+  animation-delay: calc(250ms + var(--n, 0) * 55ms);
+}
+
+@keyframes itemIn {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+}
+
 .item {
   composes: shine from '../components/Button.module.css';
   display: flex;

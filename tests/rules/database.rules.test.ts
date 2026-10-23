@@ -10,6 +10,7 @@ import { get, push, ref, remove, serverTimestamp, set, update } from 'firebase/d
 import { readFileSync } from 'node:fs';
 import {
   sampleActions,
+  sampleMember,
   sampleMeta,
   samplePrivate,
   samplePublic,
@@ -85,14 +86,28 @@ describe('salas (spec 13.7)', () => {
     await assertFails(get(ref(zé, `rooms/${CODE}/public`)));
   });
 
-  it('entrar só no lobby; membro reconecta durante a partida', async () => {
+  it('entra no lobby ou com a partida em andamento (ADR 0020); membro reconecta', async () => {
     await seedRoom('playing');
-    await assertFails(set(ref(db('ze'), `rooms/${CODE}/members/ze`), true));
+    await assertSucceeds(set(ref(db('ze'), `rooms/${CODE}/members/ze`), sampleMember()));
     await assertSucceeds(set(ref(db('bia'), `rooms/${CODE}/presence/bia`), true));
     await seedRoom('lobby');
     await assertSucceeds(set(ref(db('ze'), `rooms/${CODE}/members/ze`), true));
     // ninguém se torna membro em nome de outro
-    await assertFails(set(ref(db('ze'), `rooms/${CODE}/members/outro`), true));
+    await assertFails(set(ref(db('ze'), `rooms/${CODE}/members/outro`), sampleMember()));
+  });
+
+  it('membros: perfil validado; membros veem quem está na sala, de fora não', async () => {
+    await seedRoom('lobby');
+    const ze = db('ze');
+    const member = `rooms/${CODE}/members/ze`;
+    await assertFails(set(ref(ze, member), { ...sampleMember(), lixo: 1 }));
+    await assertFails(set(ref(ze, member), { ...sampleMember(), displayName: 'x'.repeat(25) }));
+    await assertFails(
+      set(ref(ze, member), { ...sampleMember(), photoURL: 'https://rastreador.example/p.png' }),
+    );
+    await assertSucceeds(set(ref(ze, member), sampleMember()));
+    await assertSucceeds(get(ref(db('bia'), `rooms/${CODE}/members`)));
+    await assertFails(get(ref(db('caio'), `rooms/${CODE}/members`)));
   });
 
   it('inbox: só o dono escreve no seu, com formato válido; só o anfitrião lê', async () => {
@@ -168,6 +183,16 @@ describe('salas (spec 13.7)', () => {
     );
     await assertFails(
       set(ref(host, `rooms/${CODE}/seats/1`), { type: 'human', displayName: 'x'.repeat(25) }),
+    );
+    await assertFails(
+      set(ref(host, `rooms/${CODE}/seats/1`), {
+        type: 'human',
+        displayName: 'x',
+        photoURL: 'https://rastreador.example/p.png',
+      }),
+    );
+    await assertFails(
+      set(ref(host, `rooms/${CODE}/seats/1`), { type: 'human', displayName: 'x', cover: 'x' }),
     );
     await assertFails(
       set(ref(host, `rooms/${CODE}/private/bia`), {

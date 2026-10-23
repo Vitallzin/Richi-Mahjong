@@ -1,20 +1,23 @@
 /**
- * /sala/:codigo (spec 13.2): lobby (assentos, personagens dos bots, código e link) e, durante a partida,
- * a mesma mesa do solo. Convidados veem "Anfitrião desconectado" se o anfitrião cair (13.6).
+ * /sala/:codigo (spec 13.2): lobby (assentos, quem está na sala, personagens dos bots, código e link) e,
+ * durante a partida, a mesma mesa do solo com o código à vista, avisos de quem saiu ou voltou e o
+ * "(bot)" de quem está sendo coberto (ADR 0020). Convidados veem "Anfitrião desconectado" se o
+ * anfitrião cair (13.6). Ao fim da partida, todos voltam a esta tela.
  */
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CHARACTERS, type CharacterId } from '../../bots';
-import type { RuleSet } from '../../engine';
+import type { RuleSet, Seat } from '../../engine';
 import { t, tKey } from '../../i18n';
-import { parseRoomCode } from '../../session';
+import { isGooglePhoto, parseRoomCode } from '../../session';
 import { useAccount } from '../../state/account';
+import { GOOGLE_AVATAR } from '../../state/profile';
 import { RoomController, type RoomSettings, type RoomState } from '../../state/roomController';
 import { Avatar } from '../components/Avatar';
 import { BackLink } from '../components/BackLink';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { enterGameDisplay } from '../platform/display';
-import { Table } from '../table/Table';
+import { enterGameDisplay, exitGameDisplay } from '../platform/display';
+import { Table, type TableRoom } from '../table/Table';
 import page from './Page.module.css';
 import { GoogleButton } from './ProfileScreen';
 import styles from './RoomScreen.module.css';
@@ -23,10 +26,45 @@ const WIND = ['東', '南', '西', '北'];
 /** Tempo sem o anfitrião antes do aviso (evita piscar em reconexões rápidas). */
 const HOST_AWAY_MS = 3000;
 
+/** Quem está na sala agora (online), sentado ou não, com o anfitrião primeiro. */
+function Members({ state }: { state: RoomState }) {
+  const hostUid = state.meta?.hostUid;
+  const present = Object.entries(state.members)
+    .filter(([uid]) => state.online.has(uid))
+    .sort(([a], [b]) => Number(b === hostUid) - Number(a === hostUid));
+  return (
+    <section className={page.section} aria-labelledby="members-title">
+      <h2 id="members-title">
+        {t('room.members')} <small className={styles.count}>{present.length}</small>
+      </h2>
+      {present.length <= 1 && <p className={page.desc}>{t('room.members.empty')}</p>}
+      <ul className={styles.members}>
+        {present.map(([uid, m]) => {
+          const seat = state.seats.findIndex((s) => s.type === 'human' && s.uid === uid);
+          return (
+            <li key={uid} className={seat < 0 ? styles.memberStanding : styles.member}>
+              <Avatar avatar={m.avatar} photoURL={m.photoURL} size={34} />
+              <span className={styles.memberName}>
+                {m.displayName}
+                {uid === hostUid && <small> · {t('room.host')}</small>}
+              </span>
+              <span className={styles.memberStatus}>
+                {seat < 0
+                  ? t('room.members.standing')
+                  : t('room.members.seated', { wind: WIND[seat] ?? '' })}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
 function Lobby({ room, state }: { room: RoomController; state: RoomState }) {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
-  const [confirmClose, setConfirmClose] = useState(false);
+  const [confirm, setConfirm] = useState<'close' | 'back' | 'start' | null>(null);
   const meta = state.meta;
   if (!meta) return null;
   const rules = JSON.parse(meta.rules) as RuleSet;
@@ -36,6 +74,7 @@ function Lobby({ room, state }: { room: RoomController; state: RoomState }) {
     settings.timer.mode === 'unlimited'
       ? t('setup.timer.unlimited')
       : `${settings.timer.baseSeconds}+${settings.timer.bankSeconds}`;
+  const unseated = room.unseated();
 
   const copy = async () => {
     try {
@@ -46,10 +85,31 @@ function Lobby({ room, state }: { room: RoomController; state: RoomState }) {
     }
   };
 
+  const start = () => {
+    setConfirm(null);
+    void enterGameDisplay();
+    void room.startMatch();
+  };
+
+  const close = () => {
+    setConfirm(null);
+    void room.closeRoom().then(() => navigate('/salas'));
+  };
+
   return (
-    <main className={page.page}>
+    <main className={`${page.page} ${styles.enter}`}>
       <header className={page.header}>
-        <BackLink to="/salas" label={t('rooms.title')} />
+        <BackLink
+          to="/salas"
+          label={t('rooms.title')}
+          onClick={(e) => {
+            // Anfitrião sair da sala a fecha: pergunta antes. Convidado só sai.
+            if (state.isHost) {
+              e.preventDefault();
+              setConfirm('back');
+            } else room.forget();
+          }}
+        />
         <h1 className={page.title}>{t('room.lobby')}</h1>
       </header>
 
@@ -80,7 +140,7 @@ function Lobby({ room, state }: { room: RoomController; state: RoomState }) {
                 </span>
                 {s.type === 'human' ? (
                   <>
-                    <Avatar avatar={s.avatar ?? 'chun'} size={42} />
+                    <Avatar avatar={s.avatar ?? 'chun'} photoURL={s.photoURL} size={42} />
                     <span className={styles.seatName}>
                       {s.displayName}
                       {s.uid === meta.hostUid && <small> · {t('room.host')}</small>}
@@ -138,20 +198,19 @@ function Lobby({ room, state }: { room: RoomController; state: RoomState }) {
         <p className={page.desc}>{t('room.botsNote')}</p>
       </section>
 
+      <Members state={state} />
+
       {state.isHost ? (
         <div className={page.buttons}>
           <button
             type="button"
             className={page.primary}
             disabled={state.mySeat === null}
-            onClick={() => {
-              void enterGameDisplay();
-              void room.startMatch();
-            }}
+            onClick={() => (unseated.length > 0 ? setConfirm('start') : start())}
           >
             {t('room.start')}
           </button>
-          <button type="button" className={page.secondary} onClick={() => setConfirmClose(true)}>
+          <button type="button" className={page.secondary} onClick={() => setConfirm('close')}>
             {t('room.close')}
           </button>
         </div>
@@ -161,7 +220,7 @@ function Lobby({ room, state }: { room: RoomController; state: RoomState }) {
         </p>
       )}
 
-      {confirmClose && (
+      {confirm === 'close' && (
         <ConfirmDialog
           danger
           glyph="閉"
@@ -169,13 +228,59 @@ function Lobby({ room, state }: { room: RoomController; state: RoomState }) {
           message={t('room.close.message')}
           confirmLabel={t('room.close')}
           cancelLabel={t('common.cancel')}
-          onConfirm={() => {
-            setConfirmClose(false);
-            void room.closeRoom().then(() => navigate('/salas'));
-          }}
-          onCancel={() => setConfirmClose(false)}
+          onConfirm={close}
+          onCancel={() => setConfirm(null)}
         />
       )}
+      {confirm === 'back' && (
+        <ConfirmDialog
+          danger
+          glyph="退"
+          title={t('room.back.title')}
+          message={t('room.back.message')}
+          confirmLabel={t('room.back.confirm')}
+          cancelLabel={t('common.cancel')}
+          onConfirm={close}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
+      {confirm === 'start' && (
+        <ConfirmDialog
+          glyph="座"
+          title={t('room.start.unseated.title')}
+          message={t('room.start.unseated.message', {
+            names: unseated.map((m) => m.displayName).join(', '),
+          })}
+          confirmLabel={t('room.start.unseated.confirm')}
+          cancelLabel={t('common.cancel')}
+          onConfirm={start}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
+    </main>
+  );
+}
+
+/** Entrou com a partida em andamento: espera a mão acabar para assumir um bot. */
+function WaitingSeat({ room, state }: { room: RoomController; state: RoomState }) {
+  const full = !state.seats.some((s) => s.type === 'bot');
+  return (
+    <main className={`${page.page} ${styles.enter}`}>
+      <header className={page.header}>
+        <BackLink to="/salas" label={t('rooms.title')} onClick={() => room.forget()} />
+        <h1 className={page.title}>{t('room.waitingSeat.title')}</h1>
+      </header>
+      <section className={`${page.section} ${styles.codeCard}`}>
+        <span className={styles.waitSeal} aria-hidden="true">
+          待
+        </span>
+        <span className={page.desc}>{t('room.code')}</span>
+        <strong className={styles.code}>{room.code}</strong>
+        <p className={page.lead} role="status">
+          {full ? t('room.waitingSeat.full') : t('room.waitingSeat')}
+        </p>
+      </section>
+      <Members state={state} />
     </main>
   );
 }
@@ -198,15 +303,23 @@ function RoomView({
   uid,
   name,
   avatar,
+  photoURL,
 }: {
   code: string;
   uid: string;
   name: string;
   avatar: string;
+  photoURL: string | null;
 }) {
   const room = useMemo(
-    () => new RoomController(code, { uid, displayName: name, avatar }),
-    [code, uid, name, avatar],
+    () =>
+      new RoomController(code, {
+        uid,
+        displayName: name,
+        avatar,
+        ...(photoURL ? { photoURL } : {}),
+      }),
+    [code, uid, name, avatar, photoURL],
   );
   useEffect(() => {
     void room.start();
@@ -233,6 +346,27 @@ function RoomBody({ room }: { room: RoomController }) {
     return () => clearTimeout(id);
   }, [hostOnline, state.isHost]);
 
+  const tableRoom = useMemo<TableRoom>(() => {
+    const covered = new Set<Seat>();
+    state.seats.forEach((s, i) => {
+      if (s.type === 'human' && s.cover) covered.add(i as Seat);
+    });
+    const mine = state.mySeat === null ? undefined : state.seats[state.mySeat];
+    return {
+      code: room.code,
+      isHost: state.isHost,
+      covered,
+      myCover: mine?.cover ?? null,
+      notices: state.notices,
+      onResume: () => void room.resume(),
+    };
+  }, [room, state.seats, state.mySeat, state.isHost, state.notices]);
+
+  const leave = (to: string) => {
+    void exitGameDisplay();
+    navigate(to);
+  };
+
   switch (state.phase) {
     case 'loading':
       return <Message text={t('room.loading')} />;
@@ -253,10 +387,19 @@ function RoomBody({ room }: { room: RoomController }) {
         <Table
           key={state.session.localSeat}
           session={state.session}
-          onExit={() => navigate('/salas')}
-          onPlayAgain={() => void room.playAgain()}
+          room={tableRoom}
+          onExit={() => {
+            // Anfitrião sair encerra a partida para todos; convidado sai e um bot assume.
+            if (state.isHost) void room.closeRoom();
+            leave('/');
+          }}
+          onResultMenu={() => leave('/')}
+          onPlayAgain={() => {
+            void exitGameDisplay();
+            void room.backToRoom();
+          }}
         />
-        {hostAway && state.phase === 'playing' && (
+        {hostAway && state.meta?.status === 'playing' && (
           <div className={styles.away} role="alertdialog" aria-labelledby="away-title">
             <div className={styles.awayCard}>
               <span className={styles.awaySeal} aria-hidden="true">
@@ -264,7 +407,7 @@ function RoomBody({ room }: { room: RoomController }) {
               </span>
               <h2 id="away-title">{t('room.hostAway')}</h2>
               <p>{t('room.hostAway.desc')}</p>
-              <button type="button" className={page.secondary} onClick={() => navigate('/salas')}>
+              <button type="button" className={page.secondary} onClick={() => leave('/salas')}>
                 {t('room.leave')}
               </button>
             </div>
@@ -273,6 +416,8 @@ function RoomBody({ room }: { room: RoomController }) {
       </>
     );
   }
+  if (state.meta?.status === 'playing' && !state.isHost && state.mySeat === null)
+    return <WaitingSeat room={room} state={state} />;
   if (state.phase === 'starting' || state.phase === 'playing')
     return <Message text={t('room.joining')} />;
   return <Lobby room={room} state={state} />;
@@ -298,5 +443,16 @@ export function RoomScreen() {
       </main>
     );
   }
-  return <RoomView code={code} uid={user.uid} name={profile.displayName} avatar={profile.avatar} />;
+  // A foto vai para a sala só quando é o avatar escolhido (os outros a veem na mesa).
+  const photo =
+    profile.avatar === GOOGLE_AVATAR && isGooglePhoto(user.photoURL) ? user.photoURL : null;
+  return (
+    <RoomView
+      code={code}
+      uid={user.uid}
+      name={profile.displayName}
+      avatar={profile.avatar}
+      photoURL={photo}
+    />
+  );
 }

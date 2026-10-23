@@ -25,3 +25,4 @@ Um arquivo curto por decisão não óbvia. Valores de regra confirmados ficam em
 | 0017 | Fase 5: Aparência, conta, histórico e salas privadas                |
 | 0018 | Fase 6: bot Difícil, personagens e acabamento                       |
 | 0019 | Endurecimento: cabeçalhos HTTP, limites no banco, código de sala    |
+| 0020 | Salas: bot de cobertura, entrada no meio e volta à sala             |

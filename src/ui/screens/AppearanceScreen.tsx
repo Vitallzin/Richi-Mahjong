@@ -2,7 +2,7 @@
  * /aparencia (spec 11.2, Fase 5 — ADR 0014): fundo, feltro, faces e verso escolhidos de forma
  * independente, com prévia ao vivo. Tudo desbloqueado; a escolha fica neste aparelho.
  */
-import type { CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { parseTiles } from '../../engine';
 import { t, tKey } from '../../i18n';
 import { useSettings } from '../../state/settings';
@@ -25,6 +25,23 @@ const PREVIEW_FRONT = parseTiles('1m5p0s7s1z6z7z');
 const SAMPLE = parseTiles('5p1z6z');
 
 type Axis = keyof Appearance;
+
+/** A prévia é desenhada neste tamanho e escalada para caber na moldura (fica centralizada no celular). */
+const SCENE_WIDTH = 640;
+
+function useFitScale() {
+  const [el, setEl] = useState<HTMLElement | null>(null);
+  const [scale, setScale] = useState(1);
+  useEffect(() => {
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(([entry]) =>
+      setScale((entry?.contentRect.width ?? SCENE_WIDTH) / SCENE_WIDTH),
+    );
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [el]);
+  return [setEl, scale] as const;
+}
 
 function Sample({ axis, option }: { axis: Axis; option: AppearanceOption<string> }) {
   const style = option.vars as CSSProperties;
@@ -93,6 +110,7 @@ export function AppearanceScreen() {
   // Lê o valor mais recente: cliques seguidos não se sobrescrevem.
   const pick = (patch: Partial<Appearance>) =>
     set({ appearance: { ...useSettings.getState().appearance, ...patch } });
+  const [fitRef, scale] = useFitScale();
 
   return (
     <main className={page.page}>
@@ -102,19 +120,21 @@ export function AppearanceScreen() {
       </header>
       <p className={page.lead}>{t('appearance.lead')}</p>
 
-      <figure className={styles.preview} aria-label={t('appearance.preview')}>
+      <figure ref={fitRef} className={styles.preview} aria-label={t('appearance.preview')}>
         <Backdrop />
-        <div className={styles.table}>
-          <div className={styles.felt}>
-            <div className={styles.row}>
-              {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-                <Tile key={i} tile={null} width={22} />
-              ))}
-            </div>
-            <div className={styles.row}>
-              {PREVIEW_FRONT.map((tile) => (
-                <Tile key={tile.id} tile={tile} width={34} />
-              ))}
+        <div className={styles.scene} style={{ '--scale': scale } as CSSProperties}>
+          <div className={styles.table}>
+            <div className={styles.felt}>
+              <div className={styles.row}>
+                {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+                  <Tile key={i} tile={null} width={26} />
+                ))}
+              </div>
+              <div className={styles.row}>
+                {PREVIEW_FRONT.map((tile) => (
+                  <Tile key={tile.id} tile={tile} width={40} />
+                ))}
+              </div>
             </div>
           </div>
         </div>

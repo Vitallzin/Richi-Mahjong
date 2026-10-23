@@ -10,7 +10,7 @@ import { t, tKey } from '../../i18n';
 import type { MatchSession } from '../../session';
 import { relativeSide, seatName, windKanji, windName, NUMBER_KANJI } from './labels';
 import styles from './MatchIntro.module.css';
-import { portraitOf, portraitStyle } from '../components/seatPortrait';
+import { PlayerPortrait } from '../components/PlayerPortrait';
 
 /** Fecha sozinha depois deste tempo (clicar ou Enter pula). */
 export const INTRO_MS = 5200;
@@ -108,9 +108,7 @@ export function MatchIntro({
             <span className={styles.wind} aria-hidden="true">
               {windKanji(p.seatWind)}
             </span>
-            <span className={styles.portrait} style={portraitStyle(setup, name)} aria-hidden="true">
-              {portraitOf(setup, name).glyph}
-            </span>
+            <PlayerPortrait seat={setup} name={name} className={styles.portrait} />
             <div className={styles.info}>
               <strong className={styles.name}>{name}</strong>
               <span className={styles.meta}>

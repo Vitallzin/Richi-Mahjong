@@ -28,10 +28,10 @@ export interface GuestSessionOptions {
 export class GuestSession implements MatchSession {
   readonly rules: RuleSet;
   readonly settings: MatchSettings;
-  readonly seats: readonly SeatSetup[];
   readonly localSeat: Seat;
   readonly source = 'room';
 
+  private seatList: readonly SeatSetup[];
   private view: PlayerView;
   private seq: number;
   private clock: {
@@ -51,7 +51,7 @@ export class GuestSession implements MatchSession {
   constructor(opts: GuestSessionOptions) {
     this.rules = opts.rules;
     this.settings = opts.settings;
-    this.seats = opts.seats;
+    this.seatList = opts.seats;
     this.localSeat = opts.localSeat;
     this.transport = opts.transport;
     this.now = opts.now ?? (() => performance.now());
@@ -73,6 +73,15 @@ export class GuestSession implements MatchSession {
     this.lastError = p.lastError ?? null;
     if (this.view.summary) this.winLog.push(...winsFromEvents(events, this.view.summary));
     for (const l of this.listeners) l(this.view, events);
+  }
+
+  get seats(): readonly SeatSetup[] {
+    return this.seatList;
+  }
+
+  /** Assentos mudaram no banco (alguém entrou no lugar de um bot entre mãos). */
+  setSeats(seats: readonly SeatSetup[]): void {
+    if (seats.length === this.seatList.length) this.seatList = seats;
   }
 
   getView(): PlayerView {

@@ -2,7 +2,7 @@ import { t } from './index';
 
 describe('i18n', () => {
   it('traduz chaves conhecidas', () => {
-    expect(t('menu.play')).toBe('Jogar partida');
+    expect(t('menu.play')).toBe('Jogar');
   });
 
   it('interpola parâmetros e mantém os ausentes literais', () => {

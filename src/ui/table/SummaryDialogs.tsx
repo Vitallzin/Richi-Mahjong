@@ -11,11 +11,14 @@ const PLACE_GLYPH = ['一', '二', '三', '四'] as const;
 export function MatchResultDialog({
   result,
   seats,
+  playAgainLabel = t('result.playAgain'),
   onPlayAgain,
   onMenu,
 }: {
   result: MatchResult;
   seats: readonly SeatSetup[];
+  /** Na sala, "Voltar à sala" no lugar de "Jogar de novo". */
+  playAgainLabel?: string;
   onPlayAgain: () => void;
   onMenu: () => void;
 }) {
@@ -48,7 +51,7 @@ export function MatchResultDialog({
         </ol>
         <div className={styles.buttons}>
           <button type="button" className={styles.primary} onClick={onPlayAgain} autoFocus>
-            {t('result.playAgain')}
+            {playAgainLabel}
           </button>
           <button type="button" className={styles.secondary} onClick={onMenu}>
             {t('result.menu')}

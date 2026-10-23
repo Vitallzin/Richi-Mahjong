@@ -47,6 +47,7 @@ export function ProfileScreen() {
   const { status, user, profile, error } = useAccount();
   const [name, setName] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
   const [saved, setSaved] = useState(false);
 
   if (status !== 'signedIn' || !user || !profile) {
@@ -156,7 +157,7 @@ export function ProfileScreen() {
         <button type="button" className={page.primary} onClick={() => navigate('/historico')}>
           {t('account.history')}
         </button>
-        <button type="button" className={page.secondary} onClick={() => void signOut()}>
+        <button type="button" className={page.secondary} onClick={() => setConfirmSignOut(true)}>
           {t('account.signOut')}
         </button>
         <button
@@ -169,6 +170,20 @@ export function ProfileScreen() {
       </div>
       <p className={page.desc}>{t('account.privacy')}</p>
 
+      {confirmSignOut && (
+        <ConfirmDialog
+          glyph="別"
+          title={t('account.signOut.title')}
+          message={t('account.signOut.message')}
+          confirmLabel={t('account.signOut')}
+          cancelLabel={t('common.cancel')}
+          onConfirm={() => {
+            setConfirmSignOut(false);
+            void signOut();
+          }}
+          onCancel={() => setConfirmSignOut(false)}
+        />
+      )}
       {confirmDelete && (
         <ConfirmDialog
           danger

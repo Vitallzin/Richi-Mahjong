@@ -1,14 +1,16 @@
 // Salas (spec 13): anfitrião e convidado ligados por um transporte em memória (sem Firebase).
 import { createMatch, PRESET_YONMA, type Action, type PlayerView, type Seat } from '../engine';
-import { DEFAULT_TIMER } from './clock';
+import { DEFAULT_TIMER, type TimerSettings } from './clock';
 import { GuestSession, type GuestTransport } from './GuestSession';
 import { HostSession } from './HostSession';
 import { NO_DELAYS, type Scheduler } from './LocalSession';
 import {
   generateRoomCode,
+  IDLE_TURN_MS,
   isRoomCode,
   parseRoomCode,
   seatsForMatch,
+  type CoverReason,
   type HostUpdate,
   type PrivatePayload,
 } from './room';
@@ -48,19 +50,23 @@ const SEATS: SeatSetup[] = [
   { kind: 'bot', skill: 'normal', characterId: 'akari' },
 ];
 
-function setup(seed = 77) {
+function setup(seed = 77, timer: TimerSettings = DEFAULT_TIMER) {
   const scheduler = new ManualScheduler();
   const updates: HostUpdate[] = [];
+  const seatChanges: { seats: readonly SeatSetup[]; covers: Partial<Record<Seat, CoverReason>> }[] =
+    [];
   let deliver: ((p: PrivatePayload) => void) | null = null;
   const host = new HostSession({
     state: createMatch(PRESET_YONMA, seed).state,
-    settings: { timer: DEFAULT_TIMER, training: false },
+    settings: { timer, training: false },
     seats: SEATS,
     localSeat: 0,
     scheduler,
     delays: NO_DELAYS,
     autosave: false,
     seed: () => seed,
+    pick: () => 0,
+    onSeats: (seats, covers) => seatChanges.push({ seats, covers }),
     transport: {
       publish: (u) => {
         updates.push(u);
@@ -94,7 +100,18 @@ function setup(seed = 77) {
     initial: first,
     now: scheduler.now,
   });
-  return { scheduler, updates, host, guest, sent };
+  return { scheduler, updates, host, guest, sent, seatChanges };
+}
+
+/** Faz a primeira jogada legal (descarta a comprada, passa ou continua). */
+function act(session: { getView(): PlayerView; submit(a: Action): void }): boolean {
+  const v = session.getView();
+  if (v.legal.discard.length > 0)
+    session.submit({ type: 'discard', tile: v.drawn ?? v.legal.discard[0]! });
+  else if (v.legal.pass) session.submit({ type: 'pass' });
+  else if (v.legal.ackSummary) session.submit({ type: 'ackSummary' });
+  else return false;
+  return true;
 }
 
 /** Joga até o convidado ter algo a decidir (ou a mão acabar). */
@@ -217,5 +234,88 @@ describe('anfitrião e convidado (spec 13.1 e 13.4)', () => {
     expect(clock!.baseMs).toBeGreaterThan(0);
     s.scheduler.advance(2000);
     expect(s.guest.getClock()!.baseMs).toBeLessThanOrEqual(clock!.baseMs - 2000 + 1);
+  });
+});
+
+describe('bot no lugar de quem sai, fica parado ou entra depois (ADR 0020)', () => {
+  it('quem sai fica marcado como coberto nos assentos; ao voltar, o bot sai', () => {
+    const s = setup(5);
+    untilGuestActs(s);
+    s.host.setPresent('bia', false);
+    expect(s.host.coverOf(1)).toBe('away');
+    expect(s.seatChanges.at(-1)?.covers).toEqual({ 1: 'away' });
+    s.host.setPresent('bia', true);
+    expect(s.host.coverOf(1)).toBeNull();
+    expect(s.seatChanges.at(-1)?.covers).toEqual({});
+  });
+
+  it('tempo ilimitado: parado demais ⇒ bot assume; agir de novo devolve o assento', () => {
+    const s = setup(5, { mode: 'unlimited' });
+    const v = untilGuestActs(s);
+    expect(v.legal.ackSummary).toBe(false);
+    // A decisão começou até 500 ms antes (untilGuestActs anda de meio em meio segundo).
+    s.scheduler.advance(IDLE_TURN_MS - 600);
+    expect(s.host.coverOf(1)).toBeNull();
+    s.scheduler.advance(600);
+    expect(s.host.coverOf(1)).toBe('idle');
+    expect(s.seatChanges.at(-1)?.covers).toEqual({ 1: 'idle' });
+    // Reconectar não tira o bot de quem estava parado; agir tira.
+    s.host.setPresent('bia', true);
+    expect(s.host.coverOf(1)).toBe('idle');
+    // Qualquer ação do convidado (mesmo atrasada e recusada) mostra que ele voltou.
+    s.guest.submit({ type: 'pass' });
+    expect(s.host.coverOf(1)).toBeNull();
+    expect(s.seatChanges.at(-1)?.covers).toEqual({});
+  });
+
+  it('com relógio: estouros seguidos ⇒ bot assume; "voltar a jogar" tira o bot', () => {
+    const s = setup(5);
+    for (let i = 0; i < 12 && !s.host.coverOf(1); i++) {
+      const v = untilGuestActs(s);
+      if (v.legal.ackSummary) s.guest.submit({ type: 'ackSummary' });
+      else s.scheduler.advance(30_000);
+    }
+    expect(s.host.coverOf(1)).toBe('idle');
+    s.host.resume('bia');
+    expect(s.host.coverOf(1)).toBeNull();
+  });
+
+  it('o próprio anfitrião parado também é coberto; jogar o devolve', () => {
+    const s = setup(9, { mode: 'unlimited' });
+    for (let i = 0; i < 400 && !s.host.getView().legal.discard.length; i++) {
+      act(s.guest);
+      s.scheduler.advance(500);
+    }
+    s.scheduler.advance(IDLE_TURN_MS);
+    expect(s.host.coverOf(0)).toBe('idle');
+    s.host.resume();
+    expect(s.host.coverOf(0)).toBeNull();
+  });
+
+  it('quem entra com a partida em andamento assume um bot na mão seguinte', () => {
+    const s = setup(21, { mode: 'unlimited' });
+    s.host.queueJoin({ kind: 'human', name: 'Caio', uid: 'caio' });
+    expect(s.host.isWaiting('caio')).toBe(true);
+    // Na mão atual nada muda.
+    expect(s.host.seats[2]).toMatchObject({ kind: 'bot' });
+    for (let i = 0; i < 3000 && s.host.isWaiting('caio'); i++) {
+      act(s.host);
+      act(s.guest);
+      s.scheduler.advance(500);
+    }
+    expect(s.host.isWaiting('caio')).toBe(false);
+    expect(s.host.getState().handsPlayed).toBeGreaterThan(0);
+    expect(s.host.seats[2]).toEqual({ kind: 'human', name: 'Caio', uid: 'caio' });
+    expect(s.seatChanges.at(-1)?.seats[2]).toMatchObject({ uid: 'caio' });
+    // Ele passa a receber a própria visão, do assento novo.
+    const view = JSON.parse(s.updates.at(-1)!.privates['caio']!.view) as PlayerView;
+    expect(view.seat).toBe(2);
+  });
+
+  it('quem sai da sala antes da vez dele deixa a fila', () => {
+    const s = setup(21);
+    s.host.queueJoin({ kind: 'human', name: 'Caio', uid: 'caio' });
+    s.host.setPresent('caio', false);
+    expect(s.host.isWaiting('caio')).toBe(false);
   });
 });

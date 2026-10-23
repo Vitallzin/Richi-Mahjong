@@ -47,7 +47,7 @@ export const help = {
   'welcome.tutorial': 'Quero ler o tutorial antes',
 
   // Descrições das ajudas (boas-vindas e /ajudas)
-  'helps.title': 'Ajudas e acessibilidade',
+  'helps.title': 'Acessibilidade',
   'helps.rules.label': 'Ajuda de regras',
   'helps.rules.desc':
     'Mostra quanto falta para a mão ficar pronta (tenpai) e se ela já está completa.',
@@ -144,7 +144,7 @@ export const help = {
     'Mostra as mãos dos bots abertas para você aprender a ler o jogo. Só em partida solo; os bots não ganham nada com isso. Partidas em modo treino não entram nas estatísticas.',
 
   // Tutorial
-  'tutorial.title': 'Tutorial e regras',
+  'tutorial.title': 'Aprender Mahjong',
   'tutorial.chapters': 'Capítulos',
   'tutorial.prev': 'Anterior',
   'tutorial.next': 'Próximo',

@@ -17,12 +17,14 @@ import {
 import type { Action } from '../engine';
 import {
   generateRoomCode,
+  isGooglePhoto,
   PROTOCOL_VERSION,
   ROOM_TTL_MS,
   type HostUpdate,
   type InboxMessage,
   type LobbyRequest,
   type PrivatePayload,
+  type RoomMember,
   type RoomMeta,
   type RoomSeat,
   type RoomStatus,
@@ -57,7 +59,7 @@ export async function readMeta(code: string): Promise<RoomMeta | null> {
 /** Cria a sala com o anfitrião sentado no assento 0; apaga as salas antigas dele. */
 export async function createRoom(
   hostUid: string,
-  host: { readonly displayName: string; readonly avatar: string },
+  host: RoomMember,
   config: {
     readonly rules: string;
     readonly settings: string;
@@ -82,10 +84,16 @@ export async function createRoom(
     protocolVersion: PROTOCOL_VERSION,
   };
   await set(roomRef(code, 'meta'), meta);
-  await set(roomRef(code, `members/${hostUid}`), true);
+  await joinRoom(code, hostUid, host);
   const seats: RoomSeat[] = Array.from({ length: config.players }, (_, i) =>
     i === 0
-      ? { type: 'human', uid: hostUid, displayName: host.displayName, avatar: host.avatar }
+      ? {
+          type: 'human',
+          uid: hostUid,
+          displayName: host.displayName,
+          avatar: host.avatar,
+          ...(isGooglePhoto(host.photoURL) ? { photoURL: host.photoURL } : {}),
+        }
       : { type: 'empty', displayName: '' },
   );
   await set(roomRef(code, 'seats'), seats);
@@ -105,9 +113,26 @@ export async function deleteRoom(code: string): Promise<void> {
   setMyRooms(myRooms().filter((c) => c !== code));
 }
 
-/** Entra como membro (só no lobby; quem já é membro pode reconectar durante a partida). */
-export async function joinRoom(code: string, uid: string): Promise<void> {
-  await set(roomRef(code, `members/${uid}`), true);
+/** Entra como membro, com nome e avatar (a sala mostra quem chegou, mesmo sem assento). */
+export async function joinRoom(code: string, uid: string, me: RoomMember): Promise<void> {
+  await set(roomRef(code, `members/${uid}`), {
+    displayName: me.displayName.slice(0, 24) || '?',
+    avatar: me.avatar.slice(0, 64),
+    ...(isGooglePhoto(me.photoURL) ? { photoURL: me.photoURL } : {}),
+  });
+}
+
+/** Quem entrou na sala (por uid). Entradas antigas (`true`) não têm perfil e ficam de fora. */
+export function watchMembers(
+  code: string,
+  cb: (members: Readonly<Record<string, RoomMember>>) => void,
+): () => void {
+  return onValue(roomRef(code, 'members'), (s) => {
+    const raw = (s.val() as Record<string, RoomMember | true> | null) ?? {};
+    const out: Record<string, RoomMember> = {};
+    for (const [uid, m] of Object.entries(raw)) if (m !== true) out[uid] = m;
+    cb(out);
+  });
 }
 
 /** Presença com onDisconnect (13.6); refeita a cada reconexão. Devolve a função para sair. */

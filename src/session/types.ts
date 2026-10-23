@@ -11,6 +11,8 @@ export type SeatSetup =
       /** Conta do jogador em sala (spec 13): para quem vai a visão privada. */
       readonly uid?: string;
       readonly avatar?: string;
+      /** Foto da conta Google (salas): mostrada no lugar do avatar quando ele é "google". */
+      readonly photoURL?: string;
     }
   | { readonly kind: 'bot'; readonly skill: BotSkill; readonly characterId: CharacterId };
 

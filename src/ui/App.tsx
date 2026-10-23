@@ -5,6 +5,7 @@ import { applyAppearance } from '../theme/appearance';
 import { MigrationPrompt } from './components/MigrationPrompt';
 import { devSignIn, initAccount } from '../state/account';
 import { useAmbientAudio } from './audio/useAmbientAudio';
+import { useRouteTransition } from './platform/routeTransition';
 import { MainMenu } from './screens/MainMenu';
 import { NotFound } from './screens/NotFound';
 
@@ -49,6 +50,8 @@ export function App() {
   const a11y = useSettings((s) => s.accessibility);
   const appearance = useSettings((s) => s.appearance);
   useAmbientAudio();
+  // Entrada e saída animadas de cada tela.
+  const location = useRouteTransition();
   // Conta: só carrega o Firebase se o jogador já entrou neste aparelho (spec 12.1).
   useEffect(() => {
     initAccount();
@@ -67,7 +70,7 @@ export function App() {
     <>
       <MigrationPrompt />
       <Suspense fallback={<div className="route-loading" aria-busy="true" />}>
-        <Routes>
+        <Routes location={location}>
           <Route path="/" element={<MainMenu />} />
           <Route path="/jogar" element={<SetupScreen />} />
           <Route path="/partida" element={<TableScreen />} />

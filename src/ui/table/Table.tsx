@@ -9,18 +9,20 @@ import {
   type Action,
   type PlayerEvent,
   type PlayerView,
+  type Seat,
   type Tile as TileData,
   type TileKind,
 } from '../../engine';
 import { doraPairs } from '../../help';
 import { t } from '../../i18n';
-import { formatClock, type MatchSession } from '../../session';
+import { formatClock, type CoverReason, type MatchSession } from '../../session';
+import type { RoomNotice } from '../../state/roomController';
 import { useSettings } from '../../state/settings';
 import { useGameSounds } from '../audio/useGameSounds';
 import { Backdrop } from '../components/Backdrop';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { DecisionDialog } from '../components/DecisionDialog';
-import { portraitOf, portraitStyle } from '../components/seatPortrait';
+import { PlayerPortrait } from '../components/PlayerPortrait';
 import { Tile } from '../components/Tile';
 import { TileHighlightContext, type TileHighlight } from '../components/tileHighlight';
 import { TileLabelsContext } from '../components/tileLabels';
@@ -45,14 +47,32 @@ import { useRecordHistory } from './useRecordHistory';
 import { SpeechBubble } from './SpeechBubble';
 import { useSpeech } from './useSpeech';
 
+/** O que a mesa mostra a mais numa sala online (ADR 0020). */
+export interface TableRoom {
+  readonly code: string;
+  readonly isHost: boolean;
+  /** Assentos de humanos que um bot está jogando agora. */
+  readonly covered: ReadonlySet<Seat>;
+  /** Um bot está jogando por mim (parado demais). */
+  readonly myCover: CoverReason | null;
+  readonly notices: readonly RoomNotice[];
+  readonly onResume: () => void;
+}
+
 export function Table({
   session,
   onExit,
   onPlayAgain,
+  onResultMenu = onExit,
+  room,
 }: {
   session: MatchSession;
+  /** Confirmou a saída no meio da partida. */
   onExit: () => void;
   onPlayAgain: () => void;
+  /** "Voltar ao menu" no resultado final (padrão: o mesmo que sair). */
+  onResultMenu?: () => void;
+  room?: TableRoom;
 }) {
   const { view, events, tick, lastDiscardId } = useMatch(session);
   useRecordHistory(session, view);
@@ -265,6 +285,8 @@ export function Table({
             </button>
           </nav>
 
+          {room && <RoomCode code={room.code} />}
+
           <div className={styles.plane}>
             <div className={styles.frame} />
             <div className={styles.felt} />
@@ -312,14 +334,19 @@ export function Table({
                 className={`${styles.badge} ${styles[`badge${side}`]} ${isTurn ? styles.badgeTurn : ''}`}
                 aria-current={isTurn ? 'true' : undefined}
               >
-                <span
+                <PlayerPortrait
+                  seat={session.seats[p.seat]}
+                  name={name}
                   className={styles.portrait}
-                  style={portraitStyle(session.seats[p.seat], name)}
-                  aria-hidden="true"
-                >
-                  {portraitOf(session.seats[p.seat], name).glyph}
+                />
+                <span className={styles.badgeName}>
+                  {name}
+                  {room?.covered.has(p.seat) && (
+                    <small className={styles.badgeBot} title={t('room.botPlaying')}>
+                      {t('room.botTag')}
+                    </small>
+                  )}
                 </span>
-                <span className={styles.badgeName}>{name}</span>
                 <span className={styles.badgeScore}>{p.score.toLocaleString('pt-BR')}</span>
                 <span className={p.isDealer ? styles.badgeDealer : styles.badgeWind}>
                   <span className={styles.badgeWindGlyph} aria-hidden="true">
@@ -367,6 +394,33 @@ export function Table({
 
           {revealed && <div className={styles.trainingSeal}>{t('table.training')}</div>}
 
+          {room && room.notices.length > 0 && (
+            <ul className={styles.notices} aria-live="polite">
+              {room.notices.map((x) => (
+                <li
+                  key={x.id}
+                  className={
+                    x.kind === 'back' || x.kind === 'joined' ? styles.noticeGood : styles.notice
+                  }
+                >
+                  {t(`room.notice.${x.kind}`, { name: x.name })}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {room?.myCover === 'idle' && playing && (
+            <div className={styles.covered} role="status">
+              <span className={styles.coveredGlyph} aria-hidden="true">
+                代
+              </span>
+              <span>{t('room.covered')}</span>
+              <button type="button" className={styles.coveredButton} onClick={room.onResume}>
+                {t('room.resume')}
+              </button>
+            </div>
+          )}
+
           {me && (
             <div className={styles.ownMelds}>
               <Melds player={me} players={n} width={48} />
@@ -410,9 +464,15 @@ export function Table({
               onStage
               danger
               glyph="退"
-              title={t('table.exit.title')}
-              message={t('table.exit.message')}
-              confirmLabel={t('table.exit.confirm')}
+              title={t(room?.isHost ? 'room.exit.host.title' : 'table.exit.title')}
+              message={t(
+                room
+                  ? room.isHost
+                    ? 'room.exit.host.message'
+                    : 'room.exit.guest.message'
+                  : 'table.exit.message',
+              )}
+              confirmLabel={t(room?.isHost ? 'room.exit.host.confirm' : 'table.exit.confirm')}
               cancelLabel={t('table.exit.cancel')}
               onConfirm={onExit}
               onCancel={() => setExitOpen(false)}
@@ -433,13 +493,40 @@ export function Table({
             <MatchResultDialog
               result={view.result}
               seats={session.seats}
+              playAgainLabel={room ? t('room.backToRoom') : t('result.playAgain')}
               onPlayAgain={onPlayAgain}
-              onMenu={onExit}
+              onMenu={onResultMenu}
             />
           )}
         </Stage>
       </TileHighlightContext.Provider>
     </TileLabelsContext.Provider>
+  );
+}
+
+/** Código da sala sempre à vista durante a partida (quem chegar depois entra com ele). */
+function RoomCode({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await globalThis.navigator.clipboard.writeText(`${globalThis.location.origin}/sala/${code}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setCopied(false);
+    }
+  };
+  return (
+    <button
+      type="button"
+      className={styles.roomCode}
+      onClick={() => void copy()}
+      title={t('room.copyLink')}
+      aria-label={`${t('room.code')}: ${code}. ${t('room.copyLink')}`}
+    >
+      <span className={styles.roomCodeLabel}>{copied ? t('room.copied') : t('room.code')}</span>
+      <strong className={styles.roomCodeValue}>{code}</strong>
+    </button>
   );
 }
 

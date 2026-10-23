@@ -188,16 +188,28 @@
             "displayName": { ".validate": "newData.isString() && newData.val().length <= 24" },
             "avatar": { ".validate": "newData.isString() && newData.val().length <= 64" },
             "characterId": { ".validate": "newData.isString() && newData.val().length <= 32" },
+            "photoURL": {
+              ".validate": "newData.isString() && newData.val().length <= 512 && newData.val().matches(/^https:\\/\\/[a-z0-9-]+\\.googleusercontent\\.com\\//)"
+            },
+            "cover": { ".validate": "newData.val() === 'away' || newData.val() === 'idle'" },
             "$other": { ".validate": false }
           }
         },
         "members": {
           "$uid": {
             ".read": "auth != null && ($uid === auth.uid || root.child('rooms').child($code).child('meta/hostUid').val() === auth.uid)",
-            ".write": "auth != null && auth.token.firebase.sign_in_provider === 'google.com' && (($uid === auth.uid && root.child('rooms').child($code).child('meta/status').val() === 'lobby' && root.child('rooms').child($code).child('meta/expiresAt').val() > now) || root.child('rooms').child($code).child('meta/hostUid').val() === auth.uid)",
-            ".validate": "!newData.exists() || newData.val() === true"
+            ".write": "auth != null && auth.token.firebase.sign_in_provider === 'google.com' && (($uid === auth.uid && root.child('rooms').child($code).child('meta/expiresAt').val() > now) || root.child('rooms').child($code).child('meta/hostUid').val() === auth.uid)",
+            ".validate": "!newData.exists() || newData.val() === true || newData.hasChildren(['displayName', 'avatar'])",
+            "displayName": {
+              ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 24"
+            },
+            "avatar": { ".validate": "newData.isString() && newData.val().length <= 64" },
+            "photoURL": {
+              ".validate": "newData.isString() && newData.val().length <= 512 && newData.val().matches(/^https:\\/\\/[a-z0-9-]+\\.googleusercontent\\.com\\//)"
+            },
+            "$other": { ".validate": false }
           },
-          ".read": "auth != null && root.child('rooms').child($code).child('meta/hostUid').val() === auth.uid"
+          ".read": "auth != null && (root.child('rooms').child($code).child('members').child(auth.uid).exists() || root.child('rooms').child($code).child('meta/hostUid').val() === auth.uid)"
         },
         "presence": {
           "$uid": {

@@ -16,3 +16,11 @@
   box-shadow: 0 0 0 3px rgb(240 211 145 / 0.12);
   text-shadow: 0 2px 0 rgb(0 0 0 / 0.35);
 }
+
+/* Foto dentro do retrato de um assento (mesa, apresentação, resultado). */
+.seatPhoto {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
