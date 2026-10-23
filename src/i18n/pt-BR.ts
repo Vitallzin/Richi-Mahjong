@@ -45,7 +45,7 @@ export const ptBR = {
   'room.offline': 'desconectado',
   'room.botFor': 'Bot do assento {n}',
   'room.bot': 'Bot',
-  'room.emptyBot': 'Vazio (bot aleatório)',
+  'room.emptyBot': 'Bot aleatório',
   'room.empty': 'Vazio',
   'room.sit': 'Sentar aqui',
   'room.stand': 'Levantar',
@@ -58,8 +58,23 @@ export const ptBR = {
   'room.waiting': 'Aguardando o anfitrião começar…',
   'room.loading': 'Entrando na sala…',
   'room.joining': 'Abrindo a mesa…',
-  'room.notFound': 'Sala não encontrada. Confira o código.',
-  'room.closed': 'Esta sala foi encerrada pelo anfitrião.',
+  'room.notFound':
+    'Confira o código: são 6 caracteres, sem 0, O, 1 nem I. Se a sala expirou, peça um código novo.',
+  'room.closed':
+    'O anfitrião encerrou esta sala e o código não funciona mais. Para jogar de novo, peça um código novo ou crie a sua sala.',
+  'room.status.loading': 'Entrando…',
+  'room.status.notFound': 'Sala não encontrada',
+  'room.status.closed': 'Sala encerrada',
+  'room.status.outdated': 'Versão nova disponível',
+  'room.status.error': 'Algo deu errado',
+  'room.status.toRooms': 'Ir para salas privadas',
+  'room.status.reload': 'Recarregar a página',
+  'room.leave.title': 'Sair da sala?',
+  'room.leave.stay': 'Ficar',
+  'room.leave.lobby.message':
+    'Seu assento fica livre para outra pessoa. Para voltar, entre de novo com o código.',
+  'room.leave.waiting.message':
+    'Você deixa a fila para entrar na partida. Para voltar, entre de novo com o código.',
   'room.outdated': 'Esta sala usa outra versão do jogo. Recarregue a página.',
   'room.error': 'Não foi possível entrar na sala. Tente de novo.',
   'room.hostAway': 'Anfitrião desconectado',
@@ -82,7 +97,7 @@ export const ptBR = {
     'Você entra no lugar de um bot assim que a mão atual terminar e os pontos forem distribuídos.',
   'room.waitingSeat.full':
     'Não há bots na mesa agora. Você entra quando um lugar de bot estiver livre.',
-  'room.botTag': '(bot)',
+  'room.botTag': 'bot',
   'room.botPlaying': 'Um bot está jogando no lugar desta pessoa',
   'room.covered': 'Você ficou parado e um bot está jogando por você.',
   'room.resume': 'Voltar a jogar',

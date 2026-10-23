@@ -3,6 +3,9 @@
   position: sticky;
   top: 0.5rem;
   z-index: 2;
+  display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  place-items: center;
   margin: 0;
   aspect-ratio: 16 / 7;
   border-radius: var(--radius-md);
@@ -12,16 +15,17 @@
   box-shadow: 0 16px 40px rgb(0 0 0 / 0.45);
 }
 
-/* Cena em tamanho fixo (640×280, mesma proporção da moldura) escalada para caber: no celular tudo
-   encolhe junto e continua centralizado. */
+/* Cena em tamanho fixo (640×280, mesma proporção da moldura), centralizada pela grade da moldura e
+   escalada a partir do centro para caber: em qualquer largura fica inteira e no meio. */
 .scene {
-  position: absolute;
-  left: 50%;
-  top: 50%;
+  position: relative;
+  grid-area: 1 / 1;
+  flex: none;
   width: 640px;
+  min-width: 640px;
   height: 280px;
-  translate: -50% -50%;
-  scale: var(--scale, 1);
+  transform: scale(var(--scale, 1));
+  transform-origin: 50% 50%;
 }
 
 .table {

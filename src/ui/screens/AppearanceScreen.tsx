@@ -33,12 +33,18 @@ function useFitScale() {
   const [el, setEl] = useState<HTMLElement | null>(null);
   const [scale, setScale] = useState(1);
   useEffect(() => {
-    if (!el || typeof ResizeObserver === 'undefined') return;
-    const ro = new ResizeObserver(([entry]) =>
-      setScale((entry?.contentRect.width ?? SCENE_WIDTH) / SCENE_WIDTH),
-    );
-    ro.observe(el);
-    return () => ro.disconnect();
+    if (!el) return;
+    // Mede já ao montar (não depende só do ResizeObserver, que pode atrasar) e a cada mudança.
+    const fit = () => setScale(el.getBoundingClientRect().width / SCENE_WIDTH || 1);
+    const id = setTimeout(fit, 0);
+    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(fit);
+    ro?.observe(el);
+    globalThis.addEventListener('resize', fit);
+    return () => {
+      clearTimeout(id);
+      ro?.disconnect();
+      globalThis.removeEventListener('resize', fit);
+    };
   }, [el]);
   return [setEl, scale] as const;
 }

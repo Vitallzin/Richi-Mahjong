@@ -53,7 +53,11 @@ describe('Jogar partida (spec 6.6)', () => {
     fireEvent.click(screen.getByRole('radio', { name: '3 jogadores' }));
     expect(useSettings.getState().mode).toBe('sanma');
     expect(screen.getByText(/108 peças/)).toBeInTheDocument();
-    expect(screen.getAllByRole('combobox')).toHaveLength(2);
+    // Um seletor de personagem por adversário.
+    expect(screen.getAllByRole('button', { name: /^Assento \d:/ })).toHaveLength(2);
+    fireEvent.click(screen.getByRole('button', { name: /^Assento 1:/ }));
+    fireEvent.click(screen.getByRole('option', { name: /Akari/ }));
+    expect(useSettings.getState().characters[0]).toBe('akari');
     fireEvent.click(screen.getByRole('radio', { name: 'Ativadas' }));
     expect(screen.getByText('Tsumo-loss')).toBeInTheDocument();
     expect(screen.getByLabelText('Pontos iniciais')).toHaveValue(35000);

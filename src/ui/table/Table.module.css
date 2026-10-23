@@ -64,6 +64,21 @@
   gap: 3px;
 }
 
+.doraHints {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  gap: 6px 14px;
+  align-items: center;
+  padding-top: 6px;
+  border-top: 1px solid var(--gold-dim);
+}
+
+.doraHintsLabel {
+  grid-column: 1 / -1;
+  font-size: 15px;
+  color: var(--color-text-muted);
+}
+
 .doraHint {
   display: flex;
   align-items: center;
@@ -668,7 +683,7 @@
 
 .badge3 {
   left: 28px;
-  top: 380px;
+  top: 410px;
 }
 
 .portrait {

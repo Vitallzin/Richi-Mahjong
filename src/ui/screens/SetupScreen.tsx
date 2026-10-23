@@ -5,7 +5,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { BotSkill } from '../../bots';
-import { CHARACTERS } from '../../bots';
 import {
   buildRuleSet,
   DEFAULT_SELECTION,
@@ -31,6 +30,8 @@ import { useAccount } from '../../state/account';
 import { useSettings, type CharacterChoice, type RuleDraft } from '../../state/settings';
 import { enterGameDisplay } from '../platform/display';
 import styles from './SetupScreen.module.css';
+import { CharacterPicker } from '../components/CharacterPicker';
+import { characterOptions } from '../components/characterOptions';
 import { BackLink } from '../components/BackLink';
 
 const TIMER_IDS: readonly TimerPresetId[] = ['3+5', '5+10', '5+20', '60+0', '300+0', 'unlimited'];
@@ -345,23 +346,24 @@ export function SetupScreen() {
           {Array.from({ length: (mode === 'yonma' ? 4 : 3) - 1 }, (_, i) => {
             const choice = s.characters[i] ?? 'random';
             return (
-              <label key={i} className={styles.character}>
-                <span>{t('setup.seat', { n: i + 1 })}</span>
-                <select
+              <div key={i} className={styles.character}>
+                <span className={styles.characterLabel}>{t('setup.seat', { n: i + 1 })}</span>
+                <CharacterPicker<CharacterChoice>
+                  label={t('setup.seat', { n: i + 1 })}
                   value={choice}
-                  onChange={(e) => s.setCharacter(i, e.target.value as CharacterChoice)}
-                >
-                  <option value="random">{t('setup.character.random')}</option>
-                  {CHARACTERS.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {t(`characters.${c.id}.name`)}
-                    </option>
-                  ))}
-                </select>
+                  options={characterOptions<CharacterChoice>({
+                    value: 'random',
+                    name: t('setup.character.random'),
+                    tag: t('setup.character.random.tag'),
+                  })}
+                  onChange={(v) => s.setCharacter(i, v)}
+                />
                 <small className={styles.help}>
-                  {choice === 'random' ? '' : t(`characters.${choice}.style`)}
+                  {choice === 'random'
+                    ? t('setup.character.random.desc')
+                    : t(`characters.${choice}.style`)}
                 </small>
-              </label>
+              </div>
             );
           })}
         </div>

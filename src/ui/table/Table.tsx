@@ -223,22 +223,26 @@ export function Table({
                 return <Tile key={i} tile={ind ?? null} width={40} />;
               })}
             </div>
-            {helps.doraHint &&
-              doraPairs(view).map((pair, i) => (
-                <div
-                  key={i}
-                  className={styles.doraHint}
-                  title={t('help.dora', {
-                    indicator: tileName({ id: -1, kind: pair.indicator, red: false }),
-                    dora: tileName({ id: -1, kind: pair.dora, red: false }),
-                  })}
-                >
-                  <Tile tile={{ id: -200 - i, kind: pair.indicator, red: false }} width={26} />
-                  <span className={styles.doraArrow} aria-hidden="true" />
-                  <span className={styles.doraLabel}>{t('table.dora')}</span>
-                  <Tile tile={{ id: -300 - i, kind: pair.dora, red: false }} width={26} glow />
-                </div>
-              ))}
+            {helps.doraHint && doraPairs(view).length > 0 && (
+              // Compacto (duas por linha): com vários dora o painel não invade a placa de baixo.
+              <div className={styles.doraHints}>
+                <span className={styles.doraHintsLabel}>{t('table.dora')}</span>
+                {doraPairs(view).map((pair, i) => (
+                  <div
+                    key={i}
+                    className={styles.doraHint}
+                    title={t('help.dora', {
+                      indicator: tileName({ id: -1, kind: pair.indicator, red: false }),
+                      dora: tileName({ id: -1, kind: pair.dora, red: false }),
+                    })}
+                  >
+                    <Tile tile={{ id: -200 - i, kind: pair.indicator, red: false }} width={26} />
+                    <span className={styles.doraArrow} aria-hidden="true" />
+                    <Tile tile={{ id: -300 - i, kind: pair.dora, red: false }} width={26} glow />
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
 
           <nav className={styles.menu}>

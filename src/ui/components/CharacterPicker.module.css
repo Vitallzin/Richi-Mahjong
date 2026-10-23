@@ -1,0 +1,149 @@
+/* Escolha de personagem: botão de laca com o selo e lista suspensa no mesmo estilo. */
+.picker {
+  position: relative;
+  min-width: 0;
+}
+
+.trigger {
+  composes: lift from './Button.module.css';
+}
+
+.triggerOpen {
+  composes: lift from './Button.module.css';
+}
+
+.trigger,
+.triggerOpen {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  min-height: 52px;
+  padding: 0.35rem 0.75rem 0.35rem 0.4rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: linear-gradient(180deg, rgb(47 29 66 / 0.9), rgb(27 17 40 / 0.9));
+  color: var(--color-text-strong);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms ease;
+}
+
+.trigger:hover,
+.trigger:focus-visible,
+.triggerOpen {
+  border-color: var(--gold);
+}
+
+.seal {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  background: radial-gradient(circle at 35% 30%, var(--a, #6b5a8c), var(--b, #2a1f3d));
+  color: var(--rice);
+  font-family: var(--font-brush);
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  line-height: 1.2;
+}
+
+.name {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tag {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.chevron {
+  flex: none;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-right: 0.2rem;
+  border-right: 2px solid var(--gold-bright);
+  border-bottom: 2px solid var(--gold-bright);
+  rotate: 45deg;
+  translate: 0 -0.15rem;
+  transition: rotate 200ms var(--ease-out);
+}
+
+.triggerOpen .chevron {
+  rotate: 225deg;
+  translate: 0 0.15rem;
+}
+
+.list {
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  top: calc(100% + 0.35rem);
+  margin: 0;
+  padding: 0.35rem;
+  list-style: none;
+  display: grid;
+  gap: 0.2rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gold);
+  background: linear-gradient(180deg, rgb(42 26 58 / 0.98), rgb(18 13 31 / 0.98));
+  box-shadow: 0 18px 40px rgb(0 0 0 / 0.55);
+  outline: none;
+  animation: listIn 180ms var(--ease-out) both;
+  transform-origin: 50% 0;
+}
+
+@keyframes listIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.35rem 0.6rem 0.35rem 0.35rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.option .seal {
+  width: 2.1rem;
+  height: 2.1rem;
+  font-size: 1rem;
+}
+
+.active {
+  background: rgb(240 211 145 / 0.12);
+}
+
+.option[aria-selected='true'] .name {
+  color: var(--gold-bright);
+}
+
+.check {
+  flex: none;
+  width: 0.45rem;
+  height: 0.8rem;
+  margin-right: 0.3rem;
+  border-right: 2px solid var(--gold-bright);
+  border-bottom: 2px solid var(--gold-bright);
+  rotate: 45deg;
+  translate: 0 -0.1rem;
+}

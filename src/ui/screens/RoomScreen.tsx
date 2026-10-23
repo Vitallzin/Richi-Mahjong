@@ -6,14 +6,16 @@
  */
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { CHARACTERS, type CharacterId } from '../../bots';
+import type { CharacterId } from '../../bots';
 import type { RuleSet, Seat } from '../../engine';
-import { t, tKey } from '../../i18n';
+import { t, tKey, type MessageKey } from '../../i18n';
 import { isGooglePhoto, parseRoomCode } from '../../session';
 import { useAccount } from '../../state/account';
 import { GOOGLE_AVATAR } from '../../state/profile';
 import { RoomController, type RoomSettings, type RoomState } from '../../state/roomController';
 import { Avatar } from '../components/Avatar';
+import { CharacterPicker } from '../components/CharacterPicker';
+import { characterOptions } from '../components/characterOptions';
 import { BackLink } from '../components/BackLink';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { enterGameDisplay, exitGameDisplay } from '../platform/display';
@@ -64,7 +66,7 @@ function Members({ state }: { state: RoomState }) {
 function Lobby({ room, state }: { room: RoomController; state: RoomState }) {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
-  const [confirm, setConfirm] = useState<'close' | 'back' | 'start' | null>(null);
+  const [confirm, setConfirm] = useState<'close' | 'back' | 'leave' | 'start' | null>(null);
   const meta = state.meta;
   if (!meta) return null;
   const rules = JSON.parse(meta.rules) as RuleSet;
@@ -103,11 +105,9 @@ function Lobby({ room, state }: { room: RoomController; state: RoomState }) {
           to="/salas"
           label={t('rooms.title')}
           onClick={(e) => {
-            // Anfitrião sair da sala a fecha: pergunta antes. Convidado só sai.
-            if (state.isHost) {
-              e.preventDefault();
-              setConfirm('back');
-            } else room.forget();
+            // Sempre pergunta: o anfitrião fecha a sala; o convidado sai (e libera o assento).
+            e.preventDefault();
+            setConfirm(state.isHost ? 'back' : 'leave');
           }}
         />
         <h1 className={page.title}>{t('room.lobby')}</h1>
@@ -151,21 +151,21 @@ function Lobby({ room, state }: { room: RoomController; state: RoomState }) {
                     />
                   </>
                 ) : state.isHost ? (
-                  <select
-                    className={styles.select}
-                    aria-label={t('room.botFor', { n: i + 1 })}
-                    value={s.type === 'bot' ? (s.characterId ?? '') : ''}
-                    onChange={(e) =>
-                      void room.setBot(i, (e.target.value || null) as CharacterId | null)
-                    }
-                  >
-                    <option value="">{t('room.emptyBot')}</option>
-                    {CHARACTERS.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {t('room.bot')}: {t(`characters.${c.id}.name`)}
-                      </option>
-                    ))}
-                  </select>
+                  <div className={styles.botPicker}>
+                    <CharacterPicker<'' | CharacterId>
+                      label={t('room.botFor', { n: i + 1 })}
+                      value={s.type === 'bot' ? (s.characterId ?? '') : ''}
+                      options={characterOptions<''>(
+                        {
+                          value: '',
+                          name: t('room.emptyBot'),
+                          tag: t('setup.character.random.tag'),
+                        },
+                        `${t('room.bot')}: `,
+                      )}
+                      onChange={(v) => void room.setBot(i, v || null)}
+                    />
+                  </div>
                 ) : (
                   <span className={styles.seatName}>
                     {s.type === 'bot' && s.characterId
@@ -244,6 +244,18 @@ function Lobby({ room, state }: { room: RoomController; state: RoomState }) {
           onCancel={() => setConfirm(null)}
         />
       )}
+      {confirm === 'leave' && (
+        <LeaveRoomDialog
+          message={t('room.leave.lobby.message')}
+          onConfirm={() => {
+            setConfirm(null);
+            room.forget();
+            if (state.mySeat !== null) void room.leaveSeat();
+            navigate('/salas');
+          }}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
       {confirm === 'start' && (
         <ConfirmDialog
           glyph="座"
@@ -263,11 +275,30 @@ function Lobby({ room, state }: { room: RoomController; state: RoomState }) {
 
 /** Entrou com a partida em andamento: espera a mão acabar para assumir um bot. */
 function WaitingSeat({ room, state }: { room: RoomController; state: RoomState }) {
+  const navigate = useNavigate();
+  const [leaving, setLeaving] = useState(false);
   const full = !state.seats.some((s) => s.type === 'bot');
   return (
     <main className={`${page.page} ${styles.enter}`}>
+      {leaving && (
+        <LeaveRoomDialog
+          message={t('room.leave.waiting.message')}
+          onConfirm={() => {
+            room.forget();
+            navigate('/salas');
+          }}
+          onCancel={() => setLeaving(false)}
+        />
+      )}
       <header className={page.header}>
-        <BackLink to="/salas" label={t('rooms.title')} onClick={() => room.forget()} />
+        <BackLink
+          to="/salas"
+          label={t('rooms.title')}
+          onClick={(e) => {
+            e.preventDefault();
+            setLeaving(true);
+          }}
+        />
         <h1 className={page.title}>{t('room.waitingSeat.title')}</h1>
       </header>
       <section className={`${page.section} ${styles.codeCard}`}>
@@ -285,15 +316,88 @@ function WaitingSeat({ room, state }: { room: RoomController; state: RoomState }
   );
 }
 
-function Message({ text }: { text: string }) {
+/** Convidado confirma antes de sair da sala (lobby ou esperando a vez de entrar). */
+function LeaveRoomDialog({
+  message,
+  onConfirm,
+  onCancel,
+}: {
+  message: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
   return (
-    <main className={page.page}>
-      <header className={page.header}>
-        <BackLink to="/salas" label={t('rooms.title')} />
-      </header>
-      <p className={page.lead} role="status">
-        {text}
-      </p>
+    <ConfirmDialog
+      danger
+      glyph="退"
+      title={t('room.leave.title')}
+      message={message}
+      confirmLabel={t('room.leave')}
+      cancelLabel={t('room.leave.stay')}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+    />
+  );
+}
+
+/** Estados da sala que não são lobby nem mesa: selo, título, explicação e para onde ir. */
+type StatusKind = 'loading' | 'notFound' | 'closed' | 'outdated' | 'error';
+
+const STATUS: Record<
+  StatusKind,
+  { glyph: string; title: MessageKey; text: MessageKey; alert: boolean }
+> = {
+  loading: { glyph: '待', title: 'room.status.loading', text: 'room.loading', alert: false },
+  notFound: { glyph: '無', title: 'room.status.notFound', text: 'room.notFound', alert: true },
+  closed: { glyph: '閉', title: 'room.status.closed', text: 'room.closed', alert: true },
+  outdated: { glyph: '新', title: 'room.status.outdated', text: 'room.outdated', alert: false },
+  error: { glyph: '誤', title: 'room.status.error', text: 'room.error', alert: true },
+};
+
+function RoomStatus({ kind, text }: { kind: StatusKind; text?: string }) {
+  const navigate = useNavigate();
+  const info = STATUS[kind];
+  const busy = kind === 'loading';
+  const seal = [
+    styles.statusSeal,
+    info.alert ? styles.statusAlert : '',
+    busy ? styles.statusBusy : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  return (
+    <main className={`${page.page} ${styles.statusPage}`}>
+      <section
+        className={`${page.section} ${styles.statusCard}`}
+        role={busy ? 'status' : 'alert'}
+        aria-busy={busy}
+      >
+        <span className={seal} aria-hidden="true">
+          {info.glyph}
+        </span>
+        <h1 className={styles.statusTitle}>{t(info.title)}</h1>
+        <p className={page.lead}>{text ?? t(info.text)}</p>
+        {!busy && (
+          <div className={`${page.buttons} ${styles.statusButtons}`}>
+            {kind === 'outdated' || kind === 'error' ? (
+              <button
+                type="button"
+                className={page.primary}
+                onClick={() => globalThis.location.reload()}
+              >
+                {t('room.status.reload')}
+              </button>
+            ) : (
+              <button type="button" className={page.primary} onClick={() => navigate('/salas')}>
+                {t('room.status.toRooms')}
+              </button>
+            )}
+            <button type="button" className={page.secondary} onClick={() => navigate('/')}>
+              {t('common.back')}
+            </button>
+          </div>
+        )}
+      </section>
     </main>
   );
 }
@@ -369,15 +473,15 @@ function RoomBody({ room }: { room: RoomController }) {
 
   switch (state.phase) {
     case 'loading':
-      return <Message text={t('room.loading')} />;
+      return <RoomStatus kind="loading" />;
     case 'notFound':
-      return <Message text={t('room.notFound')} />;
+      return <RoomStatus kind="notFound" />;
     case 'closed':
-      return <Message text={t('room.closed')} />;
+      return <RoomStatus kind="closed" />;
     case 'outdated':
-      return <Message text={t('room.outdated')} />;
+      return <RoomStatus kind="outdated" />;
     case 'error':
-      return <Message text={t('room.error')} />;
+      return <RoomStatus kind="error" />;
     default:
       break;
   }
@@ -419,7 +523,7 @@ function RoomBody({ room }: { room: RoomController }) {
   if (state.meta?.status === 'playing' && !state.isHost && state.mySeat === null)
     return <WaitingSeat room={room} state={state} />;
   if (state.phase === 'starting' || state.phase === 'playing')
-    return <Message text={t('room.joining')} />;
+    return <RoomStatus kind="loading" text={t('room.joining')} />;
   return <Lobby room={room} state={state} />;
 }
 
@@ -427,8 +531,8 @@ export function RoomScreen() {
   const { codigo } = useParams();
   const code = parseRoomCode(codigo ?? '');
   const { status, user, profile } = useAccount();
-  if (!code) return <Message text={t('room.notFound')} />;
-  if (status === 'loading') return <Message text={t('account.loading')} />;
+  if (!code) return <RoomStatus kind="notFound" />;
+  if (status === 'loading') return <RoomStatus kind="loading" text={t('account.loading')} />;
   if (status !== 'signedIn' || !user || !profile) {
     return (
       <main className={page.page}>

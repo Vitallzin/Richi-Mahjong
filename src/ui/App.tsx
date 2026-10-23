@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect, type ComponentType } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { useSettings } from '../state/settings';
 import { applyAppearance } from '../theme/appearance';
@@ -10,40 +10,43 @@ import { MainMenu } from './screens/MainMenu';
 import { NotFound } from './screens/NotFound';
 
 // Telas carregadas sob demanda: o menu abre rápido no celular (aceite de desempenho, Fase 6).
-const AppearanceScreen = lazy(() =>
-  import('./screens/AppearanceScreen').then((m) => ({ default: m.AppearanceScreen })),
-);
-const HistoryScreen = lazy(() =>
-  import('./screens/HistoryScreen').then((m) => ({ default: m.HistoryScreen })),
-);
-const ProfileScreen = lazy(() =>
-  import('./screens/ProfileScreen').then((m) => ({ default: m.ProfileScreen })),
-);
-const RoomScreen = lazy(() =>
-  import('./screens/RoomScreen').then((m) => ({ default: m.RoomScreen })),
-);
-const RoomsScreen = lazy(() =>
-  import('./screens/RoomsScreen').then((m) => ({ default: m.RoomsScreen })),
-);
-const HelpsScreen = lazy(() =>
-  import('./screens/HelpsScreen').then((m) => ({ default: m.HelpsScreen })),
-);
-const SettingsScreen = lazy(() =>
-  import('./screens/SettingsScreen').then((m) => ({ default: m.SettingsScreen })),
-);
-const WelcomeScreen = lazy(() =>
-  import('./screens/WelcomeScreen').then((m) => ({ default: m.WelcomeScreen })),
-);
-const TutorialScreen = lazy(() =>
-  import('./tutorial/TutorialScreen').then((m) => ({ default: m.TutorialScreen })),
-);
+// Depois que o menu aparece, todas são baixadas em segundo plano: a primeira troca de tela já anima
+// sem travar esperando o código chegar.
+const preloads: (() => Promise<unknown>)[] = [];
+
+function screen<K extends string, M extends Record<K, ComponentType>>(
+  load: () => Promise<M>,
+  name: K,
+) {
+  preloads.push(load);
+  return lazy(() => load().then((m) => ({ default: m[name] })));
+}
+
+const AppearanceScreen = screen(() => import('./screens/AppearanceScreen'), 'AppearanceScreen');
+const HistoryScreen = screen(() => import('./screens/HistoryScreen'), 'HistoryScreen');
+const ProfileScreen = screen(() => import('./screens/ProfileScreen'), 'ProfileScreen');
+const RoomScreen = screen(() => import('./screens/RoomScreen'), 'RoomScreen');
+const RoomsScreen = screen(() => import('./screens/RoomsScreen'), 'RoomsScreen');
+const HelpsScreen = screen(() => import('./screens/HelpsScreen'), 'HelpsScreen');
+const SettingsScreen = screen(() => import('./screens/SettingsScreen'), 'SettingsScreen');
+const WelcomeScreen = screen(() => import('./screens/WelcomeScreen'), 'WelcomeScreen');
+const TutorialScreen = screen(() => import('./tutorial/TutorialScreen'), 'TutorialScreen');
 const DevTiles = lazy(() => import('./screens/DevTiles').then((m) => ({ default: m.DevTiles })));
-const SetupScreen = lazy(() =>
-  import('./screens/SetupScreen').then((m) => ({ default: m.SetupScreen })),
-);
-const TableScreen = lazy(() =>
-  import('./screens/TableScreen').then((m) => ({ default: m.TableScreen })),
-);
+const SetupScreen = screen(() => import('./screens/SetupScreen'), 'SetupScreen');
+const TableScreen = screen(() => import('./screens/TableScreen'), 'TableScreen');
+
+/** Baixa as telas quando o navegador estiver livre (sem atrapalhar a abertura do menu). */
+function preloadScreens(): () => void {
+  const run = () => {
+    for (const load of preloads) void load().catch(() => undefined);
+  };
+  if (typeof globalThis.requestIdleCallback === 'function') {
+    const id = globalThis.requestIdleCallback(run, { timeout: 2500 });
+    return () => globalThis.cancelIdleCallback(id);
+  }
+  const id = setTimeout(run, 1200);
+  return () => clearTimeout(id);
+}
 
 /** Rotas da spec 10.1. */
 export function App() {
@@ -53,6 +56,7 @@ export function App() {
   // Entrada e saída animadas de cada tela.
   const location = useRouteTransition();
   // Conta: só carrega o Firebase se o jogador já entrou neste aparelho (spec 12.1).
+  useEffect(() => preloadScreens(), []);
   useEffect(() => {
     initAccount();
     if (import.meta.env.DEV && import.meta.env.VITE_FIREBASE_EMULATORS === 'true')

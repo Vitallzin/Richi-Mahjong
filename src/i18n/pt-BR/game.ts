@@ -26,6 +26,8 @@ export const game = {
   'setup.difficulty.normal': 'Normal',
   'setup.difficulty.hard': 'Difícil',
   'setup.character.random': 'Aleatório',
+  'setup.character.random.tag': 'Sorteado',
+  'setup.character.random.desc': 'Um dos três personagens é sorteado a cada partida.',
   'setup.seat': 'Assento {n}',
   'setup.helps': 'Ajudas',
   'setup.helps.soon':

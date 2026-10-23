@@ -45,7 +45,7 @@ describe('mesa em sala online', () => {
   it('mostra o código, o "(bot)" de quem está coberto, a foto e o aviso', () => {
     const { session } = renderTable();
     expect(screen.getByText('ABC234')).toBeInTheDocument();
-    expect(screen.getByText('(bot)')).toBeInTheDocument();
+    expect(screen.getByText('bot')).toBeInTheDocument();
     expect(screen.getByText('Bia saiu da partida. Um bot assumiu o lugar.')).toBeInTheDocument();
     expect(
       document.querySelector('img[src="https://lh3.googleusercontent.com/a/bia"]'),
