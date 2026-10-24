@@ -125,27 +125,26 @@ h3 {
 }
 
 /* ---------- Transição entre telas (View Transitions, ver platform/routeTransition) ---------- */
+/* Só opacidade e transform (sem blur): desfocar a tela inteira pesava na GPU do celular. */
 ::view-transition-old(root) {
-  animation: screen-out 200ms cubic-bezier(0.4, 0, 1, 1) both;
+  animation: screen-out 160ms cubic-bezier(0.4, 0, 1, 1) both;
 }
 
 ::view-transition-new(root) {
-  animation: screen-in 420ms var(--ease-out) 90ms both;
+  animation: screen-in 280ms var(--ease-out) 40ms both;
 }
 
 @keyframes screen-out {
   to {
     opacity: 0;
-    transform: scale(0.97);
-    filter: blur(6px);
+    transform: scale(0.98);
   }
 }
 
 @keyframes screen-in {
   from {
     opacity: 0;
-    transform: translateY(18px) scale(1.015);
-    filter: blur(8px);
+    transform: translateY(12px);
   }
 }
 

@@ -21,9 +21,21 @@ function Lantern({ x, delay, scale }: { x: string; delay: string; scale: number 
   );
 }
 
-export function Backdrop({ dim = false }: { dim?: boolean }) {
+/**
+ * `contained`: dentro de uma moldura (prévia da aparência), os tamanhos seguem a moldura, não a tela.
+ */
+export function Backdrop({
+  dim = false,
+  contained = false,
+}: {
+  dim?: boolean;
+  contained?: boolean;
+}) {
   return (
-    <div className={`${styles.backdrop} ${dim ? styles.dim : ''}`} aria-hidden="true">
+    <div
+      className={`${styles.backdrop} ${dim ? styles.dim : ''} ${contained ? styles.contained : ''}`}
+      aria-hidden="true"
+    >
       <div className={styles.moon} />
       <svg className={styles.skyline} viewBox="0 0 1600 400" preserveAspectRatio="xMidYMax slice">
         <defs>

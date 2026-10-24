@@ -141,6 +141,53 @@
   }
 }
 
+/* ---------- dentro de uma moldura: unidades da moldura (cqw/cqh) no lugar de vw/vh ---------- */
+.contained {
+  container-type: size;
+}
+
+.contained .moon {
+  width: clamp(24px, 9cqw, 120px);
+  box-shadow:
+    0 0 20px 5px rgb(243 226 184 / 0.25),
+    0 0 60px 20px rgb(243 226 184 / 0.08);
+}
+
+.contained .cord {
+  height: clamp(8px, 7cqh, 90px);
+}
+
+.contained .lanternBody {
+  width: clamp(16px, 4.5cqw, 64px);
+  border-top-width: 3px;
+  border-bottom-width: 3px;
+}
+
+.contained .lanternGlyph {
+  font-size: clamp(8px, 1.8cqw, 26px);
+}
+
+.contained .tassel {
+  width: 4px;
+  height: clamp(6px, 4cqh, 34px);
+}
+
+.contained .petal {
+  animation-name: fallContained;
+}
+
+@keyframes fallContained {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(20px, 55cqh) rotate(200deg);
+  }
+  100% {
+    transform: translate(-15px, 110cqh) rotate(420deg);
+  }
+}
+
 @media (pointer: coarse) {
   .petal:nth-child(n + 5) {
     display: none;

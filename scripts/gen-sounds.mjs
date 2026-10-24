@@ -1,10 +1,13 @@
 // Gera os efeitos sonoros do jogo por síntese (arte original, sem licenças de terceiros).
-// Uso: `npm run sounds` ⇒ public/sounds/*.wav (mono, 16 bits, 32 kHz).
+// Uso: `npm run sounds` ⇒ public/sounds/*.mp3 (mono, 32 kHz). Sintetiza em WAV e comprime com o
+// ffmpeg (precisa estar no PATH): o WAV pesava 10× mais e ia inteiro para o cache do celular.
 //
 // Técnicas: síntese modal (senoides inarmônicas com decaimento próprio) para pedra/madeira/gongo,
 // ruído filtrado para os transientes e uma reverberação simples (filtros pente + passa-tudo) para
 // dar ambiente de sala. Escala pentatônica chinesa (gong-shang-jue-zhi-yu) nos carrilhões.
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 const RATE = 32000;
@@ -283,7 +286,26 @@ function toWav(samples) {
 }
 
 mkdirSync(OUT, { recursive: true });
-for (const [name, make] of Object.entries(sounds)) {
-  writeFileSync(path.join(OUT, `${name}.wav`), toWav(make()));
-  console.log(`som gerado: public/sounds/${name}.wav`);
+const tmp = mkdtempSync(path.join(os.tmpdir(), 'sounds-'));
+try {
+  for (const [name, make] of Object.entries(sounds)) {
+    const wav = path.join(tmp, `${name}.wav`);
+    writeFileSync(wav, toWav(make()));
+    // VBR ~90 kbps: sem diferença audível para efeitos curtos.
+    execFileSync('ffmpeg', [
+      '-loglevel',
+      'error',
+      '-y',
+      '-i',
+      wav,
+      '-codec:a',
+      'libmp3lame',
+      '-q:a',
+      '4',
+      path.join(OUT, `${name}.mp3`),
+    ]);
+    console.log(`som gerado: public/sounds/${name}.mp3`);
+  }
+} finally {
+  rmSync(tmp, { recursive: true, force: true });
 }

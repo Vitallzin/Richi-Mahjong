@@ -42,7 +42,7 @@ import { Stage } from './Stage';
 import { MatchResultDialog } from './SummaryDialogs';
 import styles from './Table.module.css';
 import { CenterPanel, HiddenHand, Melds, Pond } from './TableParts';
-import { useClock, useMatch } from './useMatch';
+import { useClockValue, useMatch } from './useMatch';
 import { useRecordHistory } from './useRecordHistory';
 import { SpeechBubble } from './SpeechBubble';
 import { useSpeech } from './useSpeech';
@@ -77,7 +77,6 @@ export function Table({
   const { view, events, tick, lastDiscardId } = useMatch(session);
   useRecordHistory(session, view);
   const speech = useSpeech(events, tick, session.seats);
-  const clock = useClock(session);
   const settings = useSettings();
   // A janela de decisão vale só para a situação (tick) em que foi aberta.
   const [openDialog, setOpenDialog] = useState<{ tick: number; dialog: Dialog } | null>(null);
@@ -139,7 +138,10 @@ export function Table({
   }, [myCall, autoPass, tick]);
 
   // Aviso de tempo (spec 11.5): quando a base acaba e o banco começa a ser usado.
-  const usingBank = clock !== null && clock.baseMs === 0 && clock.hasBank;
+  const usingBank = useClockValue(
+    session,
+    (clock) => clock !== null && clock.baseMs === 0 && clock.hasBank,
+  );
   useEffect(() => {
     if (usingBank) play('timeWarning');
   }, [usingBank, tick]);
@@ -379,7 +381,7 @@ export function Table({
           {(myTurn || myCall) && playing && (
             <div className={styles.yourTurn} role="status">
               {t('table.yourTurn')}
-              {clock && <span className={styles.clock}>{formatClock(clock, clock.hasBank)}</span>}
+              <TurnClock session={session} />
             </div>
           )}
 
@@ -506,6 +508,14 @@ export function Table({
       </TileHighlightContext.Provider>
     </TileLabelsContext.Provider>
   );
+}
+
+/** Tempo da jogada: só este texto se atualiza com o relógio, não a mesa inteira. */
+function TurnClock({ session }: { session: MatchSession }) {
+  const text = useClockValue(session, (clock) =>
+    clock ? formatClock(clock, clock.hasBank) : null,
+  );
+  return text === null ? null : <span className={styles.clock}>{text}</span>;
 }
 
 /** Código da sala sempre à vista durante a partida (quem chegar depois entra com ele). */

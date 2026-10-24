@@ -127,7 +127,7 @@ export function AppearanceScreen() {
       <p className={page.lead}>{t('appearance.lead')}</p>
 
       <figure ref={fitRef} className={styles.preview} aria-label={t('appearance.preview')}>
-        <Backdrop />
+        <Backdrop contained />
         <div className={styles.scene} style={{ '--scale': scale } as CSSProperties}>
           <div className={styles.table}>
             <div className={styles.felt}>

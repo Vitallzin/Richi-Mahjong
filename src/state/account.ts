@@ -116,26 +116,32 @@ async function onSignedIn(user: AccountUser): Promise<void> {
 
 function watch(): void {
   if (unwatch) return;
-  void net().then((n) => {
-    unwatch = n.watchAuth((user) => {
-      if (!user) {
-        stopSync?.();
-        if (signingIn) return;
-        storage.set(HINT_KEY, null);
-        useAccount.setState({ status: 'guest', user: null, profile: null, askMigration: false });
-        return;
-      }
-      useAccount.setState({ status: 'loading' });
-      // Banco sem resposta não pode deixar o login preso em "carregando".
-      const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('banco sem resposta (database-timeout)')), 15_000),
-      );
-      Promise.race([onSignedIn(user), timeout]).catch((e: unknown) => {
-        const code = (e as { code?: string }).code;
-        useAccount.setState({ status: 'signedIn', user, error: code ?? String(e) });
+  void net()
+    .then((n) => {
+      unwatch = n.watchAuth((user) => {
+        if (!user) {
+          stopSync?.();
+          if (signingIn) return;
+          storage.set(HINT_KEY, null);
+          useAccount.setState({ status: 'guest', user: null, profile: null, askMigration: false });
+          return;
+        }
+        useAccount.setState({ status: 'loading' });
+        // Banco sem resposta não pode deixar o login preso em "carregando".
+        const timeout = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('banco sem resposta (database-timeout)')), 15_000),
+        );
+        Promise.race([onSignedIn(user), timeout]).catch((e: unknown) => {
+          const code = (e as { code?: string }).code;
+          useAccount.setState({ status: 'signedIn', user, error: code ?? String(e) });
+        });
       });
+    })
+    .catch(() => {
+      // Sem rede e sem o Firebase no cache: segue como visitante (a marca de login fica, para a
+      // próxima abertura com rede restaurar a conta).
+      useAccount.setState({ status: 'guest', user: null, profile: null, askMigration: false });
     });
-  });
 }
 
 /** Chamado ao abrir o site: só carrega o Firebase se o jogador já tinha entrado aqui. */

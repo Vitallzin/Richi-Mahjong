@@ -40,12 +40,33 @@ export default defineConfig({
       workbox: {
         // Só as fatias de fonte usadas vão para o build (npm run fonts): todas cabem no precache,
         // e o jogo funciona offline desde a primeira visita.
-        globPatterns: ['**/*.{js,css,html,svg,png,webp,webm,mp3,wav,woff2}'],
+        // Fora do precache (baixados só por quem usa, e guardados na primeira vez): os sons (só na
+        // partida) e o Firebase (só para quem entra na conta). A primeira visita no celular baixa
+        // ~1,6 MB a menos.
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,woff2}'],
+        globIgnores: ['**/assets/firebase-*.js'],
         runtimeCaching: [
           {
             urlPattern: /\.woff2$/,
             handler: 'CacheFirst',
             options: { cacheName: 'fonts', expiration: { maxEntries: 400 } },
+          },
+          {
+            urlPattern: /\/sounds\/.+\.mp3$/,
+            handler: 'CacheFirst',
+            // Se o navegador pedir um trecho (Range), responde a partir do arquivo inteiro guardado.
+            options: {
+              cacheName: 'sounds',
+              expiration: { maxEntries: 40 },
+              cacheableResponse: { statuses: [0, 200] },
+              rangeRequests: true,
+            },
+          },
+          {
+            // Nome com hash: o conteúdo de uma URL nunca muda.
+            urlPattern: /\/assets\/firebase-[\w-]+\.js$/,
+            handler: 'CacheFirst',
+            options: { cacheName: 'firebase', expiration: { maxEntries: 4 } },
           },
         ],
         navigateFallback: '/index.html',

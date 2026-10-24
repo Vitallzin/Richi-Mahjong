@@ -1,5 +1,5 @@
 /** Assina a MatchSession e expõe a visão do jogador local, os últimos eventos e o relógio. */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { PlayerEvent, PlayerView } from '../../engine';
 import type { ClockView, MatchSession } from '../../session';
 
@@ -34,12 +34,22 @@ export function useMatch(session: MatchSession): MatchSnapshotView {
   return snap;
 }
 
-/** Relógio lido a cada renderização; um temporizador força renderizações enquanto o jogo corre. */
-export function useClock(session: MatchSession): ClockView | null {
-  const [, setFrame] = useState(0);
+/**
+ * Valor derivado do relógio, relido a cada 200 ms. Só renderiza quando o valor escolhido muda
+ * (ex.: o texto mm:ss): a mesa inteira não se redesenha a cada leitura do relógio.
+ */
+export function useClockValue<T>(session: MatchSession, select: (clock: ClockView | null) => T): T {
+  const [value, setValue] = useState(() => select(session.getClock()));
+  // A função de seleção pode mudar a cada renderização; o temporizador usa sempre a mais recente.
+  const selectRef = useRef(select);
   useEffect(() => {
-    const id = globalThis.setInterval(() => setFrame((x) => x + 1), 200);
+    selectRef.current = select;
+  });
+  useEffect(() => {
+    const read = () => setValue(selectRef.current(session.getClock()));
+    read();
+    const id = globalThis.setInterval(read, 200);
     return () => globalThis.clearInterval(id);
-  }, []);
-  return session.getClock();
+  }, [session]);
+  return value;
 }

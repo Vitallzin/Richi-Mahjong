@@ -7,8 +7,12 @@ import { flushSync } from 'react-dom';
 import { useLocation, type Location } from 'react-router-dom';
 import { useSettings } from '../../state/settings';
 
-/** Espera máxima pela tela nova (carregada sob demanda) antes de animar a entrada. */
-const MAX_WAIT_MS = 900;
+/**
+ * Espera máxima pela tela nova (carregada sob demanda) antes de animar a entrada. Durante a espera
+ * a página fica congelada na tela antiga; as telas já são baixadas em segundo plano após o menu,
+ * então passado isso é melhor mostrar o "carregando" do que travar.
+ */
+const MAX_WAIT_MS = 350;
 
 /** Primeiro trecho do caminho: capítulos do tutorial ou ?sala=1 não contam como tela nova. */
 const sectionOf = (path: string) => path.split('/')[1] ?? '';

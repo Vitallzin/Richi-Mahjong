@@ -50,7 +50,7 @@ export function preloadSounds(): void {
   if (cache) return;
   cache = {};
   for (const id of Object.keys(LEVEL) as SoundId[]) {
-    cache[id] = new Howl({ src: [`/sounds/${id}.wav`], preload: true, volume: LEVEL[id] });
+    cache[id] = new Howl({ src: [`/sounds/${id}.mp3`], preload: true, volume: LEVEL[id] });
   }
 }
 

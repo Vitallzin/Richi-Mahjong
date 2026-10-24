@@ -21,7 +21,7 @@ Destaques: React, React Router, Zustand, Firebase JS SDK (Apache-2.0), Howler.js
 
 ## Sons
 
-- `public/sounds/*.wav` — sintetizados por `scripts/gen-sounds.mjs` (síntese modal + reverberação; arte
+- `public/sounds/*.mp3` — sintetizados por `scripts/gen-sounds.mjs` (síntese modal + reverberação; arte
   original do projeto, sem gravações de terceiros). Reprodução com **Howler.js** (MIT) — https://howlerjs.com
 
 ## Música

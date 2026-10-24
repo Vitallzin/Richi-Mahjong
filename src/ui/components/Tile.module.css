@@ -267,27 +267,48 @@
   --rim: rgb(205 70 60 / 0.9);
 }
 
+/*
+ * Desempenho: as sombras ficam paradas; só a opacidade do halo (camada própria) anima. Animar
+ * box-shadow repintava a pedra a cada quadro, caro no celular.
+ */
+.bonus .body,
+.bonusRed .body,
+.match .body {
+  isolation: isolate;
+}
+
 .bonus .body,
 .bonusRed .body {
+  box-shadow:
+    inset 0 0 0 1.5px var(--rim),
+    inset 0 0 calc(var(--tw) * 0.18) rgb(255 220 150 / 0.35),
+    0 var(--depth) 0 0 var(--tile-side, var(--tile-edge, #5b4aa3)),
+    0 calc(var(--depth) + 2px) calc(var(--tw) * 0.15) rgb(0 0 0 / 0.45),
+    0 0 calc(var(--tw) * 0.18) calc(var(--tw) * 0.02) var(--halo);
+}
+
+/* Halo máximo; respira entre quase apagado e inteiro (z-index -1: fica sob o desenho da face). */
+.bonus .body::after,
+.bonusRed .body::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 calc(var(--tw) * 0.28) rgb(255 220 150 / 0.5),
+    0 0 calc(var(--tw) * 0.5) calc(var(--tw) * 0.08) var(--halo);
+  opacity: 0.6;
   animation: bonusHalo 2.6s ease-in-out infinite alternate;
 }
 
 @keyframes bonusHalo {
   from {
-    box-shadow:
-      inset 0 0 0 1.5px var(--rim),
-      inset 0 0 calc(var(--tw) * 0.18) rgb(255 220 150 / 0.35),
-      0 var(--depth) 0 0 var(--tile-side, var(--tile-edge, #5b4aa3)),
-      0 calc(var(--depth) + 2px) calc(var(--tw) * 0.15) rgb(0 0 0 / 0.45),
-      0 0 calc(var(--tw) * 0.18) calc(var(--tw) * 0.02) var(--halo);
+    opacity: 0.15;
   }
   to {
-    box-shadow:
-      inset 0 0 0 1.5px var(--rim),
-      inset 0 0 calc(var(--tw) * 0.28) rgb(255 220 150 / 0.5),
-      0 var(--depth) 0 0 var(--tile-side, var(--tile-edge, #5b4aa3)),
-      0 calc(var(--depth) + 2px) calc(var(--tw) * 0.15) rgb(0 0 0 / 0.45),
-      0 0 calc(var(--tw) * 0.5) calc(var(--tw) * 0.08) var(--halo);
+    opacity: 1;
   }
 }
 
@@ -304,9 +325,11 @@
   position: absolute;
   top: -25%;
   bottom: -25%;
-  left: -70%;
+  left: 0;
   width: 38%;
-  transform: skewX(-20deg);
+  /* Posição por transform (não por left): só composição, sem refazer o layout a cada quadro.
+     -184% e 355% da própria largura (38%) = -70% e 135% da face. */
+  transform: translateX(-184%) skewX(-20deg);
   background: linear-gradient(
     90deg,
     transparent,
@@ -322,10 +345,10 @@
 @keyframes sheen {
   0%,
   68% {
-    left: -70%;
+    transform: translateX(-184%) skewX(-20deg);
   }
   100% {
-    left: 135%;
+    transform: translateX(355%) skewX(-20deg);
   }
 }
 
@@ -337,26 +360,37 @@
 .match .body {
   outline: 2.5px solid var(--gold-bright);
   outline-offset: 2px;
+  box-shadow:
+    0 var(--depth) 0 0 var(--tile-side, var(--tile-edge, #5b4aa3)),
+    0 0 8px 2px rgb(240 211 145 / 0.7);
+}
+
+/* Brilho máximo numa camada própria; pulsa só a opacidade. */
+.match .body::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: 0 0 24px 8px rgb(240 211 145 / 0.95);
+  opacity: 0.6;
   animation: matchPulse 800ms ease-in-out infinite alternate;
 }
 
 @keyframes matchPulse {
   from {
-    box-shadow:
-      0 var(--depth) 0 0 var(--tile-side, var(--tile-edge, #5b4aa3)),
-      0 0 8px 2px rgb(240 211 145 / 0.7);
+    opacity: 0.2;
   }
   to {
-    box-shadow:
-      0 var(--depth) 0 0 var(--tile-side, var(--tile-edge, #5b4aa3)),
-      0 0 24px 8px rgb(240 211 145 / 0.95);
+    opacity: 1;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bonus .body,
-  .bonusRed .body,
-  .match .body,
+  .bonus .body::after,
+  .bonusRed .body::after,
+  .match .body::after,
   .sheen::before {
     animation: none;
   }
