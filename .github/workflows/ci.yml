@@ -54,5 +54,6 @@ jobs:
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          # Criado por `firebase init hosting:github` (com o id do projeto no nome) ou à mão.
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_RICHIMAHJONG || secrets.FIREBASE_SERVICE_ACCOUNT }}
           channelId: live
