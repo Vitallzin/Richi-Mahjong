@@ -104,6 +104,17 @@ export async function createRoom(
 export const writeSeats = (code: string, seats: readonly RoomSeat[]): Promise<void> =>
   set(roomRef(code, 'seats'), JSON.parse(JSON.stringify(seats)) as unknown);
 
+/** Anfitrião, no lobby: troca as regras e preferências da sala (todos veem na hora). */
+export const updateRoomConfig = (
+  code: string,
+  config: { readonly rules: string; readonly settings: string; readonly mode: RoomMeta['mode'] },
+): Promise<void> =>
+  update(roomRef(code, 'meta'), {
+    rules: config.rules,
+    settings: config.settings,
+    mode: config.mode,
+  });
+
 export const setStatus = (code: string, status: RoomStatus): Promise<void> =>
   update(roomRef(code, 'meta'), { status });
 

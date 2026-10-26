@@ -18,10 +18,12 @@ import { CharacterPicker } from '../components/CharacterPicker';
 import { characterOptions } from '../components/characterOptions';
 import { BackLink } from '../components/BackLink';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { applyRoomConfig } from '../../state/roomConfig';
 import { enterGameDisplay, exitGameDisplay } from '../platform/display';
 import { Table, type TableRoom } from '../table/Table';
 import page from './Page.module.css';
 import { GoogleButton } from './ProfileScreen';
+import { SetupScreen } from './SetupScreen';
 import styles from './RoomScreen.module.css';
 
 const WIND = ['東', '南', '西', '北'];
@@ -67,8 +69,23 @@ function Lobby({ room, state }: { room: RoomController; state: RoomState }) {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [confirm, setConfirm] = useState<'close' | 'back' | 'leave' | 'start' | null>(null);
+  // Anfitrião editando as regras: a tela de configurar partida, dentro da sala (sem sair dela).
+  const [editing, setEditing] = useState(false);
   const meta = state.meta;
   if (!meta) return null;
+  if (editing && state.isHost) {
+    return (
+      <SetupScreen
+        editRoom={{
+          onSave: async (config) => {
+            await room.updateConfig(config);
+            setEditing(false);
+          },
+          onBack: () => setEditing(false),
+        }}
+      />
+    );
+  }
   const rules = JSON.parse(meta.rules) as RuleSet;
   const settings = JSON.parse(meta.settings) as RoomSettings;
   const link = `${globalThis.location.origin}/sala/${room.code}`;
@@ -209,6 +226,16 @@ function Lobby({ room, state }: { room: RoomController; state: RoomState }) {
             onClick={() => (unseated.length > 0 ? setConfirm('start') : start())}
           >
             {t('room.start')}
+          </button>
+          <button
+            type="button"
+            className={page.secondary}
+            onClick={() => {
+              applyRoomConfig(meta);
+              setEditing(true);
+            }}
+          >
+            {t('room.editRules')}
           </button>
           <button type="button" className={page.secondary} onClick={() => setConfirm('close')}>
             {t('room.close')}

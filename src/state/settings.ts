@@ -28,6 +28,8 @@ export interface SettingsData {
   readonly musicVolume: number;
   /** Som suave ao passar o mouse em botões e peças. */
   readonly hoverSounds: boolean;
+  /** Tecla de atalho visível em cada botão de jogada (em telas de toque fica escondida). */
+  readonly actionKeys: boolean;
   readonly helps: HelpPrefs;
   /** A tela de boas-vindas já foi vista (spec 9.1). */
   readonly welcomeSeen: boolean;
@@ -68,6 +70,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   music: true,
   musicVolume: 0.45,
   hoverSounds: true,
+  actionKeys: true,
   helps: DEFAULT_HELP_PREFS,
   welcomeSeen: false,
   training: false,

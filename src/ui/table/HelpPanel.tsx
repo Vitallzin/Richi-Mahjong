@@ -35,10 +35,15 @@ export function HelpPanel({
   view,
   focus,
   prefs,
+  collapsed = false,
+  onToggle,
 }: {
   view: PlayerView;
   focus: TileData | null;
   prefs: HelpPrefs;
+  /** Recolhido: só uma aba na borda direita com a frase principal. */
+  collapsed?: boolean;
+  onToggle?: () => void;
 }) {
   const advice = useMemo(() => analyzeHand(view, focus), [view, focus]);
   const path = useMemo(() => yakuPath(view, advice, focus), [view, advice, focus]);
@@ -70,9 +75,42 @@ export function HelpPanel({
     }
   }
 
+  if (collapsed) {
+    return (
+      <button
+        type="button"
+        className={styles.helpTab}
+        aria-expanded="false"
+        aria-label={`${t('help.expand')}${stateText ? `: ${stateText}` : ''}`}
+        onClick={onToggle}
+      >
+        <span className={styles.helpTabTitle} aria-hidden="true">
+          ◂ {t('help.panel')}
+        </span>
+        {stateText && (
+          <span className={styles.helpTabState} aria-hidden="true">
+            {stateText}
+          </span>
+        )}
+      </button>
+    );
+  }
+
   return (
     <aside className={styles.helpPanel} aria-label={t('help.panel')} aria-live="polite">
-      <h2 className={styles.helpTitle}>{t('help.panel')}</h2>
+      <div className={styles.helpHeader}>
+        <h2 className={styles.helpTitle}>{t('help.panel')}</h2>
+        {onToggle && (
+          <button
+            type="button"
+            className={styles.helpCollapse}
+            aria-expanded="true"
+            onClick={onToggle}
+          >
+            {t('help.collapse')} ▸
+          </button>
+        )}
+      </div>
       {focus && (
         <p className={styles.helpFocus}>
           {t('help.afterDiscard')} <Tile tile={focus} width={26} />

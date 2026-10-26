@@ -2,12 +2,13 @@
 import type { DiscardEntry, Meld, PlayerView, PublicPlayerView, Seat } from '../../engine';
 import { t } from '../../i18n';
 import { Tile } from '../components/Tile';
+import { visibleDiscards } from './pond';
 import { NUMBER_KANJI, relativeSide, windKanji, windName } from './labels';
 import styles from './Table.module.css';
 
 export const POND_TILE = 32;
 
-/** Rio: 6 por fileira nas duas primeiras, o resto na terceira; riichi deitado; chamada esmaecida. */
+/** Rio: 6 por fileira nas duas primeiras, o resto na terceira; riichi deitado. */
 export function Pond({
   discards,
   lastId,
@@ -15,18 +16,18 @@ export function Pond({
   discards: readonly DiscardEntry[];
   lastId: number | null;
 }) {
-  const rows = [discards.slice(0, 6), discards.slice(6, 12), discards.slice(12)];
+  const shown = visibleDiscards(discards);
+  const rows = [shown.slice(0, 6), shown.slice(6, 12), shown.slice(12)];
   return (
     <div className={styles.pond}>
       {rows.map((row, r) => (
         <div key={r} className={styles.pondRow}>
-          {row.map((d) => (
+          {row.map(({ entry: d, sideways }) => (
             <Tile
               key={d.tile.id}
               tile={d.tile}
               width={POND_TILE}
-              sideways={d.riichi}
-              dimmed={d.calledBy !== null}
+              sideways={sideways}
               className={`${d.tsumogiri ? styles.tsumogiri : ''} ${d.tile.id === lastId ? styles.lastDiscard : ''}`}
             />
           ))}
@@ -101,9 +102,18 @@ export function Melds({
   );
 }
 
-export function HiddenHand({ count, width }: { count: number; width: number }) {
+export function HiddenHand({
+  count,
+  width,
+  dealing = false,
+}: {
+  count: number;
+  width: number;
+  /** Mão recém-distribuída: as pedras chegam uma a uma (animação ao montar). */
+  dealing?: boolean;
+}) {
   return (
-    <div className={styles.hiddenHand}>
+    <div className={`${styles.hiddenHand} ${dealing ? styles.dealing : ''}`}>
       {Array.from({ length: count }, (_, i) => (
         <Tile key={i} tile={null} width={width} />
       ))}

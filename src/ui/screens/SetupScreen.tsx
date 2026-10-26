@@ -26,6 +26,8 @@ import {
   type TimerSettings,
 } from '../../session';
 import { startSoloMatch } from '../../state/match';
+import type { RoomConfig } from '../../state/roomController';
+import { roomConfigFromSettings } from '../../state/roomConfig';
 import { useAccount } from '../../state/account';
 import { useSettings, type CharacterChoice, type RuleDraft } from '../../state/settings';
 import { enterGameDisplay } from '../platform/display';
@@ -33,14 +35,11 @@ import styles from './SetupScreen.module.css';
 import { CharacterPicker } from '../components/CharacterPicker';
 import { characterOptions } from '../components/characterOptions';
 import { BackLink } from '../components/BackLink';
+import { ruleValueLabel } from '../components/ruleLabels';
 
 const TIMER_IDS: readonly TimerPresetId[] = ['3+5', '5+10', '5+20', '60+0', '300+0', 'unlimited'];
 
-function valueLabel(option: RuleOption, value: unknown): string {
-  if (typeof value === 'boolean') return t(value ? 'rules.value.on' : 'rules.value.off');
-  if (option.id === 'length') return tKey(`rules.length.${String(value)}`);
-  return String(value);
-}
+const valueLabel = ruleValueLabel;
 
 /** Seleção efetiva: com avançadas desligadas, só o bloco básico vale (spec 6.5). */
 function effectiveDraft(draft: RuleDraft, advanced: boolean): RuleDraft {
@@ -146,12 +145,19 @@ function RuleControl({
   );
 }
 
-export function SetupScreen() {
+/** Editar as regras de uma sala já criada (no lobby, sem sair da sala). */
+export interface EditRoom {
+  readonly onSave: (config: RoomConfig) => Promise<void>;
+  readonly onBack: () => void;
+}
+
+export function SetupScreen({ editRoom }: { editRoom?: EditRoom } = {}) {
   const navigate = useNavigate();
   const s = useSettings();
   // /jogar?sala=1: a mesma tela cria uma sala privada (spec 13.2).
   const [params] = useSearchParams();
-  const roomMode = params.get('sala') === '1';
+  const roomMode = params.get('sala') === '1' && !editRoom;
+  const [saveError, setSaveError] = useState<string | null>(null);
   const account = useAccount();
   const [creating, setCreating] = useState(false);
   const mode = s.mode;
@@ -196,22 +202,11 @@ export function SetupScreen() {
     if (!user || !profile) return;
     setCreating(true);
     try {
-      const rules = buildRuleSet(mode, draft, advanced);
       const { createRoom: create } = await import('../../net/room');
       const code = await create(
         user.uid,
         { displayName: profile.displayName, avatar: profile.avatar },
-        {
-          rules: JSON.stringify(rules),
-          settings: JSON.stringify({
-            timer: s.timer,
-            training: false,
-            difficulty: s.difficulty,
-            characters: s.characters,
-          }),
-          mode,
-          players: rules.players,
-        },
+        roomConfigFromSettings(s),
       );
       navigate(`/sala/${code}`);
     } finally {
@@ -219,8 +214,28 @@ export function SetupScreen() {
     }
   };
 
+  const saveRoom = async (target: EditRoom) => {
+    setCreating(true);
+    setSaveError(null);
+    try {
+      await target.onSave(roomConfigFromSettings(s));
+    } catch (e) {
+      setSaveError(
+        e instanceof Error && e.message === 'seatsFull'
+          ? t('room.edit.seatsFull')
+          : t('room.edit.failed'),
+      );
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const start = () => {
     if (!canStart) return;
+    if (editRoom) {
+      void saveRoom(editRoom);
+      return;
+    }
     if (roomMode) {
       void createRoom();
       return;
@@ -248,8 +263,20 @@ export function SetupScreen() {
   return (
     <main className={styles.screen}>
       <header className={styles.header}>
-        <BackLink to={roomMode ? '/salas' : '/'} label={t('setup.back')} />
-        <h1 className={styles.title}>{roomMode ? t('room.createTitle') : t('setup.title')}</h1>
+        {editRoom ? (
+          <BackLink
+            label={t('room.editBack')}
+            onClick={(e) => {
+              e.preventDefault();
+              editRoom.onBack();
+            }}
+          />
+        ) : (
+          <BackLink to={roomMode ? '/salas' : '/'} label={t('setup.back')} />
+        )}
+        <h1 className={styles.title}>
+          {editRoom ? t('room.editTitle') : roomMode ? t('room.createTitle') : t('setup.title')}
+        </h1>
       </header>
 
       <section className={styles.card} aria-labelledby="sec-mode">
@@ -401,7 +428,7 @@ export function SetupScreen() {
                   />
                 ))}
             </div>
-            {!roomMode && (
+            {!roomMode && !editRoom && (
               <div className={styles.rule}>
                 <span className={styles.ruleLabel}>{t('setup.training')}</span>
                 <Segmented<boolean>
@@ -456,13 +483,19 @@ export function SetupScreen() {
             {t('setup.invalid')}
           </p>
         )}
+        {editRoom && <p className={styles.help}>{t('room.editNote')}</p>}
+        {saveError && (
+          <p className={styles.error} role="alert">
+            {saveError}
+          </p>
+        )}
         <button
           type="button"
           className={styles.start}
           disabled={!canStart || creating || (roomMode && account.status !== 'signedIn')}
           onClick={start}
         >
-          {roomMode ? t('room.createButton') : t('setup.start')}
+          {editRoom ? t('room.saveRules') : roomMode ? t('room.createButton') : t('setup.start')}
         </button>
       </section>
     </main>

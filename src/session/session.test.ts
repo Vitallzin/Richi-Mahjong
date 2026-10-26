@@ -9,6 +9,7 @@ import {
   validateTimer,
 } from './clock';
 import { LocalSession, NO_DELAYS, type Scheduler } from './LocalSession';
+import { PACING } from './pacing';
 import { loadMatch, saveMatch, SAVE_SCHEMA_VERSION, type KeyValueStore } from './storage';
 import type { SeatSetup } from './types';
 
@@ -221,6 +222,53 @@ describe('LocalSession', () => {
     session.submit({ type: 'discard', tile: v.legal.discard[0]! });
     expect(session.getClock()).toBeNull();
     expect(session.getView().players[0]!.discards).toHaveLength(1);
+    session.dispose();
+  });
+});
+
+describe('início da mão: relógio só depois da distribuição', () => {
+  const WITH_PACING = { turn: [0, 0], call: [0, 0], presentation: true } as const;
+  const humanFirst: SeatSetup[] = [{ kind: 'human', name: 'Eu' }, ...BOTS.slice(1)];
+  const create = (scheduler: ManualScheduler, openingPauseMs?: number) =>
+    LocalSession.create(PRESET_YONMA, { timer: DEFAULT_TIMER, training: false }, humanFirst, 0, {
+      scheduler,
+      delays: WITH_PACING,
+      seed,
+      autosave: false,
+      ...(openingPauseMs === undefined ? {} : { openingPauseMs }),
+    });
+
+  it('a primeira mão espera a distribuição antes de ligar o relógio', () => {
+    const scheduler = new ManualScheduler();
+    const session = create(scheduler);
+    scheduler.advance(PACING.handStartMs - 1);
+    expect(session.getClock()).toBeNull();
+    scheduler.advance(1);
+    expect(session.getClock()).toMatchObject({ baseMs: 5000 });
+    session.dispose();
+  });
+
+  it('sala nova: espera também a apresentação', () => {
+    const scheduler = new ManualScheduler();
+    const session = create(scheduler, PACING.matchIntroMs);
+    scheduler.advance(PACING.matchIntroMs + PACING.handStartMs - 1);
+    expect(session.getClock()).toBeNull();
+    scheduler.advance(1);
+    expect(session.getClock()).toMatchObject({ baseMs: 5000 });
+    session.dispose();
+  });
+
+  it('pausada na apresentação: ao fechar, distribui e só então conta o tempo', () => {
+    const scheduler = new ManualScheduler();
+    const session = create(scheduler);
+    scheduler.step();
+    session.setPaused(true);
+    scheduler.advance(10_000);
+    session.setPaused(false);
+    scheduler.advance(PACING.handStartMs - 1);
+    expect(session.getClock()).toBeNull();
+    scheduler.advance(1);
+    expect(session.getClock()).toMatchObject({ baseMs: 5000, bankMs: 20_000 });
     session.dispose();
   });
 });

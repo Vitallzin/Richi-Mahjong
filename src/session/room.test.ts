@@ -9,10 +9,12 @@ import {
   IDLE_TURN_MS,
   isRoomCode,
   parseRoomCode,
+  resizeSeats,
   seatsForMatch,
   type CoverReason,
   type HostUpdate,
   type PrivatePayload,
+  type RoomSeat,
 } from './room';
 import type { SeatSetup } from './types';
 
@@ -317,5 +319,35 @@ describe('bot no lugar de quem sai, fica parado ou entra depois (ADR 0020)', () 
     s.host.queueJoin({ kind: 'human', name: 'Caio', uid: 'caio' });
     s.host.setPresent('caio', false);
     expect(s.host.isWaiting('caio')).toBe(false);
+  });
+});
+
+describe('resizeSeats (editar regras da sala: 4 ↔ 3 jogadores)', () => {
+  const human = (uid: string): RoomSeat => ({ type: 'human', uid, displayName: uid });
+  const empty: RoomSeat = { type: 'empty', displayName: '' };
+  const bot: RoomSeat = { type: 'bot', displayName: '', characterId: 'ren' };
+
+  it('de 3 para 4: acrescenta um lugar vazio', () => {
+    expect(resizeSeats([human('a'), empty, bot], 4)).toEqual([human('a'), empty, bot, empty]);
+  });
+
+  it('de 4 para 3: quem estava no 4º lugar vai para o primeiro lugar livre', () => {
+    expect(resizeSeats([human('a'), empty, human('b'), human('c')], 3)).toEqual([
+      human('a'),
+      human('c'),
+      human('b'),
+    ]);
+  });
+
+  it('de 4 para 3 com o 4º lugar sem gente: só tira o lugar', () => {
+    expect(resizeSeats([human('a'), human('b'), human('c'), bot], 3)).toEqual([
+      human('a'),
+      human('b'),
+      human('c'),
+    ]);
+  });
+
+  it('de 4 para 3 com quatro pessoas sentadas: não cabe (null)', () => {
+    expect(resizeSeats([human('a'), human('b'), human('c'), human('d')], 3)).toBeNull();
   });
 });

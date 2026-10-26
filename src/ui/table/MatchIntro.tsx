@@ -7,13 +7,13 @@ import { useEffect, useRef, type CSSProperties } from 'react';
 import { play } from '../../audio/sounds';
 import type { PlayerView, Seat } from '../../engine';
 import { t, tKey } from '../../i18n';
-import type { MatchSession } from '../../session';
+import { PACING, type MatchSession } from '../../session';
 import { relativeSide, seatName, windKanji, windName, NUMBER_KANJI } from './labels';
 import styles from './MatchIntro.module.css';
 import { PlayerPortrait } from '../components/PlayerPortrait';
 
 /** Fecha sozinha depois deste tempo (clicar ou Enter pula). */
-export const INTRO_MS = 5200;
+const INTRO_MS = PACING.matchIntroMs;
 const CARD_STEP_MS = 260;
 
 export function MatchIntro({

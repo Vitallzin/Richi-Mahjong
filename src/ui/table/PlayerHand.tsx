@@ -21,6 +21,8 @@ interface Props {
   readonly onFocusTile?: (tile: TileData | null) => void;
   /** Peça sob o mouse (ou tocada), em qualquer momento — destaca as cópias visíveis na mesa. */
   readonly onHoverTile?: (tile: TileData | null) => void;
+  /** Mão recém-distribuída: as pedras chegam uma a uma (animação ao montar). */
+  readonly dealing?: boolean;
 }
 
 export function PlayerHand({
@@ -31,6 +33,7 @@ export function PlayerHand({
   onDiscard,
   onFocusTile,
   onHoverTile,
+  dealing = false,
 }: Props) {
   const [rawSelected, setSelected] = useState<number | null>(null);
   const pointerType = useRef<string>('mouse');
@@ -79,7 +82,7 @@ export function PlayerHand({
 
   return (
     <div
-      className={styles.hand}
+      className={`${styles.hand} ${dealing ? styles.dealing : ''}`}
       data-hover-zone="hand"
       onKeyDown={onKeyDown}
       onPointerDown={(e: PointerEvent) => {

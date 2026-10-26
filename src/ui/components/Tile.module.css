@@ -70,10 +70,12 @@
   inset: 9% 7%;
 }
 
+/* O desenho é feito em pé (largura da pedra × altura da pedra) e girado: depois do giro ele ocupa
+   a face deitada. Com as medidas trocadas, o desenho girado vazava por cima e por baixo. */
 .sideways .face > * {
   transform: rotate(90deg);
-  width: calc(var(--th) * 0.84);
-  height: calc(var(--tw) * 0.86);
+  width: calc(var(--tw) * 0.82);
+  height: calc(var(--th) * 0.86);
   flex: none;
 }
 

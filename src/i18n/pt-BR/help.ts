@@ -2,6 +2,8 @@
 export const help = {
   // Painel de ajuda na mesa
   'help.panel': 'Guia',
+  'help.collapse': 'Recolher o guia',
+  'help.expand': 'Abrir o guia',
   'help.state.complete': 'Mão completa!',
   'help.state.completeYaku': 'Mão completa com yaku: você pode declarar Tsumo.',
   'help.state.completeNoYaku': 'Mão completa, mas sem yaku: não dá para vencer assim.',
@@ -121,6 +123,9 @@ export const help = {
   'settings.highContrast': 'Alto contraste',
   'settings.highContrast.desc': 'Cores mais fortes em textos, bordas e botões.',
   'settings.tileScale': 'Tamanho das peças da mão',
+  'settings.actionKeys': 'Teclas nos botões de jogada',
+  'settings.actionKeys.desc':
+    'Mostra a tecla de atalho de cada jogada (R para riichi, P para pon…). Some em telas de toque.',
   'settings.tileScale.normal': 'Normal',
   'settings.tileScale.large': 'Grande',
   'settings.tileScale.xlarge': 'Maior',

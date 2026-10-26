@@ -112,6 +112,18 @@ export function SettingsScreen() {
             onChange={(e) => s.setAccessibility({ highContrast: e.target.checked })}
           />
         </label>
+        <label className={styles.row}>
+          <span>
+            {t('settings.actionKeys')}
+            <br />
+            <span className={styles.desc}>{t('settings.actionKeys.desc')}</span>
+          </span>
+          <input
+            type="checkbox"
+            checked={s.actionKeys}
+            onChange={(e) => s.set({ actionKeys: e.target.checked })}
+          />
+        </label>
         <div className={styles.row} role="radiogroup" aria-label={t('settings.tileScale')}>
           <span>{t('settings.tileScale')}</span>
           <span className={styles.buttons}>

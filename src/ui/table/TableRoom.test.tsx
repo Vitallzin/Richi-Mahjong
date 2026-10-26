@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// Mesa numa sala online (ADR 0020): código à vista, "(bot)", avisos, "Voltar a jogar" e a saída.
+// Mesa numa sala online (ADR 0020): código no menu, "(bot)", avisos, "Voltar a jogar" e a saída.
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { PRESET_YONMA, type Seat } from '../../engine';
 import { LocalSession, NO_DELAYS, type SeatSetup } from '../../session';
@@ -41,10 +41,14 @@ function renderTable(room: Partial<TableRoom> = {}) {
   return { session, onResume, onExit };
 }
 
+const openMenu = () => fireEvent.click(screen.getByRole('button', { name: 'Menu da partida' }));
+
 describe('mesa em sala online', () => {
-  it('mostra o código, o "(bot)" de quem está coberto, a foto e o aviso', () => {
+  it('código no menu, "(bot)" de quem está coberto, a foto e o aviso', () => {
     const { session } = renderTable();
-    expect(screen.getByText('ABC234')).toBeInTheDocument();
+    expect(screen.queryByText('ABC234')).toBeNull();
+    openMenu();
+    expect(within(screen.getByRole('menu')).getByText('ABC234')).toBeInTheDocument();
     expect(screen.getByText('bot')).toBeInTheDocument();
     expect(screen.getByText('Bia saiu da partida. Um bot assumiu o lugar.')).toBeInTheDocument();
     expect(
@@ -62,7 +66,8 @@ describe('mesa em sala online', () => {
 
   it('convidado: sair avisa que um bot assume e que dá para voltar', () => {
     const { session } = renderTable();
-    fireEvent.click(screen.getByRole('button', { name: 'Sair da partida' }));
+    openMenu();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Sair da partida' }));
     const dialog = screen.getByRole('alertdialog');
     expect(within(dialog).getByText(/Um bot assume o seu lugar/)).toBeInTheDocument();
     expect(within(dialog).queryByText(/fica salva/)).toBeNull();
@@ -71,7 +76,8 @@ describe('mesa em sala online', () => {
 
   it('anfitrião: sair avisa que a partida será encerrada', () => {
     const { session, onExit } = renderTable({ isHost: true });
-    fireEvent.click(screen.getByRole('button', { name: 'Sair da partida' }));
+    openMenu();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Sair da partida' }));
     const dialog = screen.getByRole('alertdialog');
     expect(within(dialog).getByText(/a partida é encerrada para todos/)).toBeInTheDocument();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Encerrar e sair' }));

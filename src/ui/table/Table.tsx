@@ -22,7 +22,6 @@ import { useGameSounds } from '../audio/useGameSounds';
 import { Backdrop } from '../components/Backdrop';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { DecisionDialog } from '../components/DecisionDialog';
-import { PlayerPortrait } from '../components/PlayerPortrait';
 import { Tile } from '../components/Tile';
 import { TileHighlightContext, type TileHighlight } from '../components/tileHighlight';
 import { TileLabelsContext } from '../components/tileLabels';
@@ -34,14 +33,14 @@ import { CallBanner } from './CallBanner';
 import { buildDialog, isAction, type Dialog } from './decisions';
 import { HelpPanel } from './HelpPanel';
 import { MatchIntro } from './MatchIntro';
-import { ExitIcon, FullscreenIcon, MusicIcon, SoundIcon } from './MenuIcons';
-import { NUMBER_KANJI, relativeSide, seatName, windKanji, windName } from './labels';
+import { relativeSide, seatName } from './labels';
 import { PlayerHand } from './PlayerHand';
 import { RoundResult } from './RoundResult';
 import { Stage } from './Stage';
 import { MatchResultDialog } from './SummaryDialogs';
 import styles from './Table.module.css';
 import { CenterPanel, HiddenHand, Melds, Pond } from './TableParts';
+import { PlayerSeal, RoundCard, RulesDialog, TableMenu } from './TableHud';
 import { useClockValue, useMatch } from './useMatch';
 import { useRecordHistory } from './useRecordHistory';
 import { SpeechBubble } from './SpeechBubble';
@@ -91,16 +90,26 @@ export function Table({
   const focus =
     focusTile?.tick === tick && discardable.has(focusTile.tile.id) ? focusTile.tile : null;
   const revealed = session.getRevealedHands();
+  // Distribuição das pedras: a mão nova chega peça a peça. A chave muda a cada mão (e quando a
+  // apresentação fecha), remontando as mãos para a animação tocar uma vez.
+  const freshHand = view.players.every((p) => p.discards.length === 0 && p.melds.length === 0);
 
   // Camada de destaques: bônus (dora/vermelhas) e cópias visíveis da peça sob o mouse.
   const [exitOpen, setExitOpen] = useState(false);
+  const [rulesOpen, setRulesOpen] = useState(false);
+  // Guia recolhido ou aberto: lembrado neste aparelho entre partidas.
+  const [guideCollapsed, setGuideCollapsed] = useState(readGuideCollapsed);
+  const toggleGuide = () => {
+    writeGuideCollapsed(!guideCollapsed);
+    setGuideCollapsed(!guideCollapsed);
+  };
   // Apresentação dos jogadores ao abrir a mesa (partida nova ou retomada).
   const [intro, setIntro] = useState(() => ({
     open: view.phase !== 'matchEnded',
     resumed: view.handsPlayed > 0 || view.players.some((p) => p.discards.length > 0),
   }));
-  // Com a apresentação ou a janela de sair abertas, a partida (relógio e bots) fica parada.
-  const paused = exitOpen || intro.open;
+  // Com a apresentação, as regras ou a janela de sair abertas, a partida solo fica parada.
+  const paused = exitOpen || rulesOpen || intro.open;
   useEffect(() => {
     session.setPaused(paused);
   }, [paused, session]);
@@ -186,6 +195,8 @@ export function Table({
   });
 
   const playing = view.phase !== 'handSummary' && view.phase !== 'matchEnded';
+  const dealing = playing && freshHand;
+  const dealKey = intro.open ? 'intro' : `${view.roundWind}-${view.handNumber}-${view.honba}`;
   // Durante o resultado, o cabeçalho continua mostrando a mão que acabou de terminar.
   const round =
     view.phase === 'handSummary' && view.summary
@@ -201,97 +212,23 @@ export function Table({
             {announcement}
           </p>
 
-          <header className={styles.header}>
-            <span className={styles.headerGlyph} aria-hidden="true">
-              {windKanji(round.wind)}
-              {NUMBER_KANJI[round.n - 1]}局
-            </span>
-            <div>
-              <div className={styles.roundTitle}>
-                {windName(round.wind)} {round.n}
-              </div>
-              <div className={styles.roundInfo}>
-                <span>{t('table.honba', { n: round.honba })}</span>
-                <span>{t('table.sticks', { n: view.riichiSticks })}</span>
-              </div>
-            </div>
-          </header>
+          <RoundCard
+            round={round}
+            sticks={view.riichiSticks}
+            indicators={view.doraIndicators}
+            hints={helps.doraHint ? doraPairs(view) : null}
+          />
 
-          <section className={styles.doraPanel} aria-label={t('table.dora')}>
-            <span className={styles.doraLabel}>{t('table.indicator')}</span>
-            <div className={styles.doraTiles}>
-              {Array.from({ length: 5 }, (_, i) => {
-                const ind = view.doraIndicators[i];
-                return <Tile key={i} tile={ind ?? null} width={40} />;
-              })}
-            </div>
-            {helps.doraHint && doraPairs(view).length > 0 && (
-              // Compacto (duas por linha): com vários dora o painel não invade a placa de baixo.
-              <div className={styles.doraHints}>
-                <span className={styles.doraHintsLabel}>{t('table.dora')}</span>
-                {doraPairs(view).map((pair, i) => (
-                  <div
-                    key={i}
-                    className={styles.doraHint}
-                    title={t('help.dora', {
-                      indicator: tileName({ id: -1, kind: pair.indicator, red: false }),
-                      dora: tileName({ id: -1, kind: pair.dora, red: false }),
-                    })}
-                  >
-                    <Tile tile={{ id: -200 - i, kind: pair.indicator, red: false }} width={26} />
-                    <span className={styles.doraArrow} aria-hidden="true" />
-                    <Tile tile={{ id: -300 - i, kind: pair.dora, red: false }} width={26} glow />
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          <nav className={styles.menu}>
-            <button
-              type="button"
-              className={settings.muted ? styles.menuOff : styles.menuButton}
-              onClick={() => settings.set({ muted: !settings.muted })}
-              aria-pressed={!settings.muted}
-              aria-label={t('table.menu.sound')}
-              title={t('table.menu.sound')}
-            >
-              <SoundIcon off={settings.muted} />
-            </button>
-            <button
-              type="button"
-              className={settings.music ? styles.menuButton : styles.menuOff}
-              onClick={() => settings.set({ music: !settings.music })}
-              aria-pressed={settings.music}
-              aria-label={t('table.menu.music')}
-              title={t('table.menu.music')}
-            >
-              <MusicIcon off={!settings.music} />
-            </button>
-            <button
-              type="button"
-              className={styles.menuButton}
-              onClick={() => void toggleFullscreen()}
-              aria-label={t('table.menu.fullscreen')}
-              title={t('table.menu.fullscreen')}
-            >
-              <FullscreenIcon />
-            </button>
-            <span className={styles.menuDivider} aria-hidden="true" />
-            <button
-              type="button"
-              className={`${styles.menuButton} ${styles.menuExit}`}
-              onClick={() => {
-                setExitOpen(true);
-              }}
-              aria-label={t('table.menu.exit')}
-              title={t('table.menu.exit')}
-            >
-              <ExitIcon />
-            </button>
-          </nav>
-
-          {room && <RoomCode code={room.code} />}
+          <TableMenu
+            muted={settings.muted}
+            music={settings.music}
+            roomCode={room?.code ?? null}
+            onSound={() => settings.set({ muted: !settings.muted })}
+            onMusic={() => settings.set({ music: !settings.music })}
+            onFullscreen={() => void toggleFullscreen()}
+            onRules={() => setRulesOpen(true)}
+            onExit={() => setExitOpen(true)}
+          />
 
           <div className={styles.plane}>
             <div className={styles.frame} />
@@ -320,7 +257,12 @@ export function Table({
                           ))}
                         </div>
                       ) : (
-                        <HiddenHand count={p.handCount} width={edgeTile} />
+                        <HiddenHand
+                          key={dealKey}
+                          count={p.handCount}
+                          width={edgeTile}
+                          dealing={dealing}
+                        />
                       )}
                       <Melds player={p} players={n} width={edgeTile} />
                     </div>
@@ -333,48 +275,22 @@ export function Table({
           {view.players.map((p) => {
             const side = relativeSide(p.seat, view.seat, n);
             const name = seatName(session.seats, p.seat);
-            const isTurn = view.turn === p.seat;
             return (
-              <div
+              <PlayerSeal
                 key={p.seat}
-                className={`${styles.badge} ${styles[`badge${side}`]} ${isTurn ? styles.badgeTurn : ''}`}
-                aria-current={isTurn ? 'true' : undefined}
+                side={side}
+                seat={session.seats[p.seat]}
+                name={name}
+                wind={p.seatWind}
+                dealer={p.isDealer}
+                score={p.score}
+                riichi={!!p.riichi?.established}
+                kita={p.kita.length}
+                bot={!!room?.covered.has(p.seat)}
+                turn={view.turn === p.seat}
               >
-                <PlayerPortrait
-                  seat={session.seats[p.seat]}
-                  name={name}
-                  className={styles.portrait}
-                />
-                <span className={styles.badgeName}>
-                  {name}
-                  {room?.covered.has(p.seat) && (
-                    <small className={styles.badgeBot} title={t('room.botPlaying')}>
-                      {t('room.botTag')}
-                    </small>
-                  )}
-                </span>
-                <span className={styles.badgeScore}>{p.score.toLocaleString('pt-BR')}</span>
-                <span className={p.isDealer ? styles.badgeDealer : styles.badgeWind}>
-                  <span className={styles.badgeWindGlyph} aria-hidden="true">
-                    {windKanji(p.seatWind)}
-                  </span>
-                  {windName(p.seatWind)}
-                  {p.isDealer ? ` · ${t('table.dealer')}` : ''}
-                </span>
-                {p.riichi?.established && (
-                  <span className={styles.badgeRiichi}>{t('table.riichi')}</span>
-                )}
                 {speech?.seat === p.seat && <SpeechBubble speech={speech} side={side} />}
-                {p.kita.length > 0 && (
-                  <span
-                    className={styles.badgeKita}
-                    title={t('table.kitaCount', { n: p.kita.length })}
-                    aria-label={t('table.kitaCount', { n: p.kita.length })}
-                  >
-                    <span aria-hidden="true">北</span>×{p.kita.length}
-                  </span>
-                )}
-              </div>
+              </PlayerSeal>
             );
           })}
 
@@ -387,6 +303,8 @@ export function Table({
 
           <div className={`${styles.handTray} ${myTurn ? styles.handTrayActive : ''}`} />
           <PlayerHand
+            key={dealKey}
+            dealing={dealing}
             hand={view.hand}
             drawn={view.drawn}
             discardable={discardable}
@@ -396,7 +314,15 @@ export function Table({
             onHoverTile={(tile) => setHoverKind(tile ? tile.kind : null)}
           />
 
-          {playing && <HelpPanel view={view} focus={focus} prefs={helps} />}
+          {playing && (
+            <HelpPanel
+              view={view}
+              focus={focus}
+              prefs={helps}
+              collapsed={guideCollapsed}
+              onToggle={toggleGuide}
+            />
+          )}
 
           {revealed && <div className={styles.trainingSeal}>{t('table.training')}</div>}
 
@@ -433,7 +359,9 @@ export function Table({
             </div>
           )}
 
-          {playing && <ActionBar actions={shownActions} onAction={onAction} />}
+          {playing && (
+            <ActionBar actions={shownActions} onAction={onAction} showKeys={settings.actionKeys} />
+          )}
 
           {view.callTile && playing && (
             <div className={styles.callTile}>
@@ -462,6 +390,14 @@ export function Table({
               session={session}
               resumed={intro.resumed}
               onDone={() => setIntro((x) => ({ ...x, open: false }))}
+            />
+          )}
+
+          {rulesOpen && (
+            <RulesDialog
+              rules={session.rules}
+              timer={session.settings.timer}
+              onClose={() => setRulesOpen(false)}
             />
           )}
 
@@ -510,38 +446,31 @@ export function Table({
   );
 }
 
+const GUIDE_KEY = 'table:guideCollapsed';
+
+function readGuideCollapsed(): boolean {
+  try {
+    return globalThis.localStorage?.getItem(GUIDE_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function writeGuideCollapsed(collapsed: boolean): void {
+  try {
+    if (collapsed) globalThis.localStorage?.setItem(GUIDE_KEY, '1');
+    else globalThis.localStorage?.removeItem(GUIDE_KEY);
+  } catch {
+    // Sem armazenamento (aba privada): vale só nesta partida.
+  }
+}
+
 /** Tempo da jogada: só este texto se atualiza com o relógio, não a mesa inteira. */
 function TurnClock({ session }: { session: MatchSession }) {
   const text = useClockValue(session, (clock) =>
     clock ? formatClock(clock, clock.hasBank) : null,
   );
   return text === null ? null : <span className={styles.clock}>{text}</span>;
-}
-
-/** Código da sala sempre à vista durante a partida (quem chegar depois entra com ele). */
-function RoomCode({ code }: { code: string }) {
-  const [copied, setCopied] = useState(false);
-  const copy = async () => {
-    try {
-      await globalThis.navigator.clipboard.writeText(`${globalThis.location.origin}/sala/${code}`);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1800);
-    } catch {
-      setCopied(false);
-    }
-  };
-  return (
-    <button
-      type="button"
-      className={styles.roomCode}
-      onClick={() => void copy()}
-      title={t('room.copyLink')}
-      aria-label={`${t('room.code')}: ${code}. ${t('room.copyLink')}`}
-    >
-      <span className={styles.roomCodeLabel}>{copied ? t('room.copied') : t('room.code')}</span>
-      <strong className={styles.roomCodeValue}>{code}</strong>
-    </button>
-  );
 }
 
 /** Frase para leitor de tela sobre a última novidade relevante (spec 10.7). */

@@ -98,6 +98,11 @@ export interface LocalSessionOptions {
   readonly botRunner?: BotRunner;
   /** Sala: bot assume quem fica parado (ADR 0020). Sem isso (solo), ninguém é coberto. */
   readonly idle?: IdleRules;
+  /**
+   * Espera a mais antes da primeira jogada (sala nova: a apresentação aparece para todos e ninguém
+   * perde tempo nela). Na partida solo a mesa pausa a sessão enquanto a apresentação está aberta.
+   */
+  readonly openingPauseMs?: number;
 }
 
 interface HumanClock {
@@ -152,6 +157,12 @@ export class LocalSession implements MatchSession {
   private paused = false;
   private readonly frozen = new Map<Seat, Remaining>();
   private version = 0;
+  /**
+   * Mão recém-distribuída e ninguém agiu ainda: antes da primeira jogada (e do relógio) a mesa mostra
+   * as pedras sendo distribuídas. Vale também ao sair de uma pausa nesse momento (fim da apresentação).
+   */
+  private dealPending: boolean;
+  private openingPauseMs: number;
   private readonly winLog: LoggedWin[];
   protected disposed = false;
 
@@ -173,6 +184,8 @@ export class LocalSession implements MatchSession {
     this.delayRng = createRng(this.seed());
     this.banks = { ...opts.banks };
     this.winLog = [...(opts.winLog ?? [])];
+    this.dealPending = isFreshHand(opts.state);
+    this.openingPauseMs = opts.openingPauseMs ?? 0;
     opts.seats.forEach((setup, i) => {
       const seat = i as Seat;
       if (setup.kind === 'bot') this.bots.set(seat, createBot(setup.skill, setup.characterId));
@@ -394,7 +407,10 @@ export class LocalSession implements MatchSession {
     this.version += 1;
     this.cancelTimers();
     this.clocks.clear();
-    if (events.some((e) => e.type === 'HandStarted')) this.refillBanks();
+    if (events.some((e) => e.type === 'HandStarted')) {
+      this.refillBanks();
+      this.dealPending = true;
+    }
     this.persist();
     const view = this.getView();
     const playerEvents = eventsForSeat(events, this.localSeat);
@@ -418,7 +434,11 @@ export class LocalSession implements MatchSession {
       }, 0);
       return;
     }
-    if (pause === 0) {
+    const wait =
+      this.dealPending && this.delays.presentation
+        ? Math.max(pause, PACING.handStartMs + this.openingPauseMs)
+        : pause;
+    if (wait === 0) {
       this.scheduleActors();
       return;
     }
@@ -428,10 +448,12 @@ export class LocalSession implements MatchSession {
       this.scheduleActors();
       // Relógios novos depois da apresentação: o anfitrião publica os prazos.
       this.onChange([]);
-    }, pause);
+    }, wait);
   }
 
   private scheduleActors(): void {
+    this.dealPending = false;
+    this.openingPauseMs = 0;
     const version = this.version;
     const n = this.rules.players;
     for (let i = 0; i < n; i++) {
@@ -571,6 +593,17 @@ export class LocalSession implements MatchSession {
     }
     saveMatch(this.snapshot(), undefined, this.saveKey);
   }
+}
+
+/** Mão em andamento em que ninguém descartou nem chamou ainda (acabou de ser distribuída). */
+function isFreshHand(state: MatchState): boolean {
+  const players = state.hand?.players;
+  return (
+    !!players &&
+    state.phase !== 'handSummary' &&
+    state.phase !== 'matchEnded' &&
+    players.every((p) => p.discards.length === 0 && p.melds.length === 0 && p.kita.length === 0)
+  );
 }
 
 /** Ação padrão no estouro do tempo (spec 10.4): descarta a peça comprada ou passa. */

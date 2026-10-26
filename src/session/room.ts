@@ -153,6 +153,28 @@ export type LobbyRequest =
 export const isLobbyRequest = (a: { readonly type: string }): a is LobbyRequest =>
   a.type === 'claimSeat' || a.type === 'leaveSeat' || a.type === 'resume';
 
+/**
+ * Assentos do lobby para outro número de jogadores (o anfitrião trocou 4 ↔ 3 ao editar as regras).
+ * Quem estava num assento que some passa para um lugar livre; sem lugar livre, devolve null.
+ */
+export function resizeSeats(seats: readonly RoomSeat[], players: number): RoomSeat[] | null {
+  if (seats.length <= players) {
+    const extra: RoomSeat[] = Array.from({ length: players - seats.length }, () => ({
+      type: 'empty',
+      displayName: '',
+    }));
+    return [...seats, ...extra];
+  }
+  const kept = [...seats.slice(0, players)];
+  for (const moving of seats.slice(players)) {
+    if (moving.type !== 'human') continue;
+    const free = kept.findIndex((s) => s.type !== 'human');
+    if (free < 0) return null;
+    kept[free] = moving;
+  }
+  return kept;
+}
+
 /** Assentos do lobby → assentos da partida (vazios viram bots, spec 13.2). */
 export function seatsForMatch(
   seats: readonly RoomSeat[],

@@ -1,92 +1,83 @@
 /* Layout da mesa em coordenadas do palco (1600×900). Acabamento: laca, ouro, cinábrio, jade. */
 
-/* ---------- HUD ---------- */
-.header {
+/* ---------- HUD (formato enxuto da fase 3: cartão de rodada, menu único e selos) ---------- */
+.roundCard {
   position: absolute;
-  left: 28px;
-  top: 78px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 10px 22px 10px 14px;
+  left: 24px;
+  top: 18px;
+  z-index: 4;
+  display: grid;
+  gap: 8px;
+  max-width: 284px;
+  padding: 10px 14px 12px;
   border-radius: 12px;
-  background: linear-gradient(180deg, rgb(47 29 66 / 0.92), rgb(27 17 40 / 0.92));
+  background: linear-gradient(180deg, rgb(47 29 66 / 0.94), rgb(27 17 40 / 0.94));
   border: 1px solid var(--gold);
   box-shadow:
     inset 0 0 0 3px #1b1128,
     inset 0 0 0 4px var(--gold-dim);
 }
 
-.headerGlyph {
+.roundLine {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.roundGlyph {
   writing-mode: vertical-rl;
   font-family: var(--font-brush);
   font-weight: 800;
-  font-size: 22px;
+  font-size: 15px;
   line-height: 1;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: var(--cinnabar-bright);
 }
 
 .roundTitle {
   font-family: var(--font-display);
-  font-size: 40px;
+  font-size: 30px;
   font-weight: 800;
   line-height: 1.05;
   color: var(--gold-bright);
+  white-space: nowrap;
 }
 
 .roundInfo {
-  display: flex;
-  gap: 18px;
-  font-size: 18px;
-  color: var(--color-text-muted);
-}
-
-.doraPanel {
-  position: absolute;
-  left: 28px;
-  top: 192px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: 1px solid var(--gold-dim);
-  background: rgb(27 17 40 / 0.85);
   display: grid;
-  gap: 6px;
-}
-
-.doraLabel {
-  font-size: 16px;
+  font-size: 15px;
+  line-height: 1.25;
   color: var(--color-text-muted);
 }
 
-.doraTiles {
+.doraLine,
+.doraHints {
   display: flex;
-  gap: 3px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px 4px;
 }
 
 .doraHints {
-  display: grid;
-  grid-template-columns: repeat(2, max-content);
-  gap: 6px 14px;
-  align-items: center;
-  padding-top: 6px;
+  gap: 6px 12px;
+  padding-top: 8px;
   border-top: 1px solid var(--gold-dim);
 }
 
-.doraHintsLabel {
-  grid-column: 1 / -1;
-  font-size: 15px;
+.doraLabel {
+  margin-right: 4px;
+  font-size: 14px;
   color: var(--color-text-muted);
 }
 
 .doraHint {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .doraArrow {
-  width: 18px;
+  width: 14px;
   height: 2px;
   background: var(--gold);
   position: relative;
@@ -102,79 +93,178 @@
   border-right: 0;
 }
 
-/* Barra de navegação com ícones, no canto superior esquerdo. */
-.menu {
+/* Menu único no canto superior direito. */
+.tableMenu {
   position: absolute;
-  left: 28px;
-  top: 14px;
-  display: flex;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 12px;
-  border: 1px solid var(--gold-dim);
-  background: linear-gradient(180deg, rgb(47 29 66 / 0.92), rgb(27 17 40 / 0.92));
-  box-shadow: 0 8px 20px rgb(0 0 0 / 0.35);
+  right: 24px;
+  top: 18px;
+  z-index: 40;
 }
 
-.menuButton {
+.menuToggle,
+.menuToggleOpen {
   composes: shine from '../components/Button.module.css';
-}
-
-.menuOff {
-  composes: shine from '../components/Button.module.css';
-}
-
-.menuButton:active,
-.menuOff:active {
-  transform: scale(0.92);
-}
-
-.menuButton,
-.menuOff {
-  position: relative;
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 58px;
+  height: 58px;
   padding: 0;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  background: transparent;
+  border-radius: 14px;
+  border: 1px solid var(--gold-dim);
+  background: linear-gradient(180deg, rgb(47 29 66 / 0.94), rgb(27 17 40 / 0.94));
   color: var(--gold-bright);
   cursor: pointer;
   transition:
-    background-color 140ms ease,
     border-color 140ms ease,
-    color 140ms ease,
     transform 120ms var(--ease-out);
 }
 
-.menuButton:hover,
-.menuOff:hover {
-  border-color: var(--gold-dim);
-  background: rgb(240 211 145 / 0.1);
+.menuToggle svg,
+.menuToggleOpen svg {
+  width: 30px;
+  height: 30px;
 }
 
-.menuButton:focus-visible,
-.menuOff:focus-visible {
+.menuToggle:hover,
+.menuToggleOpen {
+  border-color: var(--gold);
+}
+
+.menuToggle:active {
+  transform: scale(0.94);
+}
+
+.menuToggle:focus-visible,
+.menuToggleOpen:focus-visible {
   outline: 2px solid var(--gold-bright);
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 
-.menuOff {
+.menuList {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  display: grid;
+  width: 330px;
+  padding: 8px;
+  border-radius: 14px;
+  border: 1px solid var(--gold);
+  background: #1f1430;
+  box-shadow: 0 20px 50px rgb(0 0 0 / 0.6);
+  animation: menuIn 160ms var(--ease-out) both;
+}
+
+@keyframes menuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+.menuItem,
+.menuItemDanger {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--rice);
+  font: inherit;
+  font-size: 18px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menuItem:hover,
+.menuItem:focus-visible,
+.menuItemDanger:hover,
+.menuItemDanger:focus-visible {
+  background: rgb(240 211 145 / 0.1);
+  outline: none;
+}
+
+.menuItemDanger {
+  color: #ffb3a8;
+}
+
+.menuIcon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  color: var(--gold-bright);
+}
+
+.menuItemDanger .menuIcon {
+  color: #ffb3a8;
+}
+
+.menuState {
+  margin-left: auto;
+  font-size: 15px;
   color: var(--color-text-muted);
 }
 
-.menuDivider {
-  align-self: center;
-  width: 1px;
-  height: 26px;
-  margin: 0 3px;
+.menuCode {
+  margin-left: auto;
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--gold-bright);
+}
+
+.menuSeparator {
+  height: 1px;
+  margin: 6px 4px;
   background: var(--gold-dim);
 }
 
-.menuExit {
-  color: #ffb3a8;
+/* "Regras desta partida" (diálogo aberto pelo menu). */
+.rulesDialog {
+  width: min(560px, 92vw);
+}
+
+.rulesList {
+  display: grid;
+  gap: 2px;
+  max-height: 460px;
+  margin: 0 0 16px;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+  text-align: left;
+}
+
+.rulesList li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 17px;
+}
+
+.rulesList li:nth-child(odd) {
+  background: rgb(255 255 255 / 0.04);
+}
+
+.rulesList strong {
+  color: var(--gold-bright);
+  text-align: right;
+}
+
+.rulesList em {
+  font-size: 14px;
+  font-style: normal;
+  color: var(--color-text-muted);
+}
+
+.rulesChanged strong {
+  color: var(--jade-bright);
 }
 
 /* ---------- Plano da mesa (perspectiva suave, spec 10.2) ---------- */
@@ -592,35 +682,34 @@
   }
 }
 
-/* ---------- Retratos ---------- */
-.badge {
+/* ---------- Selos dos jogadores, colados no lado da mesa ---------- */
+.seal {
   position: absolute;
-  display: grid;
-  grid-template-columns: 64px auto;
-  grid-template-rows: auto auto auto;
-  column-gap: 12px;
+  z-index: 3;
+  display: flex;
   align-items: center;
-  padding: 10px 18px 10px 10px;
-  min-width: 220px;
-  border-radius: 12px;
+  gap: 10px;
+  padding: 5px 16px 5px 5px;
+  border-radius: 999px;
   border: 1px solid var(--gold-dim);
-  background: linear-gradient(180deg, rgb(47 29 66 / 0.92), rgb(27 17 40 / 0.92));
+  background: linear-gradient(180deg, rgb(47 29 66 / 0.94), rgb(27 17 40 / 0.94));
+  white-space: nowrap;
   transition:
     border-color 200ms ease,
     box-shadow 200ms ease;
 }
 
-.badgeTurn {
+.sealTurn {
   border-color: var(--gold-bright);
   box-shadow:
     0 0 0 2px rgb(240 211 145 / 0.35),
-    0 0 26px rgb(240 211 145 / 0.45);
+    0 0 22px rgb(240 211 145 / 0.45);
 }
 
-.badgeTurn .portrait::after {
+.sealTurn .portrait::after {
   content: '';
   position: absolute;
-  inset: -7px;
+  inset: -6px;
   border-radius: 50%;
   background: conic-gradient(
     from 0deg,
@@ -634,111 +723,66 @@
   animation: spin 2.4s linear infinite;
 }
 
-@keyframes spin {
-  to {
-    rotate: 360deg;
-  }
-}
-
-.badge0 {
+/* Você: à esquerda da sua mão, acima de "Sua vez". */
+.seal0 {
   left: 28px;
-  top: 620px;
+  top: 690px;
 }
 
-/* Adversários à direita e em frente ficam na coluna direita, fora da mesa: não cobrem pedras. */
-/* Jogador da direita: encostado na mesa, na altura da mão dele. */
-.badge1 {
-  left: 1306px;
-  top: 228px;
+/* Direita: colado na borda direita da mesa, na altura do meio. */
+.seal1 {
+  left: 1292px;
+  top: 240px;
 }
 
-/* Jogador da frente: placa compacta numa linha, acima da borda de cima da mesa. */
-.badge2 {
+/* Frente: acima da borda de cima da mesa. */
+.seal2 {
   left: 50%;
-  top: 18px;
-  transform: translateX(-50%);
-  grid-template-columns: 44px auto auto auto;
-  grid-template-rows: auto;
-  column-gap: 14px;
-  padding: 5px 18px 5px 6px;
-  min-width: 0;
-  border-radius: 999px;
-  white-space: nowrap;
+  top: 6px;
+  translate: -50% 0;
 }
 
-.badge2 .portrait {
-  grid-row: auto;
-  width: 44px;
-  height: 44px;
-  font-size: 22px;
+/* Esquerda: colado na borda esquerda da mesa (a mesa começa em x = 312). */
+.seal3 {
+  right: 1292px;
+  top: 240px;
 }
 
-.badge2 .badgeScore {
-  font-size: 21px;
-}
-
-.badge2 .portrait::after {
-  inset: -5px;
-}
-
-.badge3 {
-  left: 28px;
-  top: 410px;
-}
-
-.portrait {
+.sealPortrait {
   position: relative;
-  grid-row: 1 / span 3;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-family: var(--font-display);
-  font-size: 30px;
-  font-weight: 800;
-  color: var(--rice);
-  background: radial-gradient(circle at 35% 30%, #7a5fc4, #2c1f52);
-  border: 2px solid var(--gold);
+  flex: none;
 }
 
-.badgeName {
+.sealName {
   font-size: 19px;
   font-weight: 700;
 }
 
-.badgeScore {
-  font-family: var(--font-display);
-  font-size: 24px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--gold-bright);
-}
-
-.badgeWind,
-.badgeDealer {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 15px;
-  color: var(--color-text-muted);
-}
-
-.badgeDealer {
-  color: #ffb3a8;
-}
-
-.badgeWindGlyph {
-  font-family: var(--font-brush);
-  font-weight: 800;
-  font-size: 18px;
-}
-
-.badgeRiichi {
+.sealWind,
+.sealWindDealer {
   position: absolute;
-  right: -10px;
-  top: -12px;
-  padding: 2px 10px;
+  right: -5px;
+  bottom: -5px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--gold);
+  background: #1b1128;
+  color: var(--rice);
+  font-family: var(--font-brush);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.sealWindDealer {
+  background: var(--cinnabar);
+  color: #fff;
+}
+
+.sealRiichi {
+  padding: 1px 9px;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 700;
@@ -747,11 +791,29 @@
   box-shadow: inset 0 0 0 1px rgb(255 220 180 / 0.5);
 }
 
+@keyframes spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+.portrait {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--rice);
+  background: radial-gradient(circle at 35% 30%, #7a5fc4, #2c1f52);
+  border: 2px solid var(--gold);
+}
+
 /* Kitas do jogador (sanma): cada um vale +1 dora. */
 .badgeKita {
-  position: absolute;
-  right: -10px;
-  bottom: -12px;
   display: inline-flex;
   align-items: center;
   gap: 2px;
@@ -854,7 +916,7 @@
 .yourTurn {
   position: absolute;
   left: 28px;
-  top: 760px;
+  top: 776px;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -1022,6 +1084,31 @@
   }
 }
 
+/* Selo da tecla de atalho no canto do botão; em telas de toque (sem teclado) some. */
+.actionKey {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  z-index: 2;
+  min-width: 20px;
+  padding: 0 5px;
+  border-radius: 5px;
+  border: 1px solid rgb(255 255 255 / 0.45);
+  background: rgb(0 0 0 / 0.35);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+@media (hover: none) {
+  .actionKey {
+    display: none;
+  }
+}
+
 .actionButton:focus-visible {
   outline: 3px solid #fff;
   outline-offset: 2px;
@@ -1100,6 +1187,70 @@
   line-height: 1.35;
 }
 
+.helpHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.helpCollapse {
+  padding: 2px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.helpCollapse:hover,
+.helpCollapse:focus-visible {
+  background: rgb(240 211 145 / 0.1);
+  color: var(--gold-bright);
+  outline: none;
+}
+
+/* Guia recolhido: aba na borda direita, ainda com a frase principal. */
+.helpTab {
+  composes: shine from '../components/Button.module.css';
+  position: absolute;
+  right: 0;
+  bottom: 420px;
+  display: grid;
+  justify-items: start;
+  gap: 2px;
+  max-width: 250px;
+  padding: 10px 16px;
+  border: 1px solid var(--gold-dim);
+  border-right: 0;
+  border-radius: 12px 0 0 12px;
+  background: rgb(27 17 40 / 0.92);
+  color: var(--rice);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.helpTab:hover,
+.helpTab:focus-visible {
+  border-color: var(--gold);
+  outline: none;
+}
+
+.helpTabTitle {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--gold-bright);
+}
+
+.helpTabState {
+  font-size: 15px;
+  line-height: 1.3;
+  color: var(--color-text-muted);
+}
+
 .helpTitle {
   margin: 0;
   font-family: var(--font-display);
@@ -1164,8 +1315,8 @@
 
 .trainingSeal {
   position: absolute;
-  right: 24px;
-  top: 22px;
+  right: 96px;
+  top: 32px;
   padding: 4px 18px;
   border-radius: 999px;
   background: var(--jade);
@@ -1190,7 +1341,7 @@
   .drawnTile,
   .meld,
   .turnLight,
-  .badgeTurn .portrait::after {
+  .sealTurn .portrait::after {
     animation: none !important;
   }
 }
@@ -1239,47 +1390,6 @@
 
 /* ---------- Sala online (ADR 0020) ---------- */
 
-/* Código da sala ao lado do menu: clicar copia o link. */
-.roomCode {
-  composes: shine from '../components/Button.module.css';
-  position: absolute;
-  left: 250px;
-  top: 14px;
-  display: grid;
-  justify-items: start;
-  gap: 0;
-  min-width: 150px;
-  padding: 5px 16px 6px;
-  border-radius: 12px;
-  border: 1px solid var(--gold-dim);
-  background: linear-gradient(180deg, rgb(47 29 66 / 0.92), rgb(27 17 40 / 0.92));
-  box-shadow: 0 8px 20px rgb(0 0 0 / 0.35);
-  color: var(--rice);
-  font: inherit;
-  cursor: pointer;
-  transition: border-color 150ms ease;
-}
-
-.roomCode:hover,
-.roomCode:focus-visible {
-  border-color: var(--gold);
-  outline: none;
-}
-
-.roomCodeLabel {
-  font-size: 13px;
-  color: var(--color-text-muted);
-  letter-spacing: 0.04em;
-}
-
-.roomCodeValue {
-  font-family: var(--font-display);
-  font-size: 24px;
-  line-height: 1.1;
-  letter-spacing: 0.18em;
-  color: var(--gold-bright);
-}
-
 /* "(bot)" ao lado do nome de quem está sendo coberto por um bot. */
 .badgeBot {
   margin-left: 8px;
@@ -1302,15 +1412,16 @@
   }
 }
 
-/* Avisos (saiu, parado, voltou, entrou): pilha no canto superior direito. */
+/* Avisos (saiu, parado, voltou, entrou): faixas curtas no topo, abaixo do jogador da frente. */
 .notices {
   position: absolute;
-  right: 24px;
-  top: 84px;
+  left: 50%;
+  top: 76px;
+  translate: -50% 0;
   z-index: 30;
   display: grid;
   gap: 8px;
-  justify-items: end;
+  justify-items: center;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1319,9 +1430,9 @@
 
 .notice,
 .noticeGood {
-  max-width: 330px;
-  padding: 10px 18px;
-  border-radius: 12px;
+  max-width: 520px;
+  padding: 8px 20px;
+  border-radius: 999px;
   border: 1px solid rgb(255 155 143 / 0.65);
   background: linear-gradient(180deg, rgb(90 22 30 / 0.95), rgb(42 14 22 / 0.95));
   color: var(--rice);
@@ -1340,7 +1451,7 @@
 @keyframes noticeIn {
   from {
     opacity: 0;
-    transform: translateX(30px);
+    transform: translateY(-12px);
   }
 }
 
@@ -1348,7 +1459,7 @@
 .covered {
   position: absolute;
   left: 50%;
-  top: 84px;
+  top: 140px;
   z-index: 30;
   display: flex;
   align-items: center;
@@ -1388,4 +1499,59 @@
   font: inherit;
   font-weight: 800;
   cursor: pointer;
+}
+
+/* ---------- Distribuição: as pedras da mão nova chegam uma a uma (dentro de PACING.handStartMs) */
+.dealing > [data-tile]:not(.drawnTile) {
+  animation: dealIn 380ms var(--ease-out) var(--deal-delay, 0ms) backwards;
+}
+
+.dealing > :nth-child(2) {
+  --deal-delay: 45ms;
+}
+.dealing > :nth-child(3) {
+  --deal-delay: 90ms;
+}
+.dealing > :nth-child(4) {
+  --deal-delay: 135ms;
+}
+.dealing > :nth-child(5) {
+  --deal-delay: 180ms;
+}
+.dealing > :nth-child(6) {
+  --deal-delay: 225ms;
+}
+.dealing > :nth-child(7) {
+  --deal-delay: 270ms;
+}
+.dealing > :nth-child(8) {
+  --deal-delay: 315ms;
+}
+.dealing > :nth-child(9) {
+  --deal-delay: 360ms;
+}
+.dealing > :nth-child(10) {
+  --deal-delay: 405ms;
+}
+.dealing > :nth-child(11) {
+  --deal-delay: 450ms;
+}
+.dealing > :nth-child(12) {
+  --deal-delay: 495ms;
+}
+.dealing > :nth-child(13) {
+  --deal-delay: 540ms;
+}
+.dealing > :nth-child(n + 14) {
+  --deal-delay: 585ms;
+}
+
+@keyframes dealIn {
+  from {
+    opacity: 0;
+    transform: translateY(-36px) scale(0.85);
+  }
+  60% {
+    opacity: 1;
+  }
 }

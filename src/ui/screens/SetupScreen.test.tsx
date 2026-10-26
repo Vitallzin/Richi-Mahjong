@@ -1,6 +1,10 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { buildRuleSet } from '../../engine';
+import { TIMER_PRESETS, type RoomMeta } from '../../session';
+import type { RoomConfig } from '../../state/roomController';
+import { applyRoomConfig } from '../../state/roomConfig';
 import { DEFAULT_SETTINGS, useSettings } from '../../state/settings';
 import { SetupScreen } from './SetupScreen';
 
@@ -62,5 +66,47 @@ describe('Jogar partida (spec 6.6)', () => {
     expect(screen.getByText('Tsumo-loss')).toBeInTheDocument();
     expect(screen.getByLabelText('Pontos iniciais')).toHaveValue(35000);
     expect(screen.getByRole('button', { name: 'Iniciar partida' })).toBeEnabled();
+  });
+});
+
+describe('Editar regras da sala (fase 3)', () => {
+  const renderEdit = (onSave: (c: RoomConfig) => Promise<void>) =>
+    render(
+      <MemoryRouter>
+        <SetupScreen editRoom={{ onSave, onBack: () => undefined }} />
+      </MemoryRouter>,
+    );
+
+  it('mostra as regras carregadas da sala e salva a configuração nova', async () => {
+    const meta = {
+      rules: JSON.stringify(buildRuleSet('sanma', {}, false)),
+      settings: JSON.stringify({
+        timer: TIMER_PRESETS['60+0'],
+        training: false,
+        difficulty: 'hard',
+        characters: ['ren', 'akari'],
+      }),
+    } as RoomMeta;
+    applyRoomConfig(meta);
+    const onSave = vi.fn((_c: RoomConfig) => Promise.resolve());
+    renderEdit(onSave);
+    expect(screen.getByRole('heading', { name: 'Regras da sala' })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: '3 jogadores' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    expect(screen.getByRole('radio', { name: '60+0' })).toHaveAttribute('aria-checked', 'true');
+    fireEvent.click(screen.getByRole('radio', { name: '4 jogadores' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar regras' }));
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+    const config = onSave.mock.calls[0]![0];
+    expect(config).toMatchObject({ mode: 'yonma', players: 4 });
+    expect(JSON.parse(config.settings)).toMatchObject({ difficulty: 'hard' });
+  });
+
+  it('sem lugar para trocar para 3 jogadores: avisa e não sai da tela', async () => {
+    renderEdit(() => Promise.reject(new Error('seatsFull')));
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar regras' }));
+    expect(await screen.findByText(/deixe um lugar livre/)).toBeInTheDocument();
   });
 });

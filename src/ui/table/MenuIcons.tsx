@@ -62,3 +62,29 @@ export function ExitIcon() {
     </Svg>
   );
 }
+
+export function MenuIcon() {
+  return (
+    <Svg>
+      <path d="M4 7h16M4 12h16M4 17h16" />
+    </Svg>
+  );
+}
+
+export function CopyIcon() {
+  return (
+    <Svg>
+      <rect x="8" y="8" width="12" height="12" rx="2" />
+      <path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3" />
+    </Svg>
+  );
+}
+
+export function RulesIcon() {
+  return (
+    <Svg>
+      <path d="M6 4h12a1 1 0 0 1 1 1v15l-3-2-3 2-3-2-3 2V5a1 1 0 0 1 1-1z" />
+      <path d="M9 9h6M9 13h4" />
+    </Svg>
+  );
+}

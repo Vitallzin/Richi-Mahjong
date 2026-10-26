@@ -27,3 +27,4 @@ Um arquivo curto por decisão não óbvia. Valores de regra confirmados ficam em
 | 0019 | Endurecimento: cabeçalhos HTTP, limites no banco, código de sala    |
 | 0020 | Salas: bot de cobertura, entrada no meio e volta à sala             |
 | 0021 | Desempenho no celular: sons em MP3, precache menor, animações       |
+| 0022 | Mesa enxuta, início da mão e regras editáveis na sala               |

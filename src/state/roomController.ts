@@ -15,7 +15,9 @@ import {
   HostSession,
   humanSetup,
   loadMatch,
+  PACING,
   PROTOCOL_VERSION,
+  resizeSeats,
   roomSeatOf,
   seatsForMatch,
   type CoverReason,
@@ -35,6 +37,14 @@ import type { CharacterChoice } from './settings';
 export interface RoomSettings extends MatchSettings {
   readonly difficulty: BotSkill;
   readonly characters: readonly CharacterChoice[];
+}
+
+/** Regras e preferências de uma sala, no formato salvo em meta (criar ou editar). */
+export interface RoomConfig {
+  readonly rules: string;
+  readonly settings: string;
+  readonly mode: RoomMeta['mode'];
+  readonly players: number;
 }
 
 export type RoomPhase =
@@ -80,6 +90,12 @@ const withoutCover = (s: RoomSeat): RoomSeat => {
 /** A partida desta sessão já terminou (o resultado final está na tela)? */
 const ended = (session: MatchSession | null): boolean => session?.getView().phase === 'matchEnded';
 
+/**
+ * Convidado: a sala foi encerrada, mas a visão final (com a classificação) ainda está a caminho.
+ * Espera por ela até este tempo antes de voltar ao lobby.
+ */
+const FINAL_VIEW_WAIT_MS = 8000;
+
 export class RoomController {
   private state: RoomState = {
     phase: 'loading',
@@ -98,6 +114,8 @@ export class RoomController {
   private stopPrivate: (() => void) | null = null;
   private host: HostSession | null = null;
   private guest: GuestSession | null = null;
+  /** Convidado esperando a visão final da partida (cancela a espera). */
+  private stopFinalWait: (() => void) | null = null;
   private readonly guestListeners = new Set<(p: PrivatePayload) => void>();
   /** Visão recebida antes de o convidado aparecer sentado (entrada no meio da partida). */
   private pendingPayload: PrivatePayload | null = null;
@@ -200,6 +218,11 @@ export class RoomController {
 
   private onStatus(meta: RoomMeta): void {
     const session = this.state.session;
+    if (meta.status === 'ended' && session && !this.state.isHost && !ended(session)) {
+      // A sala encerrou antes de a visão final chegar: espera o resultado em vez de sair dele.
+      this.awaitFinalView(session);
+      return;
+    }
     if (meta.status === 'lobby' || meta.status === 'ended') {
       // Convidado olhando o resultado final continua nele até escolher voltar à sala.
       if (session && !ended(session)) this.endSession();
@@ -269,6 +292,21 @@ export class RoomController {
     const n = await net();
     if (this.state.isHost) return;
     await n.sendToInbox(this.code, this.me.uid, { type: 'leaveSeat' }, Date.now());
+  }
+
+  /**
+   * Anfitrião, no lobby: novas regras para a sala. Trocando 4 ↔ 3 jogadores, os assentos acompanham
+   * (quem estava no 4º lugar vai para um lugar livre); sem lugar livre, recusa com 'seatsFull'.
+   */
+  async updateConfig(config: RoomConfig): Promise<void> {
+    if (!this.state.isHost || this.state.meta?.status !== 'lobby') return;
+    const n = await net();
+    if (config.players !== this.state.seats.length) {
+      const seats = resizeSeats(this.state.seats, config.players);
+      if (!seats) throw new Error('seatsFull');
+      await n.writeSeats(this.code, seats);
+    }
+    await n.updateRoomConfig(this.code, config);
   }
 
   /** Anfitrião: personagem de um assento de bot ("empty" = vazio, vira bot ao começar). */
@@ -353,7 +391,9 @@ export class RoomController {
     host.subscribe((view: PlayerView) => {
       if (done || view.phase !== 'matchEnded') return;
       done = true;
-      void n.setStatus(this.code, 'ended');
+      // Os ouvintes rodam antes da publicação da visão final: sem esperar, os convidados recebiam
+      // "encerrada" antes do resultado e voltavam ao lobby sem ver a classificação.
+      setTimeout(() => void n.setStatus(this.code, 'ended'), 0);
     });
   }
 
@@ -392,6 +432,8 @@ export class RoomController {
       botRunner: workerBotRunner,
       transport: { publish: (u) => void n.publishHostUpdate(this.code, u) },
       onSeats: this.hostSeats(n),
+      // A sala não pausa por um jogador: todos veem a apresentação e o relógio só começa depois.
+      openingPauseMs: PACING.matchIntroMs,
     });
     this.watchEnd(this.host, n);
     this.set({ session: this.host, phase: 'playing', notices: [] });
@@ -471,7 +513,31 @@ export class RoomController {
     this.set({ session: this.guest, phase: 'playing', notices: [] });
   }
 
+  /** Convidado: fica na mesa até a classificação final chegar (ou desiste depois de um tempo). */
+  private awaitFinalView(session: MatchSession): void {
+    if (this.stopFinalWait) return;
+    const done = () => {
+      unsubscribe();
+      clearTimeout(timer);
+      this.stopFinalWait = null;
+      this.set({ phase: 'lobby' });
+    };
+    const unsubscribe = session.subscribe((view) => {
+      if (view.phase === 'matchEnded') done();
+    });
+    const timer = setTimeout(() => {
+      done();
+      if (this.state.session === session && !ended(session)) this.endSession();
+    }, FINAL_VIEW_WAIT_MS);
+    this.stopFinalWait = () => {
+      unsubscribe();
+      clearTimeout(timer);
+      this.stopFinalWait = null;
+    };
+  }
+
   private endSession(): void {
+    this.stopFinalWait?.();
     this.stopPrivate?.();
     this.stopPrivate = null;
     this.state.session?.dispose();

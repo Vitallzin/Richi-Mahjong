@@ -6,12 +6,18 @@ import { t } from '../../i18n';
 import { ACTION_ICONS as ICONS, ACTION_KEYS, actionLabel, type ActionKey } from './actions';
 import styles from './Table.module.css';
 
+/** Nome curto da tecla para o selo do botão. */
+const keyLabel = (key: string) => (key === 'Escape' ? 'Esc' : key.toUpperCase());
+
 export function ActionBar({
   actions,
   onAction,
+  showKeys = false,
 }: {
   actions: readonly ActionKey[];
   onAction: (a: ActionKey) => void;
+  /** Mostra a tecla de atalho em cada botão (preferência, ligada por padrão). */
+  showKeys?: boolean;
 }) {
   if (actions.length === 0) return null;
   return (
@@ -28,6 +34,11 @@ export function ActionBar({
             {ICONS[a]}
           </span>
           {actionLabel(a)}
+          {showKeys && (
+            <kbd className={styles.actionKey} aria-hidden="true">
+              {keyLabel(ACTION_KEYS[a])}
+            </kbd>
+          )}
         </button>
       ))}
     </div>

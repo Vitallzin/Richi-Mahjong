@@ -7,8 +7,10 @@ export const PACING = Object.freeze({
   callAnnouncementMs: 1100,
   /** Voo da pedra da mão até o rio. */
   discardFlightMs: 380,
-  /** Início de mão (embaralhar/distribuir). */
+  /** Início de mão: as pedras são distribuídas (animação na mesa) antes de alguém agir. */
   handStartMs: 1200,
+  /** Apresentação dos jogadores numa partida nova (fecha sozinha depois disso). */
+  matchIntroMs: 5200,
   /** Atraso "humano" do bot no próprio turno (ms, mín–máx), somado às animações. */
   botTurnMs: [650, 1400] as const,
   /** Atraso do bot para responder a um descarte (mín–máx). */

@@ -57,6 +57,7 @@
           "music": { ".validate": "newData.isBoolean()" },
           "musicVolume": { ".validate": "newData.isNumber()" },
           "hoverSounds": { ".validate": "newData.isBoolean()" },
+          "actionKeys": { ".validate": "newData.isBoolean()" },
           "helps": {
             "rules": { ".validate": "newData.isBoolean()" },
             "waits": { ".validate": "newData.isBoolean()" },
